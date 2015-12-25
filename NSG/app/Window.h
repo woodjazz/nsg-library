@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Util.h"
 #include <string>
+#include <vector>
 namespace NSG
 {
 	struct IRender
@@ -76,7 +77,7 @@ namespace NSG
         PFilter AddBlurFilter();
         PFilter AddBlendFilter();
         PFilter AddWaveFilter();
-        const std::vector<PFilter>& GetFilters() const { return filters_; }
+        PFilter AddShockWaveFilter();        
         bool HasFilters() const { return !filters_.empty() && filtersEnabled_; }
         void EnableFilters(bool enable);
         PFrameBuffer GetFrameBuffer() const { return frameBuffer_; }
@@ -138,7 +139,7 @@ namespace NSG
         void AddFilter(PFilter filter);
         void CreateFrameBuffer();
         bool BeginFrameRender();
-        std::vector<PFilter> filters_;
+        std::vector<PWeakFilter> filters_;
         PFrameBuffer frameBuffer_;
         PShowTexture showMap_;
 		SignalSizeChanged::PSignal signalViewChanged_;

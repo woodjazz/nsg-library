@@ -30,23 +30,35 @@ misrepresented as being the original software.
 #include "Player.h"
 
 Level0::Level0(PWindow window)
-	: Level(window)
+    : Level(window)
 {
-	scene_ = std::make_shared<Scene>("Level1");
-	scene_->SetAmbientColor(ColorRGB(0.1f));
+    filter_ = window->AddShockWaveFilter();
+
+    updateSlot_ = Engine::SigUpdate()->Connect([this](float deltaTime)
+    {
+        auto data = filter_->GetMaterial()->GetShockWaveFilter();
+        data.center_ = Vector2(0.5f);
+        data.time_ += deltaTime;
+        if(data.time_ > 2)
+            data.time_ = 0;        
+        filter_->GetMaterial()->SetFilterShockWave(data);
+    });
+
+    scene_ = std::make_shared<Scene>("Level1");
+    scene_->SetAmbientColor(ColorRGB(0.1f));
     AddObject(std::make_shared<Planet>(scene_));
     AddObject(std::make_shared<Sun>(scene_));
     player_ = std::make_shared<Player>(scene_);
-	enemy_ = std::make_shared<Enemy>(scene_);
-	Enemy::SetTotal(1);
-	enemy_->SetPosition(-PI10, 0);
+    enemy_ = std::make_shared<Enemy>(scene_);
+    Enemy::SetTotal(1);
+    enemy_->SetPosition(-PI10, 0);
     camera_ = player_->GetCameraNode()->CreateChild<Camera>();
     camera_->SetPosition(Vertex3(0, 0, 10));
-	window->SetScene(scene_.get());
-	control_ = std::make_shared<CameraControl>(camera_);
+    window->SetScene(scene_.get());
+    control_ = std::make_shared<CameraControl>(camera_);
 }
 
 Level0::~Level0()
 {
-	
+
 }

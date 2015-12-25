@@ -23,6 +23,10 @@
 
 			gl_FragColor = Wave();
 
+		#elif defined(SHOCKWAVE)
+
+			gl_FragColor = ShockWave();
+
 		#elif defined(SHOW_TEXTURE0)
 
 			gl_FragColor = texture2D(u_texture0, v_texcoord0);

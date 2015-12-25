@@ -27,7 +27,7 @@
 			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);
 			#endif
 
-		#elif defined(BLUR) || defined(BLEND) || defined(WAVE) || defined(SHOW_TEXTURE0)
+		#elif defined(BLUR) || defined(BLEND) || defined(WAVE)  || defined(SHOCKWAVE) || defined(SHOW_TEXTURE0)
 
 			gl_Position = vec4(a_position, 1.0);
 			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);

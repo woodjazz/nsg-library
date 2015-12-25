@@ -94,4 +94,26 @@
     	return texture2D(u_texture0, texcoord);
     }
 
+#elif defined(SHOCKWAVE)
+
+	uniform vec2 u_shockWaveCenter; // Mouse position
+	uniform float u_shockWaveTime; // effect elapsed time
+	uniform vec3 u_shockWaveParams; // 10.0, 0.8, 0.1
+	vec4 ShockWave() 
+	{ 
+	  vec2 uv = v_texcoord0;
+	  vec2 texcoord = uv;
+	  float dist = distance(uv, u_shockWaveCenter);
+	  if ( (dist <= (u_shockWaveTime + u_shockWaveParams.z)) && 
+	       (dist >= (u_shockWaveTime - u_shockWaveParams.z)) ) 
+	  {
+	    float diff = (dist - u_shockWaveTime); 
+	    float powDiff = 1.0 - pow(abs(diff * u_shockWaveParams.x), u_shockWaveParams.y); 
+	    float diffTime = diff  * powDiff; 
+	    vec2 diffUV = normalize(uv - u_shockWaveCenter); 
+	    texcoord = uv + (diffUV * diffTime);
+	  } 
+	  return texture2D(u_texture0, texcoord);
+	}
+
 #endif

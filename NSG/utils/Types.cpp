@@ -50,6 +50,18 @@ namespace NSG
         return factor_ != obj.factor_ || offset_ != obj.offset_;
     }
 
+    ShockWaveFilter::ShockWaveFilter()
+        : center_(0, 0),
+          time_(0),
+          params_(10, 0.8f, 0.1f)
+    {
+    }
+
+    bool ShockWaveFilter::operator != (const ShockWaveFilter& obj) const
+    {
+        return center_ != obj.center_ || time_ != obj.time_ || params_ != obj.params_;
+    }
+
     RayNodeResult::RayNodeResult()
         : distance_(0),
           node_(nullptr)

@@ -41,7 +41,7 @@ namespace NSG
 {
     ShowTexture::ShowTexture()
     {
-        const char* name = "NSGShowTexture";
+        auto name = GetUniqueName("NSGShowTexture");
         scene_ = std::make_shared<Scene>(name);
         material_ = std::make_shared<Material>(name);
         //material->SetSerializable(false);

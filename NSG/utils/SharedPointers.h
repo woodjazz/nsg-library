@@ -112,9 +112,6 @@ namespace NSG
     typedef std::shared_ptr<Technique> PTechnique;
     typedef std::weak_ptr<Technique> PWeakTechnique;
 
-    class FilterBlend;
-    typedef std::shared_ptr<FilterBlend> PFilterBlend;
-
     class Pass2Texture;
     typedef std::shared_ptr<Pass2Texture> PPass2Texture;
 
@@ -215,9 +212,7 @@ namespace NSG
 
     class Filter;
     typedef std::shared_ptr<Filter> PFilter;
-
-    class FilterBlur;
-    typedef std::shared_ptr<FilterBlur> PFilterBlur;
+    typedef std::weak_ptr<Filter> PWeakFilter;
 
     class FrameBuffer;
     typedef std::shared_ptr<FrameBuffer> PFrameBuffer;

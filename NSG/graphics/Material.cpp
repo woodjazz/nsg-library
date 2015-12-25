@@ -70,6 +70,7 @@ namespace NSG
         material->blendFilterMode_ = blendFilterMode_;
         material->blurFilter_ = blurFilter_;
         material->waveFilter_ = waveFilter_;
+        material->shockWaveFilter_ = shockWaveFilter_;
         material->instanceBuffer_ = instanceBuffer_;
         material->lastBatch_ = lastBatch_;
         material->isBatched_ = isBatched_;
@@ -386,6 +387,15 @@ namespace NSG
         }
     }
 
+    void Material::SetFilterShockWave(const ShockWaveFilter& data)
+    {
+        if (shockWaveFilter_ != data)
+        {
+            shockWaveFilter_ = data;
+            SetUniformsNeedUpdate();
+        }
+    }
+
     PTexture Material::GetTextureWith(PResource resource) const
     {
         for (size_t i = 0; i < MaterialTexture::MAX_MAPS; i++)
@@ -487,6 +497,9 @@ namespace NSG
                 case RenderPass::WAVE:
                     defines += "WAVE\n";
                     break;
+                case RenderPass::SHOCKWAVE:
+                    defines += "SHOCKWAVE\n";
+                    break;                    
                 case RenderPass::SHOW_TEXTURE0:
                     defines += "SHOW_TEXTURE0\n";
                     break;

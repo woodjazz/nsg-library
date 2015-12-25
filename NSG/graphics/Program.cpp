@@ -126,6 +126,7 @@ namespace NSG
         memset(&materialLoc_, -1, sizeof(materialLoc_));
         memset(&blurFilterLoc_, -1, sizeof(blurFilterLoc_));
         memset(&wavesFilterLoc_, -1, sizeof(wavesFilterLoc_));
+        memset(&shockWaveFilterLoc_, -1, sizeof(shockWaveFilterLoc_));        
         memset(&lightViewLoc_, -1, sizeof(lightViewLoc_));
         memset(&lightProjectionLoc_, -1, sizeof(lightProjectionLoc_));
         memset(&lightViewProjectionLoc_, -1, sizeof(lightViewProjectionLoc_));
@@ -134,6 +135,7 @@ namespace NSG
 
     Program::~Program()
     {
+        Invalidate();
     }
 
     void Program::ConfigureShaders(std::string& vertexShader, std::string& fragmentShader)
@@ -326,6 +328,9 @@ namespace NSG
         blurFilterLoc_.sigma_ = GetUniformLocation("u_sigma");
         wavesFilterLoc_.factor_ = GetUniformLocation("u_waveFactor");
         wavesFilterLoc_.offset_ = GetUniformLocation("u_waveOffset");
+        shockWaveFilterLoc_.center_ = GetUniformLocation("u_shockWaveCenter");
+        shockWaveFilterLoc_.time_ = GetUniformLocation("u_shockWaveTime");
+        shockWaveFilterLoc_.params_ = GetUniformLocation("u_shockWaveParams");
 
         for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
         {
@@ -526,6 +531,14 @@ namespace NSG
                 if (wavesFilterLoc_.offset_ != -1)
                     glUniform1f(wavesFilterLoc_.offset_, material_->waveFilter_.offset_);
 
+                if (shockWaveFilterLoc_.center_ != -1)
+                    glUniform2fv(shockWaveFilterLoc_.center_, 1, &material_->shockWaveFilter_.center_[0]);
+
+                if (shockWaveFilterLoc_.time_ != -1)
+                    glUniform1f(shockWaveFilterLoc_.time_, material_->shockWaveFilter_.time_);
+
+                if (shockWaveFilterLoc_.params_ != -1)
+                    glUniform3fv(shockWaveFilterLoc_.params_, 1, &material_->shockWaveFilter_.params_[0]);
             }
         }
     }

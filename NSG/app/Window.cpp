@@ -155,11 +155,24 @@ namespace NSG
 
     void Window::RenderFilters()
     {
-        auto hasFilters = HasFilters();
-        if (hasFilters)
-            for (auto& filter : filters_)
-                filter->Draw();
-        if (hasFilters || showTexture_)
+        if (HasFilters())
+        {
+            auto it = filters_.begin();
+            while(it != filters_.end())
+            {
+                auto obj = (*it).lock();
+                if(obj)
+                {
+                    obj->Draw();
+                    ++it;
+                }
+                else
+                {
+                    it = filters_.erase(it);
+                }
+            }
+        }
+        if (HasFilters() || showTexture_)
         {
             graphics_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
             showMap_->Show();
@@ -326,7 +339,7 @@ namespace NSG
 		else
 		{
 			blur = std::make_shared<Filter>(name);
-			blur->SetInputTexture(filters_.back()->GetTexture());
+			blur->SetInputTexture(filters_.back().lock()->GetTexture());
 		}
         blur->GetMaterial()->SetRenderPass(RenderPass::BLUR);
         blur->GetMaterial()->FlipYTextureCoords(true);
@@ -343,8 +356,8 @@ namespace NSG
         if (n > 1)
         {
             blend = std::make_shared<Filter>(name);
-			blend->SetInputTexture(filters_[n - 2]->GetTexture());
-            auto texture = filters_[n - 1]->GetTexture();
+			blend->SetInputTexture(filters_[n - 2].lock()->GetTexture());
+            auto texture = filters_[n - 1].lock()->GetTexture();
             texture->SetMapType(TextureType::NORM);
             blend->GetMaterial()->SetTexture(texture);
         }
@@ -354,7 +367,7 @@ namespace NSG
 			blend->SetInputTexture(frameBuffer_->GetColorTexture());
             if (n == 1)
             {
-                auto texture = filters_[0]->GetTexture();
+                auto texture = filters_[0].lock()->GetTexture();
                 texture->SetMapType(TextureType::NORM);
                 blend->GetMaterial()->SetTexture(texture);
             }
@@ -377,9 +390,29 @@ namespace NSG
 		else
 		{
 			wave = std::make_shared<Filter>(name);
-			wave->SetInputTexture(filters_.back()->GetTexture());
+			wave->SetInputTexture(filters_.back().lock()->GetTexture());
 		}
         wave->GetMaterial()->SetRenderPass(RenderPass::WAVE);
+        wave->GetMaterial()->FlipYTextureCoords(true);
+        AddFilter(wave);
+        return wave;
+    }
+
+    PFilter Window::AddShockWaveFilter()
+    {
+        PFilter wave;
+        std::string name = GetUniqueName("FilterShockWave");
+        if (filters_.empty())
+        {
+            wave = std::make_shared<Filter>(name);
+            wave->SetInputTexture(frameBuffer_->GetColorTexture());
+        }
+        else
+        {
+            wave = std::make_shared<Filter>(name);
+            wave->SetInputTexture(filters_.back().lock()->GetTexture());
+        }
+        wave->GetMaterial()->SetRenderPass(RenderPass::SHOCKWAVE);
         wave->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(wave);
         return wave;

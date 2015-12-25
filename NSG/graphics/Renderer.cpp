@@ -474,11 +474,6 @@ namespace NSG
                 showMap_->Show();
             }
             while (filtered.size());
-            //Draw texture over target
-            graphics_->SetFrameBuffer(targetFrameBuffer);
-            showMap_->SetColortexture(oldFrameBuffer->GetColorTexture());
-            pass->SetBlendMode(BLEND_MODE::NONE);
-            showMap_->Show();
         }
     }
 
@@ -510,7 +505,8 @@ namespace NSG
                     obj->ClearUniform();
                 auto filtered = ExtractFiltered(visibles);
                 auto targetFrameBuffer = graphics_->GetFrameBuffer();
-                if (!filtered.empty())
+                auto hasFiltered = !filtered.empty();
+                if (hasFiltered)
                 {
                     // we need to render to a framebuffer in order to blend the filters
                     auto frameBuffer = targetFrameBuffer;
@@ -542,10 +538,19 @@ namespace NSG
                     DefaultTransparentPass(transparent);
                     LitTransparentPass(transparent);
                 }
-                if (!filtered.empty())
+                if (hasFiltered)
                     RenderFiltered(filtered, targetFrameBuffer);
-                if (window)
+                if (window && window->HasFilters())
                     window->RenderFilters();
+                else if (hasFiltered)
+                {
+                    //Draw texture over target
+                    auto oldFrameBuffer = graphics_->SetFrameBuffer(targetFrameBuffer);
+                    showMap_->SetColortexture(oldFrameBuffer->GetColorTexture());
+                    auto pass = showMap_->GetPass().get();
+                    pass->SetBlendMode(BLEND_MODE::NONE);
+                    showMap_->Show();
+                }
                 if (debugPhysics_)
                     DebugPhysicsPass();
                 DebugRendererPass();

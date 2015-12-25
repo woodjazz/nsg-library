@@ -174,6 +174,12 @@ namespace NSG
             GLuint offset_;
         } wavesFilterLoc_;
 
+        struct ShockWaveFilterLoc
+        {
+            GLuint center_;
+            GLuint time_;
+            GLuint params_;
+        } shockWaveFilterLoc_;
 
         /////////////////////////////////////
 

@@ -26,7 +26,7 @@ static const char* VS_GLSL = \
 "			gl_Position = GetClipPos();\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);\n"\
 "			#endif\n"\
-"		#elif defined(BLUR) || defined(BLEND) || defined(WAVE) || defined(SHOW_TEXTURE0)\n"\
+"		#elif defined(BLUR) || defined(BLEND) || defined(WAVE)  || defined(SHOCKWAVE) || defined(SHOW_TEXTURE0)\n"\
 "			gl_Position = vec4(a_position, 1.0);\n"\
 "			v_texcoord0 = GetTexCoord(a_texcoord0, u_uvTransform0);\n"\
 "		#elif defined(AMBIENT) || defined(UNLIT)\n"\

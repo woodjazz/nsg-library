@@ -81,6 +81,26 @@ static const char* POSTPROCESS_GLSL = \
 "    	texcoord.x += sin(texcoord.y * u_waveFactor + u_waveOffset) / 100.0;\n"\
 "    	return texture2D(u_texture0, texcoord);\n"\
 "    }\n"\
+"#elif defined(SHOCKWAVE)\n"\
+"	uniform vec2 u_shockWaveCenter; // Mouse position\n"\
+"	uniform float u_shockWaveTime; // effect elapsed time\n"\
+"	uniform vec3 u_shockWaveParams; // 10.0, 0.8, 0.1\n"\
+"	vec4 ShockWave() \n"\
+"	{ \n"\
+"	  vec2 uv = v_texcoord0;\n"\
+"	  vec2 texcoord = uv;\n"\
+"	  float dist = distance(uv, u_shockWaveCenter);\n"\
+"	  if ( (dist <= (u_shockWaveTime + u_shockWaveParams.z)) && \n"\
+"	       (dist >= (u_shockWaveTime - u_shockWaveParams.z)) ) \n"\
+"	  {\n"\
+"	    float diff = (dist - u_shockWaveTime); \n"\
+"	    float powDiff = 1.0 - pow(abs(diff * u_shockWaveParams.x), u_shockWaveParams.y); \n"\
+"	    float diffTime = diff  * powDiff; \n"\
+"	    vec2 diffUV = normalize(uv - u_shockWaveCenter); \n"\
+"	    texcoord = uv + (diffUV * diffTime);\n"\
+"	  } \n"\
+"	  return texture2D(u_texture0, texcoord);\n"\
+"	}\n"\
 "#endif\n"\
 ;
 }

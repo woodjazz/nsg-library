@@ -64,8 +64,10 @@ namespace NSG
         BlendFilterMode GetFilterBlendMode() const { return blendFilterMode_; }
         void SetFilterBlur(const BlurFilter& data);
         void SetFilterWave(const WaveFilter& data);
+        void SetFilterShockWave(const ShockWaveFilter& data);
         const BlurFilter& GetFilterBlur() const { return blurFilter_; }
         const WaveFilter& GetWaveFilter() const { return waveFilter_; }
+        const ShockWaveFilter& GetShockWaveFilter() const { return shockWaveFilter_; }        
         PTexture GetTextureWith(PResource resource) const;
         PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
         void SetAlpha(float alpha);
@@ -127,6 +129,7 @@ namespace NSG
         BlendFilterMode blendFilterMode_;
         BlurFilter blurFilter_;
         WaveFilter waveFilter_;
+        ShockWaveFilter shockWaveFilter_;
         PInstanceBuffer instanceBuffer_;
         Batch lastBatch_;
         bool isBatched_;

@@ -375,7 +375,7 @@ namespace NSG
         Vector2 blurRadius_; //calculated in Material::IsValid()
         float sigma_;
         BlurFilter();
-        bool operator != (const BlurFilter& uid) const;
+        bool operator != (const BlurFilter& obj) const;
     };
 
     struct WaveFilter
@@ -383,7 +383,16 @@ namespace NSG
         float factor_;
         float offset_;
         WaveFilter();
-        bool operator != (const WaveFilter& uid) const;
+        bool operator != (const WaveFilter& obj) const;
+    };
+
+    struct ShockWaveFilter
+    {
+        Vector2 center_;
+        float time_;
+        Vector3 params_;
+        ShockWaveFilter();
+        bool operator != (const ShockWaveFilter& obj) const;
     };
 
     enum class ResourceType
@@ -588,6 +597,7 @@ namespace NSG
         BLEND,
         BLUR,
         WAVE,
+        SHOCKWAVE,
         SHOW_TEXTURE0,
         MAX_INDEX
     };
