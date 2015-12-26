@@ -75,7 +75,6 @@ namespace NSG
         Recti GetViewport() const;
         const std::string& GetName() const { return name_; }
         PFilter AddBlurFilter();
-        PFilter AddBlendFilter();
         PFilter AddWaveFilter();
         PFilter AddShockWaveFilter();        
         bool HasFilters() const { return !filters_.empty() && filtersEnabled_; }
@@ -113,7 +112,7 @@ namespace NSG
         SignalTouchFinger::PSignal SigTouchFinger() { return signalTouchFinger_; }
         PixelFormat GetPixelFormat() const { return pixelFormat_; }
         void SetPixelFormat(PixelFormat value) { pixelFormat_ = value; }
-        void RenderFilters();
+        void RenderFilters(bool showMap);
         virtual void SetupImgui() = 0;
         virtual void BeginImguiRender() = 0;
 		virtual void SetContext() = 0;

@@ -55,6 +55,13 @@ namespace NSG
             if (window)
                 SetWindow(window);
         }
+
+        camera_ = std::make_shared<Camera>(name);
+        camera_->EnableOrtho();
+        camera_->SetNearClip(-1000);
+        camera_->SetFarClip(1000);
+        camera_->UnRegisterWindow();
+
     }
 
     Filter::~Filter()
@@ -90,10 +97,9 @@ namespace NSG
             return;
         Pass pass;
         pass.EnableDepthTest(false);
-        pass.EnableDepthBuffer(false);
         auto graphics = Graphics::GetPtr();
         auto oldFrameBuffer = graphics->SetFrameBuffer(frameBuffer_.get());
-        Renderer::GetPtr()->Render(&pass, nullptr, nullptr, node_.get(), nullptr);
+        Renderer::GetPtr()->Render(&pass, nullptr, camera_.get(), node_.get(), nullptr);
         graphics->SetFrameBuffer(oldFrameBuffer);
     }
 

@@ -28,21 +28,25 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	class ShowTexture
-	{
-	public:
-		ShowTexture();
-		~ShowTexture();
-		void SetColortexture(PTexture texture);
-		void SetNormal(PTexture texture);
-		void SetFont(PTexture texture);
-		void Show();
-		PPass GetPass() const {return pass_; }
-	private:
-		PPass pass_;
-		PScene scene_;
-		PMaterial material_;
-		PSceneNode node_;
-		PMesh mesh_;
-	};
+    class ShowTexture
+    {
+    public:
+        ShowTexture();
+        ~ShowTexture();
+        void SetColortexture(PTexture texture);
+        void SetFont(PTexture texture);
+        void SetMaterial(PMaterial material);
+        void Show();
+        PPass GetPass() const { return pass_; }
+        PMaterial GetMaterial() const { return material_; }
+        PSceneNode GetNode() const { return node_; }
+        PCamera GetCamera() const { return camera_; }
+    private:
+        PPass pass_;
+        PScene scene_;
+        PMaterial material_;
+        PSceneNode node_;
+        PQuadMesh mesh_;
+        PCamera camera_;
+    };
 }

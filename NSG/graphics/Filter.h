@@ -48,5 +48,6 @@ namespace NSG
 		PFrameBuffer frameBuffer_;
 		std::string name_;
 		PSceneNode node_;
+		PCamera camera_;
 	};
 }

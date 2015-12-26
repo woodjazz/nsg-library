@@ -67,7 +67,7 @@ namespace NSG
 	    void DebugPhysicsPass();
 		void DebugRendererPass();
 		void RenderOverlays();
-		void RenderFiltered(std::vector<SceneNode*>& filtered, FrameBuffer* targetFrameBuffer);
+		void RenderFiltered(std::vector<SceneNode*>& filtered);
 		PGraphics graphics_;
 		Scene* scene_;
 		Camera* camera_;

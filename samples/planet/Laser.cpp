@@ -46,7 +46,11 @@ Laser::Laser(PScene scene)
 	static auto filter = std::make_shared<Filter>("BlurFilter");
 	filter->GetMaterial()->SetRenderPass(RenderPass::BLUR);
     filter->GetMaterial()->FlipYTextureCoords(true);
-	child_->SetFilter(filter);
+    auto child1 = child_->CreateChild<SceneNode>();
+    child1->SetMesh(mesh);
+    child1->SetMaterial(material);
+    child1->SetScale(1.3f);
+	child1->SetFilter(filter);
 	filter->GetFrameBuffer()->SetSize(64, 64);
     child_->SetMaterial(material);
     child_->SetUserData(this);
@@ -62,7 +66,7 @@ Laser::Laser(PScene scene)
     {
         totalTime_ += dt;
 		if (totalTime_ > 1)
-			Destroyed();
+            Destroyed();
         else
         {
             auto dir = 2 * dt * (child_->GetOrientation() * VECTOR3_UP);

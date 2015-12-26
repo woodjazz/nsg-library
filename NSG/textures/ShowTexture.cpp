@@ -45,13 +45,17 @@ namespace NSG
         scene_ = std::make_shared<Scene>(name);
         material_ = std::make_shared<Material>(name);
         //material->SetSerializable(false);
-        mesh_ = std::make_shared<QuadMesh>(name);
+        mesh_ = Mesh::GetOrCreate<QuadMesh>("NSGShowTextureMesh");
         node_ = scene_->CreateChild<SceneNode>(name);
-		node_->SetMesh(mesh_);
-		node_->SetMaterial(material_);
+        node_->SetMesh(mesh_);
+        node_->SetMaterial(material_);
         pass_ = std::make_shared<Pass>();
         pass_->EnableDepthTest(false);
- 
+        camera_ = scene_->CreateChild<Camera>(name);
+        camera_->EnableOrtho();
+        camera_->SetNearClip(-1000);
+        camera_->SetFarClip(1000);
+        camera_->UnRegisterWindow();
     }
 
     ShowTexture::~ShowTexture()
@@ -60,25 +64,28 @@ namespace NSG
 
     void ShowTexture::SetColortexture(PTexture texture)
     {
-		material_->SetTexture(texture);
-		material_->SetRenderPass(RenderPass::SHOW_TEXTURE0);
-		material_->FlipYTextureCoords(true);
-    }
-
-    void ShowTexture::SetNormal(PTexture texture)
-    {
-		material_->SetTexture(texture);
-		material_->SetRenderPass(RenderPass::SHOW_TEXTURE0);
+        material_->SetTexture(texture);
+        material_->SetRenderPass(RenderPass::SHOW_TEXTURE0);
+        material_->FlipYTextureCoords(true);
     }
 
     void ShowTexture::SetFont(PTexture texture)
     {
-		material_->SetTexture(texture);
-		material_->SetRenderPass(RenderPass::TEXT);
+        material_->SetTexture(texture);
+        material_->SetRenderPass(RenderPass::TEXT);
+    }
+
+    void ShowTexture::SetMaterial(PMaterial material)
+    {
+        if (material_ != material)
+        {
+            material_ = material;
+            node_->SetMaterial(material);
+        }
     }
 
     void ShowTexture::Show()
     {
-        Renderer::GetPtr()->Render(pass_.get(), scene_.get(), nullptr, node_.get(), nullptr);
+        Renderer::GetPtr()->Render(pass_.get(), scene_.get(), camera_.get(), node_.get(), nullptr);
     }
 }

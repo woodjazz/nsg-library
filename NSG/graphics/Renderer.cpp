@@ -44,6 +44,7 @@ misrepresented as being the original software.
 #include "Filter.h"
 #include "ShowTexture.h"
 #include "Texture.h"
+#include "QuadMesh.h"
 
 namespace NSG
 {
@@ -442,7 +443,7 @@ namespace NSG
         }
     }
 
-    void Renderer::RenderFiltered(std::vector<SceneNode*>& filtered, FrameBuffer* targetFrameBuffer)
+    void Renderer::RenderFiltered(std::vector<SceneNode*>& filtered)
     {
         auto oldFrameBuffer = graphics_->GetFrameBuffer();
         filterFrameBuffer_->SetSize(oldFrameBuffer->GetWidth(), oldFrameBuffer->GetHeight());
@@ -465,11 +466,11 @@ namespace NSG
 
                 std::vector<SceneNode*> nodesSameFilter(filtered.begin() , it);
                 FilterPass(nodesSameFilter);
-                filter->SetInputTexture(filterFrameBuffer_->GetColorTexture());
-                filter->Draw();
                 filtered.erase(filtered.begin(), it);
                 graphics_->SetFrameBuffer(oldFrameBuffer);
-                showMap_->SetColortexture(filter->GetTexture());
+                auto material = filter->GetMaterial();
+                material->SetTexture(MaterialTexture::DIFFUSE_MAP, filterFrameBuffer_->GetColorTexture());
+                showMap_->SetMaterial(material);
                 pass->SetBlendMode(BLEND_MODE::ADDITIVE);
                 showMap_->Show();
             }
@@ -504,6 +505,7 @@ namespace NSG
                 for (auto& obj : visibles)
                     obj->ClearUniform();
                 auto filtered = ExtractFiltered(visibles);
+                RemoveFrom(visibles, filtered);
                 auto targetFrameBuffer = graphics_->GetFrameBuffer();
                 auto hasFiltered = !filtered.empty();
                 if (hasFiltered)
@@ -539,18 +541,9 @@ namespace NSG
                     LitTransparentPass(transparent);
                 }
                 if (hasFiltered)
-                    RenderFiltered(filtered, targetFrameBuffer);
-                if (window && window->HasFilters())
-                    window->RenderFilters();
-                else if (hasFiltered)
-                {
-                    //Draw texture over target
-                    auto oldFrameBuffer = graphics_->SetFrameBuffer(targetFrameBuffer);
-                    showMap_->SetColortexture(oldFrameBuffer->GetColorTexture());
-                    auto pass = showMap_->GetPass().get();
-                    pass->SetBlendMode(BLEND_MODE::NONE);
-                    showMap_->Show();
-                }
+                    RenderFiltered(filtered);
+                if (window)
+                    window->RenderFilters(hasFiltered);
                 if (debugPhysics_)
                     DebugPhysicsPass();
                 DebugRendererPass();

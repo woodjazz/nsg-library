@@ -36,6 +36,7 @@ Level0::Level0(PWindow window)
 
     updateSlot_ = Engine::SigUpdate()->Connect([this](float deltaTime)
     {
+        
         auto data = filter_->GetMaterial()->GetShockWaveFilter();
         data.center_ = Vector2(0.5f);
         data.time_ += deltaTime;

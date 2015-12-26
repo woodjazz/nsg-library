@@ -93,7 +93,7 @@ namespace NSG
 
     Window::~Window()
     {
-		gui_ = nullptr;
+        gui_ = nullptr;
         LOGI("Window %s terminated.", name_.c_str());
     }
 
@@ -128,7 +128,7 @@ namespace NSG
         frameBuffer_->SetWindow(this);
         CHECK_ASSERT(!showMap_);
         showMap_ = std::make_shared<ShowTexture>();
-        showMap_->SetNormal(frameBuffer_->GetColorTexture());
+        showMap_->SetColortexture(frameBuffer_->GetColorTexture());
     }
 
     void Window::ShowMap(PTexture texture)
@@ -137,7 +137,7 @@ namespace NSG
         if (texture)
             showMap_->SetColortexture(texture);
         else
-            showMap_->SetNormal(frameBuffer_->GetColorTexture());
+            showMap_->SetColortexture(frameBuffer_->GetColorTexture());
     }
 
     bool Window::BeginFrameRender()
@@ -153,15 +153,15 @@ namespace NSG
         return true;
     }
 
-    void Window::RenderFilters()
+    void Window::RenderFilters(bool showMap)
     {
         if (HasFilters())
         {
             auto it = filters_.begin();
-            while(it != filters_.end())
+            while (it != filters_.end())
             {
                 auto obj = (*it).lock();
-                if(obj)
+                if (obj)
                 {
                     obj->Draw();
                     ++it;
@@ -172,7 +172,23 @@ namespace NSG
                 }
             }
         }
-        if (HasFilters() || showTexture_)
+
+        if (!showTexture_)
+        {
+            if (HasFilters())
+            {
+                showMap_->SetColortexture(filters_.back().lock()->GetTexture());
+                showMap_->GetMaterial()->FlipYTextureCoords(false);
+                showMap = true;
+            }
+            else
+            {
+                showMap_->SetColortexture(frameBuffer_->GetColorTexture());
+                showMap_->GetMaterial()->FlipYTextureCoords(true);
+            }
+        }
+        
+        if (showTexture_ || showMap)
         {
             graphics_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
             showMap_->Show();
@@ -329,91 +345,33 @@ namespace NSG
 
     PFilter Window::AddBlurFilter()
     {
-        PFilter blur;
         std::string name = GetUniqueName("FilterBlur");
-		if (filters_.empty())
-		{
-			blur = std::make_shared<Filter>(name);
-			blur->SetInputTexture(frameBuffer_->GetColorTexture());
-		}
-		else
-		{
-			blur = std::make_shared<Filter>(name);
-			blur->SetInputTexture(filters_.back().lock()->GetTexture());
-		}
+        auto blur = std::make_shared<Filter>(name);
+        blur->SetInputTexture(frameBuffer_->GetColorTexture());
         blur->GetMaterial()->SetRenderPass(RenderPass::BLUR);
-        blur->GetMaterial()->FlipYTextureCoords(true);
+        //blur->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(blur);
         return blur;
     }
 
-    PFilter Window::AddBlendFilter()
-    {
-        //CHECK_ASSERT(filters_.size() > 0);
-        PFilter blend;
-        std::string name = GetUniqueName("FilterBlend");
-        size_t n = filters_.size();
-        if (n > 1)
-        {
-            blend = std::make_shared<Filter>(name);
-			blend->SetInputTexture(filters_[n - 2].lock()->GetTexture());
-            auto texture = filters_[n - 1].lock()->GetTexture();
-            texture->SetMapType(TextureType::NORM);
-            blend->GetMaterial()->SetTexture(texture);
-        }
-        else
-        {
-            blend = std::make_shared<Filter>(name);
-			blend->SetInputTexture(frameBuffer_->GetColorTexture());
-            if (n == 1)
-            {
-                auto texture = filters_[0].lock()->GetTexture();
-                texture->SetMapType(TextureType::NORM);
-                blend->GetMaterial()->SetTexture(texture);
-            }
-        }
-        blend->GetMaterial()->SetRenderPass(RenderPass::BLEND);
-        blend->GetMaterial()->FlipYTextureCoords(true);
-        AddFilter(blend);
-        return blend;
-    }
-
     PFilter Window::AddWaveFilter()
     {
-        PFilter wave;
         std::string name = GetUniqueName("FilterWave");
-		if (filters_.empty())
-		{
-			wave = std::make_shared<Filter>(name);
-			wave->SetInputTexture(frameBuffer_->GetColorTexture());
-		}
-		else
-		{
-			wave = std::make_shared<Filter>(name);
-			wave->SetInputTexture(filters_.back().lock()->GetTexture());
-		}
+        auto wave = std::make_shared<Filter>(name);
+        wave->SetInputTexture(frameBuffer_->GetColorTexture());
         wave->GetMaterial()->SetRenderPass(RenderPass::WAVE);
-        wave->GetMaterial()->FlipYTextureCoords(true);
+        //wave->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(wave);
         return wave;
     }
 
     PFilter Window::AddShockWaveFilter()
     {
-        PFilter wave;
         std::string name = GetUniqueName("FilterShockWave");
-        if (filters_.empty())
-        {
-            wave = std::make_shared<Filter>(name);
-            wave->SetInputTexture(frameBuffer_->GetColorTexture());
-        }
-        else
-        {
-            wave = std::make_shared<Filter>(name);
-            wave->SetInputTexture(filters_.back().lock()->GetTexture());
-        }
+        auto wave = std::make_shared<Filter>(name);
+        wave->SetInputTexture(frameBuffer_->GetColorTexture());
         wave->GetMaterial()->SetRenderPass(RenderPass::SHOCKWAVE);
-        wave->GetMaterial()->FlipYTextureCoords(true);
+        //wave->GetMaterial()->FlipYTextureCoords(true);
         AddFilter(wave);
         return wave;
     }
@@ -422,7 +380,6 @@ namespace NSG
     {
         filter->SetWindow(this);
         filters_.push_back(filter);
-        showMap_->SetColortexture(filter->GetTexture());
     }
 
     void Window::EnableFilters(bool enable)
@@ -477,14 +434,14 @@ namespace NSG
 
     void Window::SetRender(IRender* render)
     {
-		CHECK_CONDITION(render_ == nullptr);
-		render_ = render;
+        CHECK_CONDITION(render_ == nullptr);
+        render_ = render;
     }
 
     void Window::RemoveRender(IRender* render)
     {
-		CHECK_CONDITION(render_ == render);
-		render_ = nullptr;
+        CHECK_CONDITION(render_ == render);
+        render_ = nullptr;
     }
 
     void Window::RenderFrame()
@@ -492,12 +449,12 @@ namespace NSG
         if (BeginFrameRender())
         {
             if (render_)
-				render_->Render();
+                render_->Render();
             else
             {
                 Renderer::GetPtr()->Render(this, scene_);
-				if (SigDrawIMGUI()->HasSlots())
-					gui_->Render(this, [this]() { SigDrawIMGUI()->Run(); });
+                if (SigDrawIMGUI()->HasSlots())
+                    gui_->Render(this, [this]() { SigDrawIMGUI()->Run(); });
             }
             SwapWindowBuffers();
         }
