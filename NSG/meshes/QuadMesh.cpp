@@ -45,5 +45,11 @@ namespace NSG
         if (size_ != size)
             RectangleMesh::Set(size, size);
     }
+
+    PQuadMesh QuadMesh::GetNDC()
+    {
+        static auto mesh = Mesh::Create<QuadMesh>(GetUniqueName("NSGNDCQuadMesh"));
+        return mesh;
+    }
 }
 

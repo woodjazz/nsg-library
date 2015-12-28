@@ -44,8 +44,6 @@ misrepresented as being the original software.
 #include "Batch.h"
 #include "InstanceData.h"
 #include "FrameBuffer.h"
-#include "ShowTexture.h"
-#include "Filter.h"
 #include "imgui.h"
 #include <functional>
 

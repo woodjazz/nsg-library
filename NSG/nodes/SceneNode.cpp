@@ -115,7 +115,7 @@ namespace NSG
     {
         CHECK_ASSERT(character_ == nullptr);
         if (!rigidBody_)
-			rigidBody_ = std::make_shared<RigidBody>(std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this)));
+            rigidBody_ = std::make_shared<RigidBody>(std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this)));
         return rigidBody_;
     }
 
@@ -123,14 +123,14 @@ namespace NSG
     {
         CHECK_ASSERT(rigidBody_ == nullptr);
         if (!character_)
-			character_ = std::make_shared<Character>(std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this)));
+            character_ = std::make_shared<Character>(std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this)));
         return character_;
     }
 
     PAnimationController SceneNode::GetOrCreateAnimationController()
     {
         if (!animationController_)
-			animationController_ = std::make_shared<AnimationController>(std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this)));
+            animationController_ = std::make_shared<AnimationController>(std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this)));
         return animationController_;
     }
 
@@ -168,28 +168,28 @@ namespace NSG
         if (scene)
             scene->NeedUpdate((SceneNode*)this);
 
-        if(rigidBody_ && rigidBody_->IsKinematic())
+        if (rigidBody_ && rigidBody_->IsKinematic())
             rigidBody_->SyncWithNode();
     }
 
     const BoundingBox& SceneNode::GetWorldBoundingBox() const
     {
-		if (worldBBNeedsUpdate_)
+        if (worldBBNeedsUpdate_)
         {
             if (mesh_ && mesh_->IsReady())
             {
                 worldBB_ = mesh_->GetBB();
-				worldBB_.Transform(*this);
+                worldBB_.Transform(*this);
                 worldBBNeedsUpdate_ = false;
             }
         }
         return worldBB_;
     }
 
-	bool SceneNode::IsBillboard() const
-	{
-		return material_ && material_->GetBillboardType() != BillboardType::NONE;
-	}
+    bool SceneNode::IsBillboard() const
+    {
+        return material_ && material_->GetBillboardType() != BillboardType::NONE;
+    }
 
     BoundingBox SceneNode::GetWorldBoundingBoxBut(const SceneNode* node) const
     {
@@ -373,7 +373,7 @@ namespace NSG
             skeleton_ = skeleton;
             if (skeleton_)
             {
-				auto thisSceneNode = std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this));
+                auto thisSceneNode = std::dynamic_pointer_cast<SceneNode>(SharedFromPointerNode(this));
                 SetArmature(thisSceneNode);
                 CHECK_CONDITION(skeleton_->IsReady());
                 skeleton_->CreateBonesFor(thisSceneNode);

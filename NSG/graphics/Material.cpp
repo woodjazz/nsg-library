@@ -186,7 +186,7 @@ namespace NSG
 		{
 			texture_[index] = texture;
 			SetUniformsNeedUpdate();
-			Invalidate();
+			//Invalidate();
 			return true;
 		}
 		return false;
@@ -281,10 +281,10 @@ namespace NSG
     {
         instanceBuffer_ = nullptr;
         lastBatch_.Clear();
-
+/*
         for (int index = 0; index < MaterialTexture::MAX_MAPS; index++)
             if (texture_[index])
-                texture_[index]->Invalidate();
+                texture_[index]->Invalidate();*/
     }
 
     static const char* TEXTURE_NAME = "Texture";

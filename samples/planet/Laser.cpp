@@ -43,17 +43,16 @@ Laser::Laser(PScene scene)
     material->SetDiffuseColor(COLOR_YELLOW);
     material->SetEmitIntensity(10);
     material->SetRenderPass(RenderPass::UNLIT);
-	static auto filter = std::make_shared<Filter>("BlurFilter");
-	filter->GetMaterial()->SetRenderPass(RenderPass::BLUR);
-    filter->GetMaterial()->FlipYTextureCoords(true);
+    child_->SetMaterial(material);
+    child_->SetUserData(this);
+	auto blurMaterial = Material::GetOrCreate("LaserBlurMaterial");
+	blurMaterial->SetRenderPass(RenderPass::BLUR);
+    blurMaterial->FlipYTextureCoords(true);
     auto child1 = child_->CreateChild<SceneNode>();
     child1->SetMesh(mesh);
     child1->SetMaterial(material);
     child1->SetScale(1.3f);
-	child1->SetFilter(filter);
-	filter->GetFrameBuffer()->SetSize(64, 64);
-    child_->SetMaterial(material);
-    child_->SetUserData(this);
+	child1->SetFilter(blurMaterial);
 
     body_->SetKinematic(true);
     //body_->HandleCollisions(true);

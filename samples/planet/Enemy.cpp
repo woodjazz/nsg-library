@@ -48,10 +48,10 @@ Enemy::Enemy(PScene scene)
     child_->SetMaterial(material);
     child_->SetUserData(this);
 
-    static auto filter = std::make_shared<Filter>("WaveFilter");
-    filter->GetMaterial()->SetRenderPass(RenderPass::WAVE);
-    filter->GetMaterial()->FlipYTextureCoords(true);
-    child_->SetFilter(filter);
+    auto waveMaterial = Material::GetOrCreate("WaveMaterial");
+    waveMaterial->SetRenderPass(RenderPass::WAVE);
+    waveMaterial->FlipYTextureCoords(true);
+    child_->SetFilter(waveMaterial);
 
 
     body_->SetKinematic(true);

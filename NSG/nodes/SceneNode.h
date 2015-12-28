@@ -79,8 +79,8 @@ namespace NSG
         PSceneNode GetArmature() const;
         void SetArmature(PSceneNode armature);
         bool IsBillboard() const;
-        void SetFilter(PFilter filter) { filter_ = filter; }
-        PFilter GetFilter() const { return filter_; }
+        void SetFilter(PMaterial filter) { filter_ = filter; }
+        PMaterial GetFilter() const { return filter_; }
         bool HasFilter() const { return filter_ != nullptr; }
     protected:
         PMaterial material_;
@@ -99,6 +99,6 @@ namespace NSG
         SignalEmpty::PSignal signalMeshSet_;
         SignalEmpty::PSignal signalMaterialSet_;
         SignalCollision::PSignal signalCollision_;
-        PFilter filter_;
+        PMaterial filter_;
     };
 }

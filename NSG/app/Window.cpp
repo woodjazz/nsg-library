@@ -33,7 +33,6 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Graphics.h"
 #include "Music.h"
-#include "Filter.h"
 #include "FrameBuffer.h"
 #include "Program.h"
 #include "Material.h"
@@ -44,6 +43,8 @@ misrepresented as being the original software.
 #include "UTF8String.h"
 #include "Renderer.h"
 #include "GUI.h"
+#include "Pass.h"
+#include "QuadMesh.h"
 #include "imgui.h"
 #include <algorithm>
 #include <thread>
@@ -126,9 +127,15 @@ namespace NSG
         //frameBufferFlags |= FrameBuffer::STENCIL;
         frameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("WindowFrameBuffer"), frameBufferFlags);
         frameBuffer_->SetWindow(this);
+
+        CHECK_ASSERT(!filterFrameBuffer_);
+        filterFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("WindowFilterFrameBuffer"), frameBufferFlags);
+        filterFrameBuffer_->SetDepthTexture(frameBuffer_->GetDepthTexture());
+        filterFrameBuffer_->SetWindow(this);
+
         CHECK_ASSERT(!showMap_);
         showMap_ = std::make_shared<ShowTexture>();
-        showMap_->SetColortexture(frameBuffer_->GetColorTexture());
+        showMap_->SetColortexture(frameBuffer_->GetColorTexture());        
     }
 
     void Window::ShowMap(PTexture texture)
@@ -140,14 +147,19 @@ namespace NSG
             showMap_->SetColortexture(frameBuffer_->GetColorTexture());
     }
 
+    bool Window::UseFrameRender()
+    {
+        if (!frameBuffer_->IsReady() || !filterFrameBuffer_->IsReady())
+            return false;
+        graphics_->SetFrameBuffer(frameBuffer_.get());
+        return true;
+    }
+
+
     bool Window::BeginFrameRender()
     {
         if (HasFilters())
-        {
-            if (!frameBuffer_->IsReady())
-                return false;
-            graphics_->SetFrameBuffer(frameBuffer_.get());
-        }
+            return UseFrameRender();
         else
             graphics_->SetFrameBuffer(nullptr);
         return true;
@@ -160,10 +172,15 @@ namespace NSG
             auto it = filters_.begin();
             while (it != filters_.end())
             {
-                auto obj = (*it).lock();
-                if (obj)
+                auto filter = (*it).lock();
+                if (filter)
                 {
-                    obj->Draw();
+                    graphics_->SetFrameBuffer(filterFrameBuffer_.get());
+                    filter->SetTexture(MaterialTexture::DIFFUSE_MAP, frameBuffer_->GetColorTexture());
+                    Renderer::GetPtr()->Render(showMap_->GetPass().get(), QuadMesh::GetNDC().get(), filter.get());
+                    graphics_->SetFrameBuffer(frameBuffer_.get());
+                    showMap_->SetColortexture(filterFrameBuffer_->GetColorTexture());
+                    showMap_->Show();
                     ++it;
                 }
                 else
@@ -171,19 +188,18 @@ namespace NSG
                     it = filters_.erase(it);
                 }
             }
-        }
 
+        }
         if (!showTexture_)
         {
+            showMap_->SetColortexture(frameBuffer_->GetColorTexture());
             if (HasFilters())
             {
-                showMap_->SetColortexture(filters_.back().lock()->GetTexture());
-                showMap_->GetMaterial()->FlipYTextureCoords(false);
+                showMap_->GetMaterial()->FlipYTextureCoords(true);
                 showMap = true;
             }
             else
             {
-                showMap_->SetColortexture(frameBuffer_->GetColorTexture());
                 showMap_->GetMaterial()->FlipYTextureCoords(true);
             }
         }
@@ -343,42 +359,8 @@ namespace NSG
         return Recti(0, 0, width_, height_);
     }
 
-    PFilter Window::AddBlurFilter()
+    void Window::AddFilter(PMaterial filter)
     {
-        std::string name = GetUniqueName("FilterBlur");
-        auto blur = std::make_shared<Filter>(name);
-        blur->SetInputTexture(frameBuffer_->GetColorTexture());
-        blur->GetMaterial()->SetRenderPass(RenderPass::BLUR);
-        //blur->GetMaterial()->FlipYTextureCoords(true);
-        AddFilter(blur);
-        return blur;
-    }
-
-    PFilter Window::AddWaveFilter()
-    {
-        std::string name = GetUniqueName("FilterWave");
-        auto wave = std::make_shared<Filter>(name);
-        wave->SetInputTexture(frameBuffer_->GetColorTexture());
-        wave->GetMaterial()->SetRenderPass(RenderPass::WAVE);
-        //wave->GetMaterial()->FlipYTextureCoords(true);
-        AddFilter(wave);
-        return wave;
-    }
-
-    PFilter Window::AddShockWaveFilter()
-    {
-        std::string name = GetUniqueName("FilterShockWave");
-        auto wave = std::make_shared<Filter>(name);
-        wave->SetInputTexture(frameBuffer_->GetColorTexture());
-        wave->GetMaterial()->SetRenderPass(RenderPass::SHOCKWAVE);
-        //wave->GetMaterial()->FlipYTextureCoords(true);
-        AddFilter(wave);
-        return wave;
-    }
-
-    void Window::AddFilter(PFilter filter)
-    {
-        filter->SetWindow(this);
         filters_.push_back(filter);
     }
 
@@ -388,7 +370,10 @@ namespace NSG
         {
             filtersEnabled_ = enable;
             if (!enable)
+            {
                 frameBuffer_->Invalidate();
+                filterFrameBuffer_->Invalidate();
+            }
         }
     }
 

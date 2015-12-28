@@ -41,8 +41,6 @@ misrepresented as being the original software.
 #include "LinesMesh.h"
 #include "Check.h"
 #include "DebugRenderer.h"
-#include "Filter.h"
-#include "ShowTexture.h"
 #include "Texture.h"
 #include "QuadMesh.h"
 
@@ -50,6 +48,7 @@ namespace NSG
 {
     Renderer::Renderer()
         : graphics_(Graphics::GetPtr()),
+          window_(nullptr),
           scene_(nullptr),
           camera_(nullptr),
           shadowPass_(std::make_shared<Pass>()),
@@ -63,9 +62,7 @@ namespace NSG
           debugMaterial_(Material::Create("NSGDebugMaterial")),
           debugRenderer_(std::make_shared<DebugRenderer>()),
           context_(RendererContext::DEFAULT),
-          overlaysCamera_(std::make_shared<Camera>("NSGOverlays")),
-          filterFrameBuffer_(std::make_shared<FrameBuffer>("NSGFilterFrameBuffer", FrameBuffer::Flag::COLOR | FrameBuffer::Flag::DEPTH | FrameBuffer::Flag::COLOR_USE_TEXTURE | FrameBuffer::Flag::DEPTH_USE_TEXTURE)),
-          showMap_(std::make_shared<ShowTexture>())
+          overlaysCamera_(std::make_shared<Camera>("NSGOverlays"))
     {
         debugMaterial_->SetSerializable(false);
 
@@ -404,6 +401,13 @@ namespace NSG
         }
     }
 
+    void Renderer::Render(const Pass* pass, Mesh* mesh, Material* material)
+    {
+        graphics_->SetMesh(mesh);
+        if (graphics_->SetupProgram(pass, nullptr, nullptr, nullptr, material, nullptr))
+            graphics_->DrawActiveMesh();
+    }
+
     void Renderer::Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light)
     {
         graphics_->SetMesh(node->GetMesh().get());
@@ -446,40 +450,34 @@ namespace NSG
     void Renderer::RenderFiltered(std::vector<SceneNode*>& filtered)
     {
         auto oldFrameBuffer = graphics_->GetFrameBuffer();
-        filterFrameBuffer_->SetSize(oldFrameBuffer->GetWidth(), oldFrameBuffer->GetHeight());
-        filterFrameBuffer_->SetDepthTexture(oldFrameBuffer->GetDepthTexture());
-        if (filterFrameBuffer_->IsReady())
+        auto filterFrameBuffer = window_->GetFilterFrameBuffer().get();
+        Pass pass;
+        pass.EnableDepthTest(false);
+        pass.SetBlendMode(BLEND_MODE::ADDITIVE);
+        do
         {
-            std::vector<Filter*> filters;
-            auto pass = showMap_->GetPass();
-            do
+            graphics_->SetFrameBuffer(filterFrameBuffer);
+            graphics_->SetClearColor(Color(0, 0, 0, 0));
+            graphics_->ClearBuffers(true, false, false);
+            auto filter = filtered[0]->GetFilter();
+            auto it = std::partition(filtered.begin(), filtered.end(), [&](SceneNode * obj)
             {
-                graphics_->SetFrameBuffer(filterFrameBuffer_.get());
-                graphics_->SetClearColor(Color(0, 0, 0, 0));
-                graphics_->ClearBuffers(true, false, false);
-                auto filter = filtered[0]->GetFilter().get();
-                filters.push_back(filter);
-                auto it = std::partition(filtered.begin(), filtered.end(), [&](SceneNode * obj)
-                {
-                    return obj->GetFilter().get() == filter;
-                });
+                return obj->GetFilter().get() == filter.get();
+            });
 
-                std::vector<SceneNode*> nodesSameFilter(filtered.begin() , it);
-                FilterPass(nodesSameFilter);
-                filtered.erase(filtered.begin(), it);
-                graphics_->SetFrameBuffer(oldFrameBuffer);
-                auto material = filter->GetMaterial();
-                material->SetTexture(MaterialTexture::DIFFUSE_MAP, filterFrameBuffer_->GetColorTexture());
-                showMap_->SetMaterial(material);
-                pass->SetBlendMode(BLEND_MODE::ADDITIVE);
-                showMap_->Show();
-            }
-            while (filtered.size());
+            std::vector<SceneNode*> nodesSameFilter(filtered.begin() , it);
+            FilterPass(nodesSameFilter);
+            filtered.erase(filtered.begin(), it);
+            graphics_->SetFrameBuffer(oldFrameBuffer);
+            filter->SetTexture(MaterialTexture::DIFFUSE_MAP, filterFrameBuffer->GetColorTexture());
+            Renderer::GetPtr()->Render(&pass, QuadMesh::GetNDC().get(), filter.get());
         }
+        while (filtered.size());
     }
 
     void Renderer::Render(Window* window, Scene* scene, Camera* camera)
     {
+        window_ = window;
         scene_ = scene;
         camera_ = camera;
         graphics_->SetWindow(window);
@@ -507,7 +505,7 @@ namespace NSG
                 auto filtered = ExtractFiltered(visibles);
                 RemoveFrom(visibles, filtered);
                 auto targetFrameBuffer = graphics_->GetFrameBuffer();
-                auto hasFiltered = !filtered.empty();
+                auto hasFiltered = !filtered.empty() && window_->UseFrameRender();
                 if (hasFiltered)
                 {
                     // we need to render to a framebuffer in order to blend the filters

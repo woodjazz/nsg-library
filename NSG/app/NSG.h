@@ -57,7 +57,6 @@ misrepresented as being the original software.
 #include "ShadowCamera.h"
 #include "Graphics.h"
 #include "Material.h"
-#include "Filter.h"
 #include "RectangleMesh.h"
 #include "ShowTexture.h"
 #include "ResourceFile.h"

@@ -34,6 +34,7 @@ namespace NSG
 	public:
 		Renderer();
 		~Renderer();
+		void Render(const Pass* pass, Mesh* mesh, Material* material);
 		void Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light);
 		void Render(Window* window, Scene* scene, Camera* camera);
 		void Render(Window* window, Scene* scene);
@@ -44,6 +45,7 @@ namespace NSG
 		static SignalDebugRenderer::PSignal SigDebugRenderer();
 		RendererContext SetContext(RendererContext context);
 		RendererContext GetContext() const { return context_; }
+		Pass* GetFilterPass() const { return filterPass_.get(); }
 	private:
 		void SortTransparentBackToFront(std::vector<SceneNode*>& objs);
 		void SortSolidFrontToBack(std::vector<SceneNode*>& objs);
@@ -69,6 +71,7 @@ namespace NSG
 		void RenderOverlays();
 		void RenderFiltered(std::vector<SceneNode*>& filtered);
 		PGraphics graphics_;
+		Window* window_;
 		Scene* scene_;
 		Camera* camera_;
 		PPass shadowPass_;
@@ -84,7 +87,5 @@ namespace NSG
 		RendererContext context_;
 		std::vector<SceneNode*> overlays_;
 		PCamera overlaysCamera_;
-		PFrameBuffer filterFrameBuffer_;
-		PShowTexture showMap_;
 	};
 }

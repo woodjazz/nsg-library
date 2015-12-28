@@ -42,20 +42,10 @@ namespace NSG
     ShowTexture::ShowTexture()
     {
         auto name = GetUniqueName("NSGShowTexture");
-        scene_ = std::make_shared<Scene>(name);
-        material_ = std::make_shared<Material>(name);
+        material_ = Material::GetOrCreate(name);
         //material->SetSerializable(false);
-        mesh_ = Mesh::GetOrCreate<QuadMesh>("NSGShowTextureMesh");
-        node_ = scene_->CreateChild<SceneNode>(name);
-        node_->SetMesh(mesh_);
-        node_->SetMaterial(material_);
         pass_ = std::make_shared<Pass>();
         pass_->EnableDepthTest(false);
-        camera_ = scene_->CreateChild<Camera>(name);
-        camera_->EnableOrtho();
-        camera_->SetNearClip(-1000);
-        camera_->SetFarClip(1000);
-        camera_->UnRegisterWindow();
     }
 
     ShowTexture::~ShowTexture()
@@ -75,17 +65,8 @@ namespace NSG
         material_->SetRenderPass(RenderPass::TEXT);
     }
 
-    void ShowTexture::SetMaterial(PMaterial material)
-    {
-        if (material_ != material)
-        {
-            material_ = material;
-            node_->SetMaterial(material);
-        }
-    }
-
     void ShowTexture::Show()
     {
-        Renderer::GetPtr()->Render(pass_.get(), scene_.get(), camera_.get(), node_.get(), nullptr);
+        Renderer::GetPtr()->Render(pass_.get(), QuadMesh::GetNDC().get(), material_.get());
     }
 }
