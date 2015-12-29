@@ -437,12 +437,16 @@ namespace NSG
                 SortSolidFrontToBack(visibles);
                 DefaultOpaquePass(visibles);
                 LitOpaquePass(visibles);
+                for (auto& obj : visibles)
+                    obj->ClearUniform();
             }
             if (!transparent.empty())
             {
                 SortTransparentBackToFront(transparent);
                 DefaultTransparentPass(transparent);
                 LitTransparentPass(transparent);
+                for (auto& obj : transparent)
+                    obj->ClearUniform();
             }
         }
     }
@@ -512,34 +516,37 @@ namespace NSG
                     SortSolidFrontToBack(visibles);
                     DefaultOpaquePass(visibles);
                     LitOpaquePass(visibles);
+                    for (auto& obj : visibles)
+                        obj->ClearUniform();
                 }
                 if (!transparent.empty())
                 {
                     SortTransparentBackToFront(transparent);
                     DefaultTransparentPass(transparent);
                     LitTransparentPass(transparent);
+                    for (auto& obj : transparent)
+                        obj->ClearUniform();
                 }
                 if (hasFiltered)
+                {
                     RenderFiltered(filtered);
+                    for (auto& obj : filtered)
+                        obj->ClearUniform();
+                }
                 window->RenderFilters();
                 if (debugPhysics_)
                     DebugPhysicsPass();
                 DebugRendererPass();
-                
-                for (auto& obj : visibles)
-                    obj->ClearUniform();
-                
-                for (auto& obj : transparent)
-                    obj->ClearUniform();
-
-                for (auto& obj : filtered)
-                    obj->ClearUniform();
+                camera_ = overlaysCamera_.get();
+                RenderOverlays();
             }
         }
         else
+        {
             graphics_->ClearAllBuffers();
-        camera_ = overlaysCamera_.get();
-        RenderOverlays();
+            camera_ = overlaysCamera_.get();
+            RenderOverlays();
+        }
         window->ShowMap();
     }
 
