@@ -57,7 +57,6 @@ namespace NSG
           defaultTransparentPass_(std::make_shared<Pass>()),
           litTransparentPass_(std::make_shared<Pass>()),
           debugPass_(std::make_shared<Pass>()),
-          filterPass_(std::make_shared<Pass>()),
           debugPhysics_(false),
           debugMaterial_(Material::Create("NSGDebugMaterial")),
           debugRenderer_(std::make_shared<DebugRenderer>()),
@@ -88,10 +87,13 @@ namespace NSG
         debugPass_->SetDepthFunc(DepthFunc::LEQUAL);
         debugPass_->SetBlendMode(BLEND_MODE::ADDITIVE);
 
-        filterPass_->SetType(PassType::DEFAULT);
-        filterPass_->EnableDepthBuffer(false);
-        filterPass_->SetDepthFunc(DepthFunc::LEQUAL);
-        filterPass_->SetBlendMode(BLEND_MODE::ALPHA);
+        filterPass_.SetType(PassType::DEFAULT);
+        filterPass_.EnableDepthBuffer(false);
+        filterPass_.SetDepthFunc(DepthFunc::LEQUAL);
+        filterPass_.SetBlendMode(BLEND_MODE::ALPHA);
+
+        addPass_.EnableDepthTest(false);
+        addPass_.SetBlendMode(BLEND_MODE::ADDITIVE);
 
         debugMaterial_->SetRenderPass(RenderPass::VERTEXCOLOR);
         debugMaterial_->SetFillMode(FillMode::WIREFRAME);
@@ -311,7 +313,7 @@ namespace NSG
         std::vector<PBatch> batches;
         GenerateBatches(objs, batches);
         for (auto& batch : batches)
-            Draw(batch.get(), filterPass_.get(), nullptr, camera_);
+            Draw(batch.get(), &filterPass_, nullptr, camera_);
     }
 
     void Renderer::LitOpaquePass(const std::vector<SceneNode*>& objs)
@@ -456,9 +458,6 @@ namespace NSG
         auto filtered = objs;
         auto oldFrameBuffer = graphics_->GetFrameBuffer();
         auto filterFrameBuffer = window_->GetFilterFrameBuffer().get();
-        Pass pass;
-        pass.EnableDepthTest(false);
-        pass.SetBlendMode(BLEND_MODE::ADDITIVE);
         do
         {
             graphics_->SetFrameBuffer(filterFrameBuffer);
@@ -475,7 +474,7 @@ namespace NSG
             filtered.erase(filtered.begin(), it);
             graphics_->SetFrameBuffer(oldFrameBuffer);
             filter->SetTexture(MaterialTexture::DIFFUSE_MAP, filterFrameBuffer->GetColorTexture());
-            Renderer::GetPtr()->Render(&pass, QuadMesh::GetNDC().get(), filter.get());
+            Renderer::GetPtr()->Render(&addPass_, QuadMesh::GetNDC().get(), filter.get());
         }
         while (filtered.size());
     }

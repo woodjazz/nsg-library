@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Singleton.h"
+#include "Pass.h"
 
 namespace NSG
 {
@@ -79,7 +80,8 @@ namespace NSG
 		PPass defaultTransparentPass_;
 		PPass litTransparentPass_;
 		PPass debugPass_;
-		PPass filterPass_;
+		Pass filterPass_;
+		Pass addPass_;
 		bool debugPhysics_;
 		PMaterial debugMaterial_;
 		PDebugRenderer debugRenderer_;

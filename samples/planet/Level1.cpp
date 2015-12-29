@@ -30,26 +30,27 @@ misrepresented as being the original software.
 #include "Player.h"
 
 Level1::Level1(PWindow window)
-	: Level(window)
+    : Level(window)
 {
-	scene_ = std::make_shared<Scene>("Level1");
-	scene_->SetAmbientColor(ColorRGB(0.1f));
-	AddObject(std::make_shared<Planet>(scene_));
-	AddObject(std::make_shared<Sun>(scene_));
-	player_ = std::make_shared<Player>(scene_);
-	auto enemy0 = std::make_shared<Enemy>(scene_);
-	auto enemy1 = std::make_shared<Enemy>(scene_);
-	enemy0->SetPosition(-PI10, 0);
-	enemy1->SetPosition(PI10, 0);
-	AddObject(enemy0);
-	AddObject(enemy1);
-	Enemy::SetTotal(2);
-	camera_ = player_->GetCameraNode()->CreateChild<Camera>();
-	camera_->SetPosition(Vertex3(0, 0, 10));
-	window->SetScene(scene_.get());
+    scene_ = std::make_shared<Scene>("Level1");
+    scene_->SetAmbientColor(ColorRGB(0.1f));
+    AddObject(std::make_shared<Planet>(scene_));
+    AddObject(std::make_shared<Sun>(scene_));
+    player_ = std::make_shared<Player>(scene_);
+    auto enemy0 = std::make_shared<Enemy>(scene_);
+    auto enemy1 = std::make_shared<Enemy>(scene_);
+    enemy0->SetPosition(-PI10, 0);
+    enemy1->SetPosition(PI10, 0);
+    AddObject(enemy0);
+    AddObject(enemy1);
+    Enemy::SetTotal(2);
+    camera_ = player_->GetCameraNode()->CreateChild<Camera>();
+    camera_->SetPosition(Vertex3(0, 0, 10));
+    camera_->SetWindow(window.get());
+    window->SetScene(scene_.get());
 }
 
 Level1::~Level1()
 {
-	
+
 }
