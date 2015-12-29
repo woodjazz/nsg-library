@@ -32,27 +32,6 @@ misrepresented as being the original software.
 Level0::Level0(PWindow window)
     : Level(window)
 {
-    filter_ = Material::GetOrCreate("ShockWaveMaterial");
-    filter_->SetRenderPass(RenderPass::SHOCKWAVE);
-    filter_->SetTexture(window->GetFrameBuffer()->GetColorTexture());
-
-    filter1_ = Material::GetOrCreate("WAVEMaterial");
-    filter1_->SetRenderPass(RenderPass::WAVE);
-    filter1_->SetTexture(window->GetFrameBuffer()->GetColorTexture());
-    window->AddFilter(filter1_);
-    window->AddFilter(filter_);
-
-    updateSlot_ = Engine::SigUpdate()->Connect([this](float deltaTime)
-    {
-        
-        auto data = filter_->GetShockWaveFilter();
-        data.center_ = Vector2(0.5f);
-        data.time_ += deltaTime;
-        if(data.time_ > 2)
-            data.time_ = 0;        
-        filter_->SetFilterShockWave(data);
-    });
-
     scene_ = std::make_shared<Scene>("Level1");
     scene_->SetAmbientColor(ColorRGB(0.1f));
     AddObject(std::make_shared<Planet>(scene_));

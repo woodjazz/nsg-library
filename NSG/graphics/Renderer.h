@@ -45,7 +45,6 @@ namespace NSG
 		static SignalDebugRenderer::PSignal SigDebugRenderer();
 		RendererContext SetContext(RendererContext context);
 		RendererContext GetContext() const { return context_; }
-		Pass* GetFilterPass() const { return filterPass_.get(); }
 	private:
 		void SortTransparentBackToFront(std::vector<SceneNode*>& objs);
 		void SortSolidFrontToBack(std::vector<SceneNode*>& objs);
@@ -69,7 +68,7 @@ namespace NSG
 	    void DebugPhysicsPass();
 		void DebugRendererPass();
 		void RenderOverlays();
-		void RenderFiltered(std::vector<SceneNode*>& filtered);
+		void RenderFiltered(const std::vector<SceneNode*>& objs);
 		PGraphics graphics_;
 		Window* window_;
 		Scene* scene_;

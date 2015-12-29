@@ -110,7 +110,7 @@ namespace NSG
         SignalTouchFinger::PSignal SigTouchFinger() { return signalTouchFinger_; }
         PixelFormat GetPixelFormat() const { return pixelFormat_; }
         void SetPixelFormat(PixelFormat value) { pixelFormat_ = value; }
-        void RenderFilters(bool showMap);
+        void RenderFilters();
         virtual void SetupImgui() = 0;
         virtual void BeginImguiRender() = 0;
         virtual void SetContext() = 0;
@@ -118,7 +118,9 @@ namespace NSG
         void RemoveRender(IRender* render);
         PShowTexture GetShowMap() const { return showMap_; }
         void AddFilter(PMaterial filter);
+        void RemoveFilter(PMaterial filter);
         bool UseFrameRender();
+        void ShowMap();
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);

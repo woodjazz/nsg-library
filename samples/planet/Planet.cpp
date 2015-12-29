@@ -88,7 +88,8 @@ Planet::Planet(PScene scene)
     {
         auto material(Material::Create());
         material->SetFillMode(FillMode::WIREFRAME);
-        material->SetRenderPass(RenderPass::UNLIT);
+        material->SetRenderPass(RenderPass::LIT);
+        material->SetEmitIntensity(25);
         material->SetDiffuseColor(COLOR_PEACH_PUFF);
         material->EnableTransparent(true);
         material->SetAlpha(0.03f);

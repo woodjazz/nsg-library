@@ -41,8 +41,7 @@ namespace NSG
 {
     ShowTexture::ShowTexture()
     {
-        auto name = GetUniqueName("NSGShowTexture");
-        material_ = Material::GetOrCreate(name);
+        material_ = Material::GetOrCreate(GetUniqueName("NSGShowTexture"));
         //material->SetSerializable(false);
         pass_ = std::make_shared<Pass>();
         pass_->EnableDepthTest(false);

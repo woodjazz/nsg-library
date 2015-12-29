@@ -52,6 +52,8 @@ Explo::Explo(PSceneNode node)
 	sound_ = Sound::Create();
 	sound_->Set(Resource::GetOrCreate<ResourceFile>("data/explo.wav"));
 	sound_->TryReady();
+    filter_ = Material::GetOrCreate("ShockWaveMaterial");
+    filter_->SetRenderPass(RenderPass::SHOCKWAVE);
 }
 
 Explo::~Explo()
@@ -69,6 +71,15 @@ void Explo::Start()
 
     slotUpdate_ = Engine::GetPtr()->SigUpdate()->Connect([this](float deltaTime)
     {
+        auto data = filter_->GetShockWaveFilter();
+        data.time_ += deltaTime * 0.3f;
+        if(data.time_ > 2)
+        {
+            Window::GetMainWindow()->RemoveFilter(filter_);
+            data.time_ = 0;
+        }
+        filter_->SetFilterShockWave(data);
+
         const auto fps = 1 / 24.f;
         if (totalTime_ > fps)
         {
@@ -97,4 +108,12 @@ void Explo::Start()
     });
 
     sound_->Play();
+    Window::GetMainWindow()->AddFilter(filter_);
+
+    auto camera = sprite_->GetScene()->GetMainCamera();
+    auto posNDC = camera->WorldToScreen(sprite_->GetGlobalPosition());
+    auto data = filter_->GetShockWaveFilter();
+    data.time_ = 0;
+    data.center_ = Vector2(posNDC.x, posNDC.y) * .5f + .5f;
+    filter_->SetFilterShockWave(data);
 }

@@ -447,8 +447,9 @@ namespace NSG
         }
     }
 
-    void Renderer::RenderFiltered(std::vector<SceneNode*>& filtered)
+    void Renderer::RenderFiltered(const std::vector<SceneNode*>& objs)
     {
+        auto filtered = objs;
         auto oldFrameBuffer = graphics_->GetFrameBuffer();
         auto filterFrameBuffer = window_->GetFilterFrameBuffer().get();
         Pass pass;
@@ -477,19 +478,16 @@ namespace NSG
 
     void Renderer::Render(Window* window, Scene* scene, Camera* camera)
     {
+        CHECK_ASSERT(window && "window cannot be null");
         window_ = window;
         scene_ = scene;
         camera_ = camera;
         graphics_->SetWindow(window);
-
         if (!scene)
-        {
             graphics_->ClearAllBuffers();
-        }
         else if (scene->GetDrawablesNumber())
         {
             std::vector<SceneNode*> visibles;
-
             if (camera_)
             {
                 scene->GetVisibleNodes(camera_, visibles);
@@ -500,29 +498,12 @@ namespace NSG
                 visibles = scene->GetDrawables();
             if (!visibles.empty())
             {
-                for (auto& obj : visibles)
-                    obj->ClearUniform();
                 auto filtered = ExtractFiltered(visibles);
                 RemoveFrom(visibles, filtered);
-                auto targetFrameBuffer = graphics_->GetFrameBuffer();
+                // we need to render to a framebuffer in order to blend the filters
                 auto hasFiltered = !filtered.empty() && window_->UseFrameRender();
-                if (hasFiltered)
-                {
-                    // we need to render to a framebuffer in order to blend the filters
-                    auto frameBuffer = targetFrameBuffer;
-                    if (!frameBuffer)
-                    {
-                        // no default framebuffer then use the one in the window
-                        CHECK_ASSERT(window);
-                        frameBuffer = window->GetFrameBuffer().get();
-                    }
-                    CHECK_ASSERT(frameBuffer->IsReady());
-                    graphics_->SetFrameBuffer(frameBuffer);
-                }
-
                 auto transparent = ExtractTransparent(visibles);
                 RemoveFrom(visibles, transparent);
-
                 graphics_->SetClearColor(Color(scene->GetHorizonColor(), 1));
                 graphics_->ClearAllBuffers();
 
@@ -540,21 +521,26 @@ namespace NSG
                 }
                 if (hasFiltered)
                     RenderFiltered(filtered);
-                if (window)
-                    window->RenderFilters(hasFiltered);
+                window->RenderFilters();
                 if (debugPhysics_)
                     DebugPhysicsPass();
                 DebugRendererPass();
+                
+                for (auto& obj : visibles)
+                    obj->ClearUniform();
+                
+                for (auto& obj : transparent)
+                    obj->ClearUniform();
+
+                for (auto& obj : filtered)
+                    obj->ClearUniform();
             }
-            camera_ = overlaysCamera_.get();
-            RenderOverlays();
         }
         else
-        {
             graphics_->ClearAllBuffers();
-            camera_ = overlaysCamera_.get();
-            RenderOverlays();
-        }
+        camera_ = overlaysCamera_.get();
+        RenderOverlays();
+        window->ShowMap();
     }
 
     SignalDebugRenderer::PSignal Renderer::SigDebugRenderer()

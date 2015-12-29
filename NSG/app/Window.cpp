@@ -135,7 +135,7 @@ namespace NSG
 
         CHECK_ASSERT(!showMap_);
         showMap_ = std::make_shared<ShowTexture>();
-        showMap_->SetColortexture(frameBuffer_->GetColorTexture());        
+        showMap_->SetColortexture(frameBuffer_->GetColorTexture());
     }
 
     void Window::ShowMap(PTexture texture)
@@ -165,9 +165,9 @@ namespace NSG
         return true;
     }
 
-    void Window::RenderFilters(bool showMap)
+    void Window::RenderFilters()
     {
-        if (HasFilters())
+        if (!showTexture_ && HasFilters())
         {
             auto it = filters_.begin();
             while (it != filters_.end())
@@ -177,6 +177,7 @@ namespace NSG
                 {
                     graphics_->SetFrameBuffer(filterFrameBuffer_.get());
                     filter->SetTexture(MaterialTexture::DIFFUSE_MAP, frameBuffer_->GetColorTexture());
+                    filter->FlipYTextureCoords(true);
                     Renderer::GetPtr()->Render(showMap_->GetPass().get(), QuadMesh::GetNDC().get(), filter.get());
                     graphics_->SetFrameBuffer(frameBuffer_.get());
                     showMap_->SetColortexture(filterFrameBuffer_->GetColorTexture());
@@ -188,25 +189,17 @@ namespace NSG
                     it = filters_.erase(it);
                 }
             }
-
         }
-        if (!showTexture_)
+    }
+
+    void Window::ShowMap()
+    {
+        auto current = graphics_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
+        if (showTexture_)
+            showMap_->Show();
+        else if (current == frameBuffer_.get())
         {
             showMap_->SetColortexture(frameBuffer_->GetColorTexture());
-            if (HasFilters())
-            {
-                showMap_->GetMaterial()->FlipYTextureCoords(true);
-                showMap = true;
-            }
-            else
-            {
-                showMap_->GetMaterial()->FlipYTextureCoords(true);
-            }
-        }
-        
-        if (showTexture_ || showMap)
-        {
-            graphics_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
             showMap_->Show();
         }
     }
@@ -362,6 +355,15 @@ namespace NSG
     void Window::AddFilter(PMaterial filter)
     {
         filters_.push_back(filter);
+    }
+
+    void Window::RemoveFilter(PMaterial filter)
+    {
+        filters_.erase(std::remove_if(filters_.begin(), filters_.end(), [&](PWeakMaterial material)
+        {
+            return material.lock() == filter;
+        }), filters_.end());
+
     }
 
     void Window::EnableFilters(bool enable)

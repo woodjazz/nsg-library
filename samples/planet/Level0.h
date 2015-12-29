@@ -41,7 +41,4 @@ private:
 	std::shared_ptr<Enemy> enemy_;
 	SignalEmpty::PSlot slotEnemyDestroyed_;
 	PCameraControl control_;
-	PMaterial filter_;
-	PMaterial filter1_;
-	SignalUpdate::PSlot updateSlot_;
 };
