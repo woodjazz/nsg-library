@@ -35,7 +35,8 @@ namespace NSG
         ~PlayerControl();
         void SetWindow(Window* window);
 		SignalFloatFloat::PSignal SigMoved() { return signalMoved_; }
-        SignalFloatFloat::PSignal SigLeftStickMoved() { return signalLeftStickMoved_; }        
+        SignalFloatFloat::PSignal SigLeftStickMoved() { return signalLeftStickMoved_; }
+        SignalFloatFloat::PSignal SigRightStickMoved() { return signalRightStickMoved_; }
         SignalBool::PSignal SigButtonA() { return signalButtonA_; }
     private:
         void OnKey(int key, int action, int modifier);
@@ -48,6 +49,7 @@ namespace NSG
 
         SignalFloatFloat::PSignal signalMoved_;
         SignalFloatFloat::PSignal signalLeftStickMoved_;
+        SignalFloatFloat::PSignal signalRightStickMoved_;        
         SignalBool::PSignal signalButtonA_;
         SignalFloatFloat::PSlot slotMouseMoved_;
         SignalMouseButton::PSlot slotMouseDown_;
@@ -64,6 +66,8 @@ namespace NSG
         SignalWindow::PSlot slotWindow_;
         float leftHorizontalAxis_;
         float leftVerticalAxis_;
+        float rightHorizontalAxis_;
+        float rightVerticalAxis_;
         bool left_;
         bool right_;
         bool forward_;

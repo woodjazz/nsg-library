@@ -79,7 +79,6 @@ namespace NSG
 		particleMesh_->Set(1.f);
         particleMaterial_ = std::make_shared<Material>(GetUniqueName(name + "Particle"));
 		particleMaterial_->SetRenderPass(RenderPass::UNLIT);
-		particleMaterial_->SetAlpha(0);
 		particleMaterial_->SetBillboardType(BillboardType::SPHERICAL);
         DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
 		particles_.reserve(amount_);

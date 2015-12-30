@@ -35,10 +35,13 @@ namespace NSG
     PlayerControl::PlayerControl()
         : signalMoved_(new SignalFloatFloat),
           signalLeftStickMoved_(new SignalFloatFloat),
+          signalRightStickMoved_(new SignalFloatFloat),
           signalButtonA_(new SignalBool),
           window_(nullptr),
           leftHorizontalAxis_(0),
           leftVerticalAxis_(0),
+          rightHorizontalAxis_(0),
+          rightVerticalAxis_(0),
           left_(false),
           right_(false),
           forward_(false),
@@ -129,8 +132,10 @@ namespace NSG
                             leftVerticalAxis_ = -position;
                             break;
                         case JoystickAxis::RIGHTX:
+                            rightHorizontalAxis_ = position;
                             break;
                         case JoystickAxis::RIGHTY:
+                            rightVerticalAxis_ = -position;
                             break;
                         case JoystickAxis::TRIGGERLEFT:
                             break;
@@ -156,6 +161,7 @@ namespace NSG
                         }
                         else
                         {
+                            rightHorizontalAxis_ = rightVerticalAxis_ = 0;
                             rightFingerId_ = FirgerId{true, event.fingerId};
                             signalButtonA_->Run(true);
                         }
@@ -167,6 +173,11 @@ namespace NSG
                             leftHorizontalAxis_ += event.dx;
                             leftVerticalAxis_ -= event.dy;
                         }
+                        else if (rightFingerId_.first && rightFingerId_.second == event.fingerId)
+                        {
+                            rightHorizontalAxis_ += event.dx;
+                            rightVerticalAxis_ -= event.dy;
+                        }
                     }
                     else // UP
                     {
@@ -177,6 +188,7 @@ namespace NSG
                         }
                         else if (rightFingerId_.first && rightFingerId_.second == event.fingerId)
                         {
+                            rightHorizontalAxis_ = rightVerticalAxis_ = 0;
                             rightFingerId_ = FirgerId{false, 0};
                             signalButtonA_->Run(false);
                         }
@@ -187,6 +199,7 @@ namespace NSG
             {
                 signalMoved_ = nullptr;
                 signalLeftStickMoved_ = nullptr;
+                signalRightStickMoved_ = nullptr;                
                 signalButtonA_ = nullptr;
                 slotMouseMoved_ = nullptr;
                 slotMouseDown_ = nullptr;
@@ -227,6 +240,9 @@ namespace NSG
             leftHorizontalAxis_ = Clamp(leftHorizontalAxis_, -1.f, 1.f);
             leftVerticalAxis_ = Clamp(leftVerticalAxis_, -1.f, 1.f);
             signalLeftStickMoved_->Run(leftHorizontalAxis_, leftVerticalAxis_);
+            rightHorizontalAxis_ = Clamp(rightHorizontalAxis_, -1.f, 1.f);
+            rightVerticalAxis_ = Clamp(rightVerticalAxis_, -1.f, 1.f);
+            signalRightStickMoved_->Run(rightHorizontalAxis_, rightVerticalAxis_);
         }
     }
 

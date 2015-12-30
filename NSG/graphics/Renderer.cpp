@@ -88,7 +88,7 @@ namespace NSG
         debugPass_->SetBlendMode(BLEND_MODE::ADDITIVE);
 
         filterPass_.SetType(PassType::DEFAULT);
-        filterPass_.EnableDepthBuffer(false);
+        //filterPass_.EnableDepthBuffer(false);
         filterPass_.SetDepthFunc(DepthFunc::LEQUAL);
         filterPass_.SetBlendMode(BLEND_MODE::ALPHA);
 

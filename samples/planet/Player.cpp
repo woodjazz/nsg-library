@@ -42,7 +42,8 @@ Player::Player(PScene scene)
       explo_(std::make_shared<Explo>(child_)),
       collisionGroup_((int)CollisionMask::PLAYER),
       collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::PLAYER),
-      buttonAPressed_(false),
+      shot_(false),
+      buttonADown_(false),
       lastShotTime_(0)
 {
     slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
@@ -88,22 +89,39 @@ Player::Player(PScene scene)
         }
     });
 
+    moveRightStickSlot_ = control_.SigRightStickMoved()->Connect([this](float x, float y)
+    {
+        if (!child_->IsHidden() && (x || y))
+        {
+            auto angle = Angle(VECTOR3_UP, Normalize(Vector3(x, y, 0)));
+            if (x > 0)
+                angle *= -1;
+            lastShotOrientation_ = AngleAxis(angle, VECTOR3_FORWARD);
+            shot_ = true;
+        }
+        else
+            shot_ = false;
+    });
+
     buttonASlot_ =  control_.SigButtonA()->Connect([this](bool down)
     {
-        buttonAPressed_ = down;
+        buttonADown_ = down;
     });
 
     updateSlot_ = Engine::SigUpdate()->Connect([this](float deltaTime)
     {
         lastShotTime_ += deltaTime;
-        if (buttonAPressed_)
+        if (shot_ || buttonADown_)
         {
             if (lastShotTime_ > 0.2f)
             {
+                if (buttonADown_ && !shot_)
+                    lastShotOrientation_ = child_->GetOrientation();
+
                 lastShotTime_ = 0;
                 auto obj = std::make_shared<Laser>(node_->GetScene());
                 obj->SetPosition(child_->GetPosition());
-                obj->SetOrientation(node_->GetOrientation(), child_->GetOrientation());
+                obj->SetOrientation(node_->GetOrientation(), lastShotOrientation_);
                 Level::GetCurrent()->AddObject(obj);
             }
         }

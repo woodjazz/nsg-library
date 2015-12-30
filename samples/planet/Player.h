@@ -41,6 +41,7 @@ private:
     PlayerControl control_;
     SignalFloatFloat::PSlot moveSlot_;
     SignalFloatFloat::PSlot moveLeftStickSlot_;
+    SignalFloatFloat::PSlot moveRightStickSlot_;
     SignalBool::PSlot buttonASlot_;
     SignalUpdate::PSlot updateSlot_;
     PRigidBody body_;
@@ -48,6 +49,9 @@ private:
     shared_ptr<Explo> explo_;
     int collisionGroup_;
     int collisionMask_;
-	bool buttonAPressed_;
+	bool shot_;
+    bool buttonADown_;
 	float lastShotTime_;
+    Quaternion lastShotOrientation_;
+
 };
