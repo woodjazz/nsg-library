@@ -51,15 +51,17 @@ Level0::~Level0()
 
 void Level0::GenerateEnemies()
 {
+    int total = 0;
     for(int i=0; i<10; i++)
     {
         for(int j=0; j<10; j++)
         {
+            ++total;
             auto enemy = std::make_shared<Enemy>(scene_);
             enemy->SetPosition(-PI10 * (i+1), PI10 * j);
             AddObject(enemy);
         }
     }
-    Enemy::SetTotal(1);
+    Enemy::SetTotal(total);
 
 }

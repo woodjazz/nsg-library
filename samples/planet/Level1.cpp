@@ -51,16 +51,18 @@ Level1::~Level1()
 
 void Level1::GenerateEnemies()
 {
+    int total = 0;
     for (int i = 0; i < 20; i++)
     {
         for (int j = 0; j < 10; j++)
         {
+            ++total;
             auto enemy = std::make_shared<Enemy>(scene_);
             enemy->SetPosition(-PI10 * (i + 1), PI10 * j);
             AddObject(enemy);
         }
     }
-    Enemy::SetTotal(200);
+    Enemy::SetTotal(total);
     auto material(Material::Get("EnemyMaterial"));
     material->SetDiffuseColor(COLOR_GREEN);
 }
