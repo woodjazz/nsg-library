@@ -38,7 +38,6 @@ Level1::Level1(PWindow window)
     AddObject(std::make_shared<Sun>(scene_));
     player_ = std::make_shared<Player>(scene_);
     GenerateEnemies();
-    Enemy::SetTotal(2);
     camera_ = player_->GetCameraNode()->CreateChild<Camera>();
     camera_->SetPosition(Vertex3(0, 0, 10));
     camera_->SetWindow(window.get());

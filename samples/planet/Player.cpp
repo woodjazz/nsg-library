@@ -46,11 +46,11 @@ Player::Player(PScene scene)
       buttonADown_(false),
       lastShotTime_(0),
       totalSpawningTime_(0),
-      spawning_(false)
+      spawning_(true)
 {
     slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
     {
-        child_->Hide(true);
+        child_->Hide(true, false);
         body_->HandleCollisions(false);
         explo_->Start();
     });
@@ -120,13 +120,13 @@ Player::Player(PScene scene)
         {
             if (totalSpawningTime_ > 3)
             {
-                child_->Hide(false);
+                child_->Hide(false, false);
                 body_->HandleCollisions(true);
                 spawning_ = false;
             }
             else
             {
-                child_->Hide(!child_->IsHidden());
+                child_->Hide(!child_->IsHidden(), false);
             }
         }
         if (shot_ || buttonADown_)
@@ -148,7 +148,6 @@ Player::Player(PScene scene)
     child_->SetUserData(this);
 
     body_->SetKinematic(true);
-    body_->HandleCollisions(true);
     body_->SetCollisionMask(collisionGroup_, collisionMask_);
     auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, VECTOR3_ONE));
     body_->AddShape(shape);

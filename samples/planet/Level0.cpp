@@ -60,6 +60,6 @@ void Level0::GenerateEnemies()
             AddObject(enemy);
         }
     }
-    Enemy::SetTotal(100);
+    Enemy::SetTotal(1);
 
 }
