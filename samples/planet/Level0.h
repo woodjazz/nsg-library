@@ -35,10 +35,9 @@ public:
     Level0(PWindow window);
     ~Level0();
 private:
-	PScene scene_;
+	void GenerateEnemies();
     PCamera camera_;
     std::shared_ptr<Player> player_;
-	std::shared_ptr<Enemy> enemy_;
 	SignalEmpty::PSlot slotEnemyDestroyed_;
 	PCameraControl control_;
 };

@@ -44,15 +44,19 @@ Player::Player(PScene scene)
       collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::PLAYER),
       shot_(false),
       buttonADown_(false),
-      lastShotTime_(0)
+      lastShotTime_(0),
+      totalSpawningTime_(0),
+      spawning_(false)
 {
     slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
     {
+        child_->Hide(true);
         body_->HandleCollisions(false);
         explo_->Start();
     });
 
-    child_->SetPosition(Vector3(0, 0, 3));
+    auto radius = Level::GetFlyDistance();
+    child_->SetPosition(Vector3(0, 0, radius));
     child_->SetScale(0.25f);
     auto mesh = Mesh::GetOrCreate<TriangleMesh>("PlayerMesh");
     child_->SetMesh(mesh);
@@ -111,6 +115,20 @@ Player::Player(PScene scene)
     updateSlot_ = Engine::SigUpdate()->Connect([this](float deltaTime)
     {
         lastShotTime_ += deltaTime;
+        totalSpawningTime_ += deltaTime;
+        if (spawning_)
+        {
+            if (totalSpawningTime_ > 3)
+            {
+                child_->Hide(false);
+                body_->HandleCollisions(true);
+                spawning_ = false;
+            }
+            else
+            {
+                child_->Hide(!child_->IsHidden());
+            }
+        }
         if (shot_ || buttonADown_)
         {
             if (lastShotTime_ > 0.2f)
@@ -163,8 +181,8 @@ void Player::Destroyed()
     }
     else
     {
+        totalSpawningTime_ = 0;
+        spawning_ = true;
         node_->GetScene()->RemoveOverlay(GetOverlayName(s_lives));
-        child_->Hide(false);
-        body_->HandleCollisions(true);
     }
 }

@@ -35,10 +35,9 @@ Enemy::Enemy(PScene scene)
       collisionGroup_((int)CollisionMask::ENEMY),
       collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::ENEMY)
 {
-    //node_->Pitch(-PI10);
-    //node_->Yaw(PI/4.f);
+    auto radius = Level::GetFlyDistance();
     child_->SetScale(0.25f);
-    child_->SetPosition(Vector3(0, 0, 3));
+    child_->SetPosition(Vector3(0, 0, radius));
     child_->SetMesh(Mesh::GetOrCreate<TriangleMesh>("EnemyMesh"));
     auto material(Material::GetOrCreate("EnemyMaterial"));
     material->SetDiffuseColor(COLOR_RED);
@@ -48,11 +47,12 @@ Enemy::Enemy(PScene scene)
     child_->SetMaterial(material);
     child_->SetUserData(this);
 
+#if 0
     auto waveMaterial = Material::GetOrCreate("WaveMaterial");
     waveMaterial->SetRenderPass(RenderPass::WAVE);
     waveMaterial->FlipYTextureCoords(true);
     child_->SetFilter(waveMaterial);
-
+#endif
 
     body_->SetKinematic(true);
     body_->HandleCollisions(true);
@@ -63,8 +63,21 @@ Enemy::Enemy(PScene scene)
 
     slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
     {
-        body_->HandleCollisions(false);
-        explo_->Start();
+        if (contactInfo.collider_->GetRigidBody()->HandleCollision())
+        {
+            body_->HandleCollisions(false);
+            explo_->Start();
+        }
+    });
+
+    updateSlot_ = Engine::SigUpdate()->Connect([this](float dt)
+    {
+        wave0_.x += dt;
+        wave0_.y = sin(wave0_.x);
+        child_->SetOrientation(AngleAxis(wave0_.y, VECTOR3_FORWARD));
+        auto dir = .5f * dt * (child_->GetOrientation() * VECTOR3_UP);
+        node_->Pitch(-dir.y);
+        node_->Yaw(dir.x);
     });
 }
 

@@ -37,12 +37,7 @@ Level1::Level1(PWindow window)
     AddObject(std::make_shared<Planet>(scene_));
     AddObject(std::make_shared<Sun>(scene_));
     player_ = std::make_shared<Player>(scene_);
-    auto enemy0 = std::make_shared<Enemy>(scene_);
-    auto enemy1 = std::make_shared<Enemy>(scene_);
-    enemy0->SetPosition(-PI10, 0);
-    enemy1->SetPosition(PI10, 0);
-    AddObject(enemy0);
-    AddObject(enemy1);
+    GenerateEnemies();
     Enemy::SetTotal(2);
     camera_ = player_->GetCameraNode()->CreateChild<Camera>();
     camera_->SetPosition(Vertex3(0, 0, 10));
@@ -54,3 +49,20 @@ Level1::~Level1()
 {
 
 }
+
+void Level1::GenerateEnemies()
+{
+    for (int i = 0; i < 20; i++)
+    {
+        for (int j = 0; j < 10; j++)
+        {
+            auto enemy = std::make_shared<Enemy>(scene_);
+            enemy->SetPosition(-PI10 * (i + 1), PI10 * j);
+            AddObject(enemy);
+        }
+    }
+    Enemy::SetTotal(200);
+    auto material(Material::Get("EnemyMaterial"));
+    material->SetDiffuseColor(COLOR_GREEN);
+}
+

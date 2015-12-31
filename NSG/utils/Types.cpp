@@ -53,7 +53,7 @@ namespace NSG
     ShockWaveFilter::ShockWaveFilter()
         : center_(0, 0),
           time_(0),
-          params_(10, 0.8f, 0.1f)
+          params_(10, 0.4f, 0.04f)
     {
     }
 

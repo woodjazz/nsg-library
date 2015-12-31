@@ -45,4 +45,6 @@ private:
     SignalEmpty::PSlot slotDestroyed_;
     int collisionGroup_;
     int collisionMask_;
+    SignalUpdate::PSlot updateSlot_;
+    Vector2 wave0_;
 };

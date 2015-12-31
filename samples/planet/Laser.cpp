@@ -32,7 +32,8 @@ Laser::Laser(PScene scene)
       body_(child_->GetOrCreateRigidBody()),
       collisionGroup_((int)CollisionMask::PLAYER),
       collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::PLAYER),
-      totalTime_(0)
+      totalTime_(0),
+      destroyed_(false)
 {
     const Vector3 Scale(0.03f, 0.15f, 0.03f);
     child_->SetScale(Scale);
@@ -45,26 +46,26 @@ Laser::Laser(PScene scene)
     material->SetRenderPass(RenderPass::UNLIT);
     child_->SetMaterial(material);
     child_->SetUserData(this);
-	auto blurMaterial = Material::GetOrCreate("LaserBlurMaterial");
-	blurMaterial->SetRenderPass(RenderPass::BLUR);
+    auto blurMaterial = Material::GetOrCreate("LaserBlurMaterial");
+    blurMaterial->SetRenderPass(RenderPass::BLUR);
     blurMaterial->FlipYTextureCoords(true);
     auto child1 = child_->CreateChild<SceneNode>();
     child1->SetMesh(mesh);
     child1->SetMaterial(material);
     child1->SetScale(1.3f);
-	child1->SetFilter(blurMaterial);
+    child1->SetFilter(blurMaterial);
 
     body_->SetKinematic(true);
-    //body_->HandleCollisions(true);
-	auto shape = Shape::GetOrCreate(ShapeKey(mesh, Vector3(Scale.x, Scale.y, Scale.z)));
+    body_->HandleCollisions(true);
+    auto shape = Shape::GetOrCreate(ShapeKey(mesh, Vector3(Scale.x, Scale.y, Scale.z)));
     shape->SetBB(child_->GetWorldBoundingBox());
-	body_->AddShape(shape, Vector3(0, Scale.y * 0.5f, 0));// , AngleAxis(PI90, VECTOR3_RIGHT));
+    body_->AddShape(shape, Vector3(0, Scale.y * 0.5f, 0));// , AngleAxis(PI90, VECTOR3_RIGHT));
     body_->SetCollisionMask(collisionGroup_, collisionMask_);
 
     updateSlot_ = Engine::SigUpdate()->Connect([this](float dt)
     {
         totalTime_ += dt;
-		if (totalTime_ > 1)
+        if (destroyed_ || totalTime_ > 1)
             Destroyed();
         else
         {
@@ -72,6 +73,11 @@ Laser::Laser(PScene scene)
             node_->Pitch(-dir.y);
             node_->Yaw(dir.x);
         }
+    });
+
+    slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
+    {
+        destroyed_ = true;
     });
 
 }

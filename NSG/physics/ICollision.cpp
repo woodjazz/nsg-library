@@ -31,15 +31,16 @@ namespace NSG
 {
     void ICollision::HandleManifold(btPersistentManifold* manifold, ICollision* collider) const
     {
-        if (!HandleCollision()) return;
+        auto sceneNode = GetSceneNode();
         int nrc = manifold->getNumContacts();
         if (nrc)
         {
             for (int j = 0; j < nrc; ++j)
             {
+                if (!HandleCollision())
+                    break;
                 ContactPoint cinf;
                 btManifoldPoint& pt = manifold->getContactPoint(j);
-				auto sceneNode = GetSceneNode();
                 cinf.collider_ = collider->GetSceneNode();
                 cinf.normalB_ = ToVector3(pt.m_normalWorldOnB);
                 cinf.appliedImpulse_ = pt.m_appliedImpulse;

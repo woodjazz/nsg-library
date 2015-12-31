@@ -37,9 +37,7 @@ Level0::Level0(PWindow window)
     AddObject(std::make_shared<Planet>(scene_));
     AddObject(std::make_shared<Sun>(scene_));
     player_ = std::make_shared<Player>(scene_);
-    enemy_ = std::make_shared<Enemy>(scene_);
-    Enemy::SetTotal(1);
-    enemy_->SetPosition(-PI10, 0);
+    GenerateEnemies();
     camera_ = player_->GetCameraNode()->CreateChild<Camera>();
     camera_->SetPosition(Vertex3(0, 0, 10));
     camera_->SetWindow(window.get());
@@ -49,5 +47,19 @@ Level0::Level0(PWindow window)
 
 Level0::~Level0()
 {
+}
+
+void Level0::GenerateEnemies()
+{
+    for(int i=0; i<10; i++)
+    {
+        for(int j=0; j<10; j++)
+        {
+            auto enemy = std::make_shared<Enemy>(scene_);
+            enemy->SetPosition(-PI10 * (i+1), PI10 * j);
+            AddObject(enemy);
+        }
+    }
+    Enemy::SetTotal(100);
 
 }

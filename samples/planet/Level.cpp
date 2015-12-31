@@ -30,6 +30,7 @@ misrepresented as being the original software.
 #include "LevelResources.h"
 
 std::shared_ptr<Level> Level::currentLevel_;
+PScene Level::scene_;
 
 Level::Level(PWindow window)
     : window_(window),
@@ -43,7 +44,7 @@ Level::~Level()
 
 void Level::Load(int idx, PWindow window)
 {
-	Level::currentLevel_ = nullptr;
+    Level::currentLevel_ = nullptr;
     std::shared_ptr<Level> level;
 
     switch (idx)
@@ -75,7 +76,7 @@ void Level::Load(int idx, PWindow window)
             break;
     }
 
-    //Renderer::GetPtr()->EnableDebugPhysics(true);    
+    //Renderer::GetPtr()->EnableDebugPhysics(true);
     level->SetIndex(idx);
 
     Level::currentLevel_ = level;
@@ -91,5 +92,11 @@ void Level::RemoveObject(GameObject* object)
     objects_.erase(object);
 }
 
+float Level::GetFlyDistance()
+{
+    auto grid = scene_->GetChild<SceneNode>("Grid", true);
+    auto bb = grid->GetWorldBoundingBox();
+    return Length(grid->GetGlobalScale() * 0.6f);
+}
 
 

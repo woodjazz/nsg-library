@@ -42,6 +42,8 @@ private:
     PRigidBody body_;
     int collisionGroup_;
     int collisionMask_;
-	SignalUpdate::PSlot updateSlot_;
+    SignalUpdate::PSlot updateSlot_;
+    SignalCollision::PSlot slotCollision_;
     float totalTime_;
+    bool destroyed_;
 };

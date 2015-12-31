@@ -37,7 +37,7 @@ public:
 	Level1(PWindow window);
 	~Level1();
 private:
-	PScene scene_;
+	void GenerateEnemies();
 	PCamera camera_;
 	std::shared_ptr<Player> player_;
 };

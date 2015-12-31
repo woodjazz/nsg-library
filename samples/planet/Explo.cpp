@@ -35,7 +35,7 @@ Explo::Explo(PSceneNode node)
 	: totalTime_(0),
 	alpha_(1)
 {
-    auto mesh = Mesh::GetOrCreate<QuadMesh>("QuadMesh");
+    auto mesh = QuadMesh::GetNDC();
 	material_ = Material::Create();
 	texture_ = std::make_shared<Texture2D>(Resource::Get("data/explo.png"));
     material_->SetTexture(texture_);
@@ -73,7 +73,7 @@ void Explo::Start()
     {
         auto data = filter_->GetShockWaveFilter();
         data.time_ += deltaTime * 0.3f;
-        if(data.time_ > 2)
+        if(data.time_ > 0.5f)
         {
             Window::GetMainWindow()->RemoveFilter(filter_);
             data.time_ = 0;
@@ -90,6 +90,9 @@ void Explo::Start()
                 uvTransform_.w += TEX_SIZE;
                 if (uvTransform_.w >= 1)
                 {
+                    uvTransform_.z = 0;
+                    uvTransform_.w = 0;
+                    filter_->SetFilterShockWave(ShockWaveFilter());
                     auto obj = static_cast<GameObject*>(sprite_->GetParent()->GetUserData());
                     auto p = obj->shared_from_this();
 					p->Destroyed();

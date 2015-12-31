@@ -252,8 +252,8 @@ namespace NSG
                 break;
         }
 
-        if (image_)
-            image_->Invalidate(); // free mem
+       // if (image_)
+         //   image_->Invalidate(); // free mem
 
         CHECK_GL_STATUS();
     }

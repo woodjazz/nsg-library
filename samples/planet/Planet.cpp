@@ -28,7 +28,7 @@ misrepresented as being the original software.
 Planet::Planet(PScene scene)
     : planet_(scene->CreateChild<SceneNode>()),
       clouds_(planet_->CreateChild<SceneNode>()),
-      grid_(planet_->CreateChild<SceneNode>())
+      grid_(planet_->CreateChild<SceneNode>("Grid"))
 {
 	auto colorTexture = std::make_shared<Texture2D>(
 		ResourceFile::GetOrCreate("data/earthcolor.jpg"),

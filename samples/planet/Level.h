@@ -34,13 +34,15 @@ class Level
 public:
     static void Load(int idx, PWindow window);
     int GetIndex() const { return levelIndex_; }
-    static std::shared_ptr<Level> GetCurrent() { return currentLevel_; }
+    static Level* GetCurrent() { return currentLevel_.get(); }
 	void RemoveObject(GameObject* object);
 	void AddObject(PGameObject object);
+    static float GetFlyDistance();
 protected:
     Level(PWindow window);
     virtual ~Level();
 	PWindow window_;
+    static PScene scene_;
 private:
 	void SetIndex(int idx) { levelIndex_ = idx; }
     std::map<GameObject*, PGameObject> objects_;

@@ -52,6 +52,7 @@ private:
 	bool shot_;
     bool buttonADown_;
 	float lastShotTime_;
+    float totalSpawningTime_;
     Quaternion lastShotOrientation_;
-
+    bool spawning_;
 };
