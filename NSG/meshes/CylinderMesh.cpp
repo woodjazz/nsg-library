@@ -158,7 +158,7 @@ namespace NSG
                 data.push_back(vertexData);
             }
 
-            // Indeces for bottom face
+            // Indices for bottom face
 			int seg = 0;
             for (; seg < segments; seg++)
             {

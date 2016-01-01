@@ -566,22 +566,20 @@ namespace NSG
     {
         EmscriptenGamepadEvent gamepadState;
         emscripten_get_gamepad_status(0, &gamepadState);
-        if (gamepadState.connected)
+        SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+        if (gamepadState.connected && window)
         {
             const auto PRECISION_ERROR = 0.15;
             for (int i = 0; i < gamepadState.numAxes; i++)
+            {
                 if (std::abs(gamepadState.axis[i]) < PRECISION_ERROR)
                     gamepadState.axis[i] = 0;
-            SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-            if (window && gamepadState.numAxes > 1)
-            {
-                window->OnJoystickAxisMotion(gamepadState.index, JoystickAxis::LEFTX, gamepadState.axis[0]);
-                window->OnJoystickAxisMotion(gamepadState.index, JoystickAxis::LEFTY, gamepadState.axis[1]);
+                window->OnJoystickAxisMotion(gamepadState.index, (JoystickAxis)i, gamepadState.axis[i]);
             }
         }
     }
     #endif
-    
+
     static int64_t s_touchId = 0;
     void SDLWindow::HandleTouchUpEvent()
     {
@@ -745,7 +743,7 @@ namespace NSG
                 auto y = (int)(event.tfinger.y * window->GetHeight());
                 TouchFingerEvent touchEvent;
                 touchEvent.type = TouchFingerEvent::Type::MOTION;
-                if(event.type == SDL_FINGERDOWN)
+                if (event.type == SDL_FINGERDOWN)
                 {
                     window->OnMouseDown(NSG_BUTTON_LEFT, x, y);
                     touchEvent.type = TouchFingerEvent::Type::DOWN;

@@ -198,21 +198,21 @@ namespace NSG
 			auto& t1 = data[faces[i * 3 + 1]].uv_[0];
 			auto& t2 = data[faces[i * 3 + 2]].uv_[0];
 
-            if (abs(t2.x - t0.x) > 0.5f)
+            if (fabs(t2.x - t0.x) > 0.5f)
             {
                 if (t0.x < 0.5f)
                     indexToSplit.push_back(faces[i * 3]);
                 else
                     indexToSplit.push_back(faces[i * 3 + 2]);
             }
-            if (abs(t1.x - t0.x) > 0.5f)
+            if (fabs(t1.x - t0.x) > 0.5f)
             {
                 if (t0.x < 0.5f)
                     indexToSplit.push_back(faces[i * 3]);
                 else
                     indexToSplit.push_back(faces[i * 3 + 1]);
             }
-            if (abs(t2.x - t1.x) > 0.5f)
+            if (fabs(t2.x - t1.x) > 0.5f)
             {
                 if (t1.x < 0.5f)
                     indexToSplit.push_back(faces[i * 3 + 1]);

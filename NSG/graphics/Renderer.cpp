@@ -143,16 +143,12 @@ namespace NSG
     }
 
 
-    void Renderer::GetLighted(const std::vector<SceneNode*>& nodes, std::vector<SceneNode*>& result) const
+    void Renderer::GetLightedBatches(const std::vector<SceneNode*>& nodes, const std::vector<PBatch>& iBatches, std::vector<PBatch>& result) const
     {
         CHECK_ASSERT(result.empty());
-
-        for (auto& node : nodes)
-        {
-            auto material = node->GetMaterial();
-            if (material && material->IsLighted())
-                result.push_back(node);
-        }
+        for (auto& batch : iBatches)
+            if (batch->GetMaterial()->IsLighted())
+                result.push_back(batch);
     }
 
     void Renderer::SortTransparentBackToFront(std::vector<SceneNode*>& objs)
@@ -300,40 +296,27 @@ namespace NSG
                 light->GenerateShadowMaps(camera_);
     }
 
-    void Renderer::DefaultOpaquePass(std::vector<SceneNode*>& objs)
+    void Renderer::OpaquePasses(std::vector<SceneNode*>& objs)
     {
         std::vector<PBatch> batches;
         GenerateBatches(objs, batches);
         for (auto& batch : batches)
             Draw(batch.get(), defaultOpaquePass_.get(), nullptr, camera_);
-    }
-
-    void Renderer::FilterPass(std::vector<SceneNode*>& objs)
-    {
-        std::vector<PBatch> batches;
-        GenerateBatches(objs, batches);
-        for (auto& batch : batches)
-            Draw(batch.get(), &filterPass_, nullptr, camera_);
-    }
-
-    void Renderer::LitOpaquePass(const std::vector<SceneNode*>& objs)
-    {
         auto lights = scene_->GetLights();
         for (auto light : lights)
         {
             if (light->GetOnlyShadow())
                 continue;
-            std::vector<SceneNode*> litNodes;
-            GetLighted(objs, litNodes);
-            std::vector<PBatch> batches;
-            GenerateBatches(litNodes, batches);
-            for (auto& batch : batches)
+            std::vector<PBatch> litBatches;
+            GetLightedBatches(objs, batches, litBatches);
+            for (auto& batch : litBatches)
                 Draw(batch.get(), litOpaquePass_.get(), light, camera_);
         }
     }
 
-    void Renderer::DefaultTransparentPass(const std::vector<SceneNode*>& objs)
+    void Renderer::TransparentPasses(const std::vector<SceneNode*>& objs)
     {
+        auto lights = scene_->GetLights();
         // Transparent nodes cannot be batched
         for (auto& node : objs)
         {
@@ -344,33 +327,27 @@ namespace NSG
                 graphics_->SetMesh(sceneNode->GetMesh().get());
                 if (graphics_->SetupProgram(defaultTransparentPass_.get(), scene_, camera_, sceneNode, material, nullptr))
                     graphics_->DrawActiveMesh();
-            }
-        }
-    }
-
-    void Renderer::LitTransparentPass(const std::vector<SceneNode*>& objs)
-    {
-        // Transparent nodes cannot be batched
-        auto lights = scene_->GetLights();
-        for (auto light : lights)
-        {
-            if (light->GetOnlyShadow())
-                continue;
-            std::vector<SceneNode*> litNodes;
-            GetLighted(objs, litNodes);
-            for (auto& node : litNodes)
-            {
-                auto sceneNode = (SceneNode*)node;
-                auto material = sceneNode->GetMaterial().get();
-                if (material)
+                for (auto light : lights)
                 {
-                    graphics_->SetMesh(sceneNode->GetMesh().get());
-                    if (graphics_->SetupProgram(litTransparentPass_.get(), scene_, camera_, sceneNode, material, light))
-                        graphics_->DrawActiveMesh();
+                    if (light->GetOnlyShadow())
+                        continue;
+                    if (material->IsLighted())
+                    {
+                        if (graphics_->SetupProgram(litTransparentPass_.get(), scene_, camera_, sceneNode, material, light))
+                            graphics_->DrawActiveMesh();
+                    }
                 }
             }
         }
     }
+
+    void Renderer::FilterPass(std::vector<SceneNode*>& objs)
+    {
+        std::vector<PBatch> batches;
+        GenerateBatches(objs, batches);
+        for (auto& batch : batches)
+            Draw(batch.get(), &filterPass_, nullptr, camera_);
+    }    
 
     void Renderer::DebugPhysicsPass()
     {
@@ -437,16 +414,14 @@ namespace NSG
             if (!visibles.empty())
             {
                 SortSolidFrontToBack(visibles);
-                DefaultOpaquePass(visibles);
-                LitOpaquePass(visibles);
+                OpaquePasses(visibles);
                 for (auto& obj : visibles)
                     obj->ClearUniform();
             }
             if (!transparent.empty())
             {
                 SortTransparentBackToFront(transparent);
-                DefaultTransparentPass(transparent);
-                LitTransparentPass(transparent);
+                TransparentPasses(transparent);
                 for (auto& obj : transparent)
                     obj->ClearUniform();
             }
@@ -513,16 +488,14 @@ namespace NSG
                 if (!visibles.empty())
                 {
                     SortSolidFrontToBack(visibles);
-                    DefaultOpaquePass(visibles);
-                    LitOpaquePass(visibles);
+                    OpaquePasses(visibles);
                     for (auto& obj : visibles)
                         obj->ClearUniform();
                 }
                 if (!transparent.empty())
                 {
                     SortTransparentBackToFront(transparent);
-                    DefaultTransparentPass(transparent);
-                    LitTransparentPass(transparent);
+                    TransparentPasses(transparent);
                     for (auto& obj : transparent)
                         obj->ClearUniform();
                 }
