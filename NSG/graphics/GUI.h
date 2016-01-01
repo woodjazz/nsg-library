@@ -62,7 +62,7 @@ namespace NSG
 		PIndexBuffer iBuffer_;
 		PCamera camera_;
 		Window* window_;
-		void* state_;
+		char* state_;
 		bool configured_;
 		//Area related to the window where the GUI is painted.
 		//Needed to adjust the mouse' coordinates

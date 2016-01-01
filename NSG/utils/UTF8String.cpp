@@ -26,6 +26,7 @@ misrepresented as being the original software.
 
 #include "UTF8String.h"
 #include "Check.h"
+#include <limits>
 
 namespace NSG
 {
