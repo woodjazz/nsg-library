@@ -425,7 +425,7 @@ namespace NSG
         if (!lastBatch_.IsEmpty())
         {
             lastBatch_.Clear();
-            isBatched_ = false; //disable batching since the scenenode is changing dynamically
+            //isBatched_ = false; //disable batching since the scenenode is changing dynamically
         }
     }
 
