@@ -3,6 +3,7 @@
 #include "Check.h"
 #include "Constants.h"
 #include "Resource.h"
+#include "Batch.h"
 #include "Material.h"
 #include "Util.h"
 #include "Scene.h"

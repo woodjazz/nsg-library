@@ -160,9 +160,6 @@ namespace NSG
 
     void SceneNode::OnDirty() const
     {
-        if (material_)
-            material_->BachedNodeHasChanged();
-
         worldBBNeedsUpdate_ = true;
         auto scene = GetScene();
         if (scene)

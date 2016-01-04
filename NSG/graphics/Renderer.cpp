@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "SceneNode.h"
 #include "Batch.h"
+#include "InstanceBuffer.h"
 #include "Pass.h"
 #include "Node.h"
 #include "Program.h"
@@ -61,7 +62,8 @@ namespace NSG
           debugMaterial_(Material::Create("NSGDebugMaterial")),
           debugRenderer_(std::make_shared<DebugRenderer>()),
           context_(RendererContext::DEFAULT),
-          overlaysCamera_(std::make_shared<Camera>("NSGOverlays"))
+          overlaysCamera_(std::make_shared<Camera>("NSGOverlays")),
+          instanceBuffer_(std::make_shared<InstanceBuffer>())
     {
         debugMaterial_->SetSerializable(false);
 
@@ -275,7 +277,7 @@ namespace NSG
         if (batch->AllowInstancing())
         {
             if (graphics_->SetupProgram(pass, scene_, camera, nullptr, batch->GetMaterial(), light))
-                graphics_->DrawInstancedActiveMesh(*batch);
+                graphics_->DrawInstancedActiveMesh(*batch, instanceBuffer_.get());
         }
         else
         {
@@ -314,30 +316,21 @@ namespace NSG
         }
     }
 
-    void Renderer::TransparentPasses(const std::vector<SceneNode*>& objs)
+    void Renderer::TransparentPasses(std::vector<SceneNode*>& objs)
     {
+        std::vector<PBatch> batches;
+        GenerateBatches(objs, batches);
+        for (auto& batch : batches)
+            Draw(batch.get(), defaultTransparentPass_.get(), nullptr, camera_);
         auto lights = scene_->GetLights();
-        // Transparent nodes cannot be batched
-        for (auto& node : objs)
+        for (auto light : lights)
         {
-            auto sceneNode = (SceneNode*)node;
-            auto material = sceneNode->GetMaterial().get();
-            if (material)
-            {
-                graphics_->SetMesh(sceneNode->GetMesh().get());
-                if (graphics_->SetupProgram(defaultTransparentPass_.get(), scene_, camera_, sceneNode, material, nullptr))
-                    graphics_->DrawActiveMesh();
-                for (auto light : lights)
-                {
-                    if (light->GetOnlyShadow())
-                        continue;
-                    if (material->IsLighted())
-                    {
-                        if (graphics_->SetupProgram(litTransparentPass_.get(), scene_, camera_, sceneNode, material, light))
-                            graphics_->DrawActiveMesh();
-                    }
-                }
-            }
+            if (light->GetOnlyShadow())
+                continue;
+            std::vector<PBatch> litBatches;
+            GetLightedBatches(objs, batches, litBatches);
+            for (auto& batch : litBatches)
+                Draw(batch.get(), litTransparentPass_.get(), light, camera_);
         }
     }
 
@@ -347,7 +340,7 @@ namespace NSG
         GenerateBatches(objs, batches);
         for (auto& batch : batches)
             Draw(batch.get(), &filterPass_, nullptr, camera_);
-    }    
+    }
 
     void Renderer::DebugPhysicsPass()
     {

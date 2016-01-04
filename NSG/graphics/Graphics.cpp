@@ -1000,20 +1000,23 @@ namespace NSG
         #endif
     }
 
-    void Graphics::SetBuffers(bool solid, bool allowInstancing)
+    void Graphics::SetBuffers(bool solid, InstanceBuffer* instancesBuffer)
     {
         VertexBuffer* vBuffer = activeMesh_->GetVertexBuffer();
         if (has_vertex_array_object_ext_ && !vBuffer->IsDynamic())
         {
-            auto vao = VertexArrayObj::GetOrCreate(VAOKey{allowInstancing, activeProgram_, activeMesh_, solid});
+            auto vao = VertexArrayObj::GetOrCreate(VAOKey{instancesBuffer != nullptr, activeProgram_, activeMesh_, solid});
             vao->Use();
         }
         else
         {
             SetVertexBuffer(vBuffer);
             SetAttributes(nullptr);
-            if (allowInstancing && activeProgram_->GetMaterial()->IsBatched() && !vBuffer->IsDynamic())
+            if (instancesBuffer && !vBuffer->IsDynamic())
+            {
+                SetVertexBuffer(instancesBuffer);
                 SetInstanceAttrPointers(activeProgram_);
+            }
             SetIndexBuffer(activeMesh_->GetIndexBuffer(solid));
         }
     }
@@ -1023,11 +1026,7 @@ namespace NSG
         if (!HasInstancedArrays())
             return;
 
-        CHECK_ASSERT(program->GetMaterial()->IsBatched());
-
         CHECK_GL_STATUS();
-
-        SetVertexBuffer(program->GetMaterial()->GetInstanceBuffer().get());
 
         GLuint modelMatrixLoc = program->GetAttModelMatrixLoc();
 
@@ -1369,7 +1368,7 @@ namespace NSG
         CHECK_GL_STATUS();
 
         bool solid = activeProgram_->GetMaterial()->GetFillMode() == FillMode::SOLID;
-        SetBuffers(solid, false);
+        SetBuffers(solid, nullptr);
         CHECK_GL_STATUS();
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
         const VertexsData& vertexsData = activeMesh_->GetVertexsData();
@@ -1388,7 +1387,7 @@ namespace NSG
         CHECK_GL_STATUS();
     }
 
-    void Graphics::DrawInstancedActiveMesh(const Batch& batch)
+    void Graphics::DrawInstancedActiveMesh(const Batch& batch, InstanceBuffer* instancesBuffer)
     {
         CHECK_ASSERT(has_instanced_arrays_ext_);
 
@@ -1398,8 +1397,8 @@ namespace NSG
         CHECK_GL_STATUS();
 
         bool solid = activeProgram_->GetMaterial()->GetFillMode() == FillMode::SOLID;
-        activeProgram_->GetMaterial()->UpdateBatchBuffer(batch);
-        SetBuffers(solid, true);
+        instancesBuffer->UpdateBatchBuffer(batch);
+        SetBuffers(solid, instancesBuffer);
         GLenum mode = solid ? activeMesh_->GetSolidDrawMode() : activeMesh_->GetWireFrameDrawMode();
         GLsizei instances = (GLsizei)batch.GetNodes().size();
         const Indexes& indexes = activeMesh_->GetIndexes(solid);

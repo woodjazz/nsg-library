@@ -10,7 +10,6 @@
 #include "Util.h"
 #include "FrameBuffer.h"
 #include "StringConverter.h"
-#include "InstanceBuffer.h"
 #include "SharedFromPointer.h"
 #include "imgui.h"
 #include "pugixml.hpp"
@@ -31,7 +30,6 @@ namespace NSG
           shininess_(1),
           serializable_(true),
           blendFilterMode_(BlendFilterMode::ADDITIVE),
-          isBatched_(false),
           fillMode_(FillMode::SOLID),
           alpha_(1),
           alphaForSpecular_(1),
@@ -71,9 +69,6 @@ namespace NSG
         material->blurFilter_ = blurFilter_;
         material->waveFilter_ = waveFilter_;
         material->shockWaveFilter_ = shockWaveFilter_;
-        material->instanceBuffer_ = instanceBuffer_;
-        material->lastBatch_ = lastBatch_;
-        material->isBatched_ = isBatched_;
         material->fillMode_ = fillMode_;
         material->alpha_ = alpha_;
         material->alphaForSpecular_ = alphaForSpecular_;
@@ -269,19 +264,6 @@ namespace NSG
         return isReady;
     }
 
-    void Material::AllocateResources()
-    {
-        isBatched_ = Graphics::GetPtr()->HasInstancedArrays() && !IsTransparent();
-        if (isBatched_)
-            instanceBuffer_ = std::make_shared<InstanceBuffer>();
-    }
-
-    void Material::ReleaseResources()
-    {
-        instanceBuffer_ = nullptr;
-        lastBatch_.Clear();
-    }
-
     static const char* TEXTURE_NAME = "Texture";
     void Material::Save(pugi::xml_node& node)
     {
@@ -411,33 +393,6 @@ namespace NSG
         return !shadeless_ && (renderPass_ == RenderPass::LIT);
     }
 
-    bool Material::IsBatched() const
-    {
-        if (((Material*)this)->IsReady()) //FIX this awful cast
-        {
-            return isBatched_;
-        }
-        return false;
-    }
-
-    void Material::BachedNodeHasChanged()
-    {
-        if (!lastBatch_.IsEmpty())
-        {
-            lastBatch_.Clear();
-            //isBatched_ = false; //disable batching since the scenenode is changing dynamically
-        }
-    }
-
-    void Material::UpdateBatchBuffer(const Batch& batch)
-    {
-        if (!(lastBatch_ == batch))
-        {
-            instanceBuffer_->UpdateBatchBuffer(batch);
-            lastBatch_ = batch;
-        }
-    }
-
     PTexture Material::GetTextureWithResource(PResource resource)
     {
         auto materials = Material::GetObjs();
@@ -556,7 +511,7 @@ namespace NSG
             }
         }
 
-        if (IsBatched() && mesh->IsStatic() && allowInstancing)
+        if (mesh->IsStatic() && allowInstancing)
             defines += "INSTANCED\n";
 
         switch (billboardType_)

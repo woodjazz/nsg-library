@@ -61,7 +61,7 @@ namespace NSG
         void GetLightedBatches(const std::vector<SceneNode*>& nodes, const std::vector<PBatch>& iBatches, std::vector<PBatch>& result) const;
         void ShadowGenerationPass();
         void OpaquePasses(std::vector<SceneNode*>& objs);
-        void TransparentPasses(const std::vector<SceneNode*>& objs);
+        void TransparentPasses(std::vector<SceneNode*>& objs);
         void FilterPass(std::vector<SceneNode*>& objs);
         void SetShadowFrameBufferSize(FrameBuffer* frameBuffer);
         void DebugPhysicsPass();
@@ -86,5 +86,6 @@ namespace NSG
         RendererContext context_;
         std::vector<SceneNode*> overlays_;
         PCamera overlaysCamera_;
+        PInstanceBuffer instanceBuffer_;
     };
 }

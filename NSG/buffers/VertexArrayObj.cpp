@@ -126,7 +126,7 @@ namespace NSG
 
         graphics_->SetIndexBuffer(iBuffer, true);
 
-        if (key_.allowInstancing && program->GetMaterial()->IsBatched())
+        if (key_.allowInstancing)
             graphics_->SetInstanceAttrPointers(program);
 
         CHECK_GL_STATUS();

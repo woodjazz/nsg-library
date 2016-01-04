@@ -67,7 +67,7 @@ namespace NSG
 	static const ColorRGB COLOR_PEACH_PUFF(1.f, 218 / 255.f, 185 / 255.f);
 	static const ColorRGB COLOR_SKY_BLUE(135 / 255.f, 206 / 255.f, 235 / 255.f);
 
-    static const size_t MAX_NODES_IN_BATCH = 1000;
+    static const size_t MAX_NODES_IN_BATCH = 10000;
     static const float PRECISION = 0.01f;
 
     static const size_t MAX_BONES_PER_VERTEX = 4;

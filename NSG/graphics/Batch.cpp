@@ -71,7 +71,7 @@ namespace NSG
 
 	bool Batch::AllowInstancing() const
 	{
-		return allowInstancing_ && material_->IsBatched() && mesh_->IsStatic();
+		return Graphics::GetPtr()->HasInstancedArrays() && allowInstancing_ && mesh_->IsStatic();
 	}
 
 	void Batch::Clear()

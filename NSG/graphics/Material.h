@@ -27,7 +27,6 @@ misrepresented as being the original software.
 
 #include "Types.h"
 #include "Object.h"
-#include "Batch.h"
 #include "Util.h"
 #include "WeakFactory.h"
 #include "UniformsUpdate.h"
@@ -69,7 +68,6 @@ namespace NSG
         const WaveFilter& GetWaveFilter() const { return waveFilter_; }
         const ShockWaveFilter& GetShockWaveFilter() const { return shockWaveFilter_; }        
         PTexture GetTextureWith(PResource resource) const;
-        PInstanceBuffer GetInstanceBuffer() const { return instanceBuffer_; }
         void SetAlpha(float alpha);
 		float GetAlpha() const { return alpha_; }
 		void SetAlphaForSpecular(float alphaForSpecular);
@@ -80,9 +78,6 @@ namespace NSG
         bool IsLighted() const;
         void SetFillMode(FillMode fillMode) { fillMode_ = fillMode; }
         FillMode GetFillMode() const { return fillMode_; }
-        bool IsBatched() const;
-        void UpdateBatchBuffer(const Batch& batch);
-        void BachedNodeHasChanged();
         static PTexture GetTextureWithResource(PResource resource);
         static void SaveMaterials(pugi::xml_node& node);
         bool HasLightMap() const;
@@ -116,8 +111,6 @@ namespace NSG
 		PTexture ShowPreview(FrameBuffer* frameBuffer, Scene* scene);
         void SetupBlur();
         bool IsValid() override;
-        void AllocateResources() override;
-        void ReleaseResources() override;
         PTexture texture_[MaterialTexture::MAX_MAPS];
 		Color diffuseColor_;
         float diffuseIntensity_;
@@ -130,9 +123,6 @@ namespace NSG
         BlurFilter blurFilter_;
         WaveFilter waveFilter_;
         ShockWaveFilter shockWaveFilter_;
-        PInstanceBuffer instanceBuffer_;
-        Batch lastBatch_;
-        bool isBatched_;
         FillMode fillMode_;
         float alpha_;
 		float alphaForSpecular_;

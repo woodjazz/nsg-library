@@ -74,7 +74,7 @@ namespace NSG
 		void DrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid * indices);
 		void DrawArrays(GLenum mode, GLint first, GLsizei count);
 		void DrawActiveMesh();
-		void DrawInstancedActiveMesh(const Batch& batch);
+		void DrawInstancedActiveMesh(const Batch& batch, InstanceBuffer* instancesBuffer);
 		void DiscardFramebuffer();
 		bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
 		bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
@@ -88,7 +88,7 @@ namespace NSG
 		bool HasTextureCompressionDXT5() const { return has_texture_compression_dxt5_ext_; }
 		bool HasTextureCompressionETC() const { return has_compressed_ETC1_RGB8_texture_ext_; }
 		bool HasTextureCompressionPVRTC() const { return has_texture_compression_pvrtc_ext_; }
-		void SetBuffers(bool solid, bool allowInstancing);
+		void SetBuffers(bool solid, InstanceBuffer* instancesBuffer);
 		void UpdateBatchBuffer(const Batch& batch);
 		void SetInstanceAttrPointers(Program* program);
 		void SetVertexAttrPointers();

@@ -100,5 +100,5 @@ misrepresented as being the original software.
 #include "DebugRenderer.h"
 #include "ShadowMapDebug.h"
 #include "SharedFromPointer.h"
-
+#include "Batch.h"
 
