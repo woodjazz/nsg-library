@@ -46,6 +46,7 @@ misrepresented as being the original software.
 #endif
 
 #if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
+
 #define CHECK_ASSERT(f) if (!(f)) {\
         char buffer[1024];\
         const char* format = "Assert " #f " has failed in file %s line %u\n";\

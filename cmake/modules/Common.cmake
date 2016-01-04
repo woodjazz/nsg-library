@@ -265,7 +265,7 @@ macro (setup_executable)
 
         add_custom_command(
             TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --embed-file data 
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s DEMANGLE_SUPPORT=1 -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --embed-file data 
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 COMMENT "Generating HTML with Emscripten" VERBATIM)
 

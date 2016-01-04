@@ -136,7 +136,7 @@ namespace NSG
 			}
 			loaded_ = true;
 		}
-		else if (AreReady())
+		else if (IsReady() && AreReady())
 		{
 			slotUpdate_ = nullptr;
 			signalLoaded_->Run();

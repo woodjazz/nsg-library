@@ -49,7 +49,7 @@ namespace NSG
         const Frustum* frustum_;
     };
 
-    class  RayOctreeQuery  : public OctreeQuery
+    class RayOctreeQuery  : public OctreeQuery
     {
     public:
         RayOctreeQuery(std::vector<SceneNode*>& result, const Ray& ray);
