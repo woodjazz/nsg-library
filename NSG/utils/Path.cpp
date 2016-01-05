@@ -130,6 +130,10 @@ namespace NSG
 
     void Path::ReDoState()
     {
+        #if defined(EMSCRIPTEN)
+        Path::ReplaceString(filePath_, "%20", " ");
+        #endif
+
         Path::ReplaceChar(filePath_, '\\', '/');
         path_ = Path::ExtractPath(filePath_);
         filename_ = Path::ExtractFilename(filePath_, true);
@@ -164,6 +168,18 @@ namespace NSG
             filePath.replace(last_slash_idx, 1, 1, to);
         }
     }
+
+    void Path::ReplaceString(std::string& filePath, const std::string& from, const std::string& to)
+    {
+        for (;;)
+        {
+            auto idx = filePath.find(from);
+            if (std::string::npos == idx) break;
+            auto n = from.length();
+            filePath.replace(idx, n, to);
+        }
+    }
+
 
     std::string Path::ExtractPath(const std::string& filePath)
     {
@@ -299,7 +315,7 @@ namespace NSG
     std::ostream& operator << (std::ostream& s , const Path& obj)
     {
         s << "IsRelativePath=" << std::boolalpha << obj.IsPathRelative();
-        s << std::resetiosflags(std::ios_base::basefield) <<"\n";
+        s << std::resetiosflags(std::ios_base::basefield) << "\n";
         s << "FilePath=" << obj.GetFilePath() << "\n";
         s << "FullAbsoluteFilePath=" << obj.GetFullAbsoluteFilePath() << "\n";
         s << "Path=" << obj.GetPath() << "\n";

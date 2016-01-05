@@ -61,6 +61,7 @@ namespace NSG
         static std::string GetCurrentDir();
         static const std::string& GetBasePath();
         static void ReplaceChar(std::string& filePath, char from, char to);
+        static void ReplaceString(std::string& filePath, const std::string& from, const std::string& to);
         static std::string ExtractPath(const std::string& filePath);
         static std::string ExtractFilename(const std::string& filePath, bool extension);
         static std::string GetLowercaseFileExtension(const std::string& filePath);
