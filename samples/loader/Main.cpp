@@ -77,13 +77,11 @@ int NSG_MAIN(int argc, char* argv[])
 
         const char* items[] =
         {
-            //"fog",
             "physics",
             "shadowdir",
             "shadowpoint",
             "shadowspot",
-            "transparency",
-            //"uvs"
+            "transparency"
         };
 
         ImGui::Text("Scenes:");

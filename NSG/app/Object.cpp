@@ -103,9 +103,9 @@ namespace NSG
             if (isValid_)
             {
                 CHECK_ASSERT(!resourcesAllocated_);
-                LOGI("Allocating resources for %s...", GetNameType().c_str());
+                LOGI("Begin: Allocating resources for %s", GetNameType().c_str());
                 AllocateResources();
-                LOGI("OK");
+                LOGI("End: Allocating resources for %s", GetNameType().c_str());
                 resourcesAllocated_ = true;
                 signalAllocated_->Run();
             }

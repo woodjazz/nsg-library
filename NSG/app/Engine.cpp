@@ -48,7 +48,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	AppConfiguration Engine::conf_;
+    AppConfiguration Engine::conf_;
 
     Engine::Engine()
         : Tick(conf_.fps_),
@@ -58,7 +58,7 @@ namespace NSG
 
     Engine::~Engine()
     {
-		Engine::Destroy();
+        Engine::Destroy();
     }
 
     void Engine::InitializeTicks()
@@ -67,7 +67,7 @@ namespace NSG
 
     void Engine::BeginTicks()
     {
-       Window::HandleEvents();
+        Window::HandleEvents();
     }
 
     void Engine::DoTick(float delta)
@@ -79,15 +79,15 @@ namespace NSG
 
     void Engine::EndTicks()
     {
-		if(!Window::AreAllWindowsMinimized())
-			RenderFrame();
-		ISignal::FreeFirst(10);
+        if (!Window::AreAllWindowsMinimized())
+            RenderFrame();
+        ISignal::FreeFirst(10);
     }
 
     void Engine::RenderFrame()
     {
-		Engine::SigBeginFrame()->Run();
-		Window::RenderWindows();
+        Engine::SigBeginFrame()->Run();
+        Window::RenderWindows();
     }
 
     int Engine::Run()

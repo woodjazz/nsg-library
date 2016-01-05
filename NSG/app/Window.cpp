@@ -395,8 +395,8 @@ namespace NSG
 
     void Window::SetMainWindow(Window* window)
     {
-        if (mainWindow_ != window)
-            mainWindow_ = window;
+        if (Window::mainWindow_ != window)
+            Window::mainWindow_ = window;
     }
 
     void Window::AddWindow(PWindow window)
@@ -485,9 +485,9 @@ namespace NSG
             }), windows_.end());
         }
 
-        if (!mainWindow_)
+        if (!Window::mainWindow_)
             return false;
-        else if (mainWindow_->IsMinimized())
+        else if (Window::mainWindow_->IsMinimized())
         {
             std::this_thread::sleep_for(Milliseconds(100));
         }

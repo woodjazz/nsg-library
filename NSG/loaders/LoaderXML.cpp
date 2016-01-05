@@ -78,7 +78,7 @@ namespace NSG
 
     void LoaderXML::ReleaseResources()
     {
-		loaded_ = false;
+        loaded_ = false;
     }
 
     pugi::xml_node LoaderXML::GetNode(const std::string& type, const std::string& name) const
@@ -92,65 +92,68 @@ namespace NSG
     bool LoaderXML::AreReady()
     {
         auto total = objects_.size();
-		if (total)
-		{
-			auto obj = *objects_.begin();
-			if (obj->IsReady())
-				objects_.erase(obj);
-			SigProgress()->Run(100.f / total);
-			return false;
-		}
-		return true;
+        if (total)
+        {
+            auto obj = *objects_.begin();
+            if (obj->IsReady())
+                objects_.erase(obj);
+            SigProgress()->Run(100.f / total);
+            return false;
+        }
+        return true;
     }
 
-	void LoaderXML::Load()
-	{
-		if (!loaded_ && IsReady())
-		{
-			resources_ = Object::LoadAll<Resource, ResourceFile>(this, "Resources");
-			objects_.insert(resources_.begin(), resources_.end());
-			sounds_ = Object::LoadAll<Sound, Sound>(this, "Sounds");
-			objects_.insert(sounds_.begin(), sounds_.end());
-			meshes_ = Object::LoadAll<Mesh, ModelMesh>(this, "Meshes");
-			objects_.insert(meshes_.begin(), meshes_.end());
-			materials_ = Object::LoadAll<Material, Material>(this, "Materials");
-			objects_.insert(materials_.begin(), materials_.end());
-			shapes_ = Object::LoadAll<Shape, Shape>(this, "Shapes");
-			objects_.insert(shapes_.begin(), shapes_.end());
-			skeletons_ = Object::LoadAll<Skeleton, Skeleton>(this, "Skeletons");
-			objects_.insert(skeletons_.begin(), skeletons_.end());
-			animations_ = Object::LoadAll<Animation, Animation>(this, "Animations");
-			objects_.insert(animations_.begin(), animations_.end());
-			auto appNode = doc_.child("App");
-			if (appNode)
-			{
-				pugi::xml_node child = appNode.child("Scene");
-				while (child)
-				{
-					std::string sceneName = child.attribute("name").as_string();
-					auto scene = std::make_shared<Scene>(sceneName);
-					scene->Load(child);
-					scenes_.push_back(scene);
-					child = child.next_sibling("Scene");
-				}
-			}
-			loaded_ = true;
-		}
-		else if (IsReady() && AreReady())
-		{
-			slotUpdate_ = nullptr;
-			signalLoaded_->Run();
-			doc_.reset(); // free mem
-		}
-	}
+    void LoaderXML::Load()
+    {
+        if (!loaded_)
+        {
+            if (IsReady())
+            {
+                resources_ = Object::LoadAll<Resource, ResourceFile>(this, "Resources");
+                objects_.insert(resources_.begin(), resources_.end());
+                sounds_ = Object::LoadAll<Sound, Sound>(this, "Sounds");
+                objects_.insert(sounds_.begin(), sounds_.end());
+                meshes_ = Object::LoadAll<Mesh, ModelMesh>(this, "Meshes");
+                objects_.insert(meshes_.begin(), meshes_.end());
+                materials_ = Object::LoadAll<Material, Material>(this, "Materials");
+                objects_.insert(materials_.begin(), materials_.end());
+                shapes_ = Object::LoadAll<Shape, Shape>(this, "Shapes");
+                objects_.insert(shapes_.begin(), shapes_.end());
+                skeletons_ = Object::LoadAll<Skeleton, Skeleton>(this, "Skeletons");
+                objects_.insert(skeletons_.begin(), skeletons_.end());
+                animations_ = Object::LoadAll<Animation, Animation>(this, "Animations");
+                objects_.insert(animations_.begin(), animations_.end());
+                auto appNode = doc_.child("App");
+                if (appNode)
+                {
+                    pugi::xml_node child = appNode.child("Scene");
+                    while (child)
+                    {
+                        std::string sceneName = child.attribute("name").as_string();
+                        auto scene = std::make_shared<Scene>(sceneName);
+                        scene->Load(child);
+                        scenes_.push_back(scene);
+                        child = child.next_sibling("Scene");
+                    }
+                }
+                loaded_ = true;
+            }
+        }
+        else if (AreReady())
+        {
+            slotUpdate_ = nullptr;
+            signalLoaded_->Run();
+            doc_.reset(); // free mem
+        }
+    }
 
     SignalEmpty::PSignal LoaderXML::Load(PResource resource)
     {
         Set(resource);
-		slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
-		{
-			Load();
-		});
+        slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
+        {
+            Load();
+        });
         return signalLoaded_;
     }
 

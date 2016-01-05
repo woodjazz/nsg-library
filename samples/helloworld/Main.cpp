@@ -40,7 +40,6 @@ int NSG_MAIN(int argc, char* argv[])
 	auto atlasTexture = std::make_shared<Texture2D>(atlasResource);
 	font->SetTexture(atlasTexture);
 
-
     auto scene = std::make_shared<Scene>("scene");
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 2));
@@ -60,7 +59,6 @@ int NSG_MAIN(int argc, char* argv[])
 	nodeRightTop->SetMesh(font->GetOrCreateMesh("RT Hello World!!!", RIGHT_ALIGNMENT, TOP_ALIGNMENT));
 	nodeLeftBottom->SetMesh(font->GetOrCreateMesh("LB Hello World!!!", LEFT_ALIGNMENT, BOTTOM_ALIGNMENT));
 	nodeRightBottom->SetMesh(font->GetOrCreateMesh("RB Hello World!!!", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT));
-
 	auto material = Material::Create();
 	material->SetTextMap(font->GetTexture());
 
@@ -75,7 +73,6 @@ int NSG_MAIN(int argc, char* argv[])
     nodeRightTop->SetMaterial(material);
     nodeLeftBottom->SetMaterial(material);
     nodeRightBottom->SetMaterial(material);
-
     //control->AutoZoom();
 
     SceneNode* lastNode = nullptr;

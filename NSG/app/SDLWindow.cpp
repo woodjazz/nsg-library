@@ -454,7 +454,7 @@ namespace NSG
     SDLWindow* SDLWindow::GetWindowFromID(uint32_t windowID)
     {
         #if EMSCRIPTEN
-        return static_cast<SDLWindow*>(mainWindow_);
+        return static_cast<SDLWindow*>(Window::mainWindow_);
         #else
         return static_cast<SDLWindow*>(SDL_GetWindowData(SDL_GetWindowFromID(windowID), InternalPointer));
         #endif
@@ -463,7 +463,7 @@ namespace NSG
     SDLWindow* SDLWindow::GetCurrentWindow()
     {
         #if EMSCRIPTEN
-        return static_cast<SDLWindow*>(mainWindow_);
+        return static_cast<SDLWindow*>(Window::mainWindow_);
         #else
         return static_cast<SDLWindow*>(SDL_GetWindowData(SDL_GL_GetCurrentWindow(), InternalPointer));
         #endif
@@ -565,16 +565,32 @@ namespace NSG
     void SDLWindow::HandleGamepad()
     {
         EmscriptenGamepadEvent gamepadState;
-        emscripten_get_gamepad_status(0, &gamepadState);
-        SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
-        if (gamepadState.connected && window)
+        if (EMSCRIPTEN_RESULT_SUCCESS == emscripten_get_gamepad_status(0, &gamepadState))
         {
-            const auto PRECISION_ERROR = 0.15;
-            for (int i = 0; i < gamepadState.numAxes; i++)
+            static EmscriptenGamepadEvent prevGamepadState = gamepadState;
+            SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
+            if (gamepadState.connected && window)
             {
-                if (std::abs(gamepadState.axis[i]) < PRECISION_ERROR)
-                    gamepadState.axis[i] = 0;
-                window->OnJoystickAxisMotion(gamepadState.index, (JoystickAxis)i, gamepadState.axis[i]);
+                const auto PRECISION_ERROR = 0.15;
+                for (int i = 0; i < gamepadState.numAxes; i++)
+                {
+                    if (std::abs(gamepadState.axis[i]) < PRECISION_ERROR)
+                        gamepadState.axis[i] = 0;
+                    window->OnJoystickAxisMotion(gamepadState.index, (JoystickAxis)i, gamepadState.axis[i]);
+                }
+                for (int i = 0; i < gamepadState.numButtons; i++)
+                {
+                    if (gamepadState.digitalButton[i] != prevGamepadState.digitalButton[i])
+                    {
+                        bool triggered = gamepadState.digitalButton[i] != 0;
+                        auto button = (JoystickButton)i;
+                        if (triggered)
+                            window->OnJoystickDown(gamepadState.index, button);
+                        else
+                            window->OnJoystickUp(gamepadState.index, button);
+                    }
+                }
+                prevGamepadState = gamepadState;
             }
         }
     }
@@ -584,7 +600,7 @@ namespace NSG
     void SDLWindow::HandleTouchUpEvent()
     {
         //SDL_FINGERUP event does not work. This is just a simulation
-        SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+        SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
         const int MaxFingers = 5;
         TouchFingerEvent touchEvent;
         touchEvent.type = TouchFingerEvent::Type::UP;
@@ -737,7 +753,7 @@ namespace NSG
             }
             else if (event.type == SDL_FINGERDOWN || event.type == SDL_FINGERDOWN || event.type == SDL_FINGERMOTION)
             {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;
                 auto x = (int)(event.tfinger.x * window->GetWidth());
                 auto y = (int)(event.tfinger.y * window->GetHeight());
@@ -768,7 +784,7 @@ namespace NSG
             #if defined(IS_TARGET_MOBILE)
             else if (event.type == SDL_MULTIGESTURE)
             {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;
                 float x = event.mgesture.x;
                 float y = event.mgesture.y;
@@ -778,21 +794,21 @@ namespace NSG
             #if !defined(EMSCRIPTEN)
             else if (event.type == SDL_JOYDEVICEADDED)
             {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;
                 auto which = event.jdevice.which;
                 window->OpenJoystick(which);
             }
             else if (event.type == SDL_JOYDEVICEREMOVED)
             {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;
                 auto which = event.jdevice.which;
                 window->CloseJoystick(which);
             }
             else if (event.type == SDL_CONTROLLERBUTTONDOWN)
             {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.cbutton.which)->second;
                 CHECK_ASSERT(state.pad_);
@@ -801,7 +817,7 @@ namespace NSG
             }
             else if (event.type == SDL_CONTROLLERBUTTONUP)
             {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.cbutton.which)->second;
                 CHECK_ASSERT(state.pad_);
@@ -810,7 +826,7 @@ namespace NSG
             }
             else if (event.type == SDL_CONTROLLERAXISMOTION)
             {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.caxis.which)->second;
                 CHECK_ASSERT(state.pad_);
@@ -824,7 +840,7 @@ namespace NSG
 
             else if (event.type == SDL_JOYBUTTONDOWN)
             {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.jbutton.which)->second;
                 if (!state.pad_)
@@ -835,7 +851,7 @@ namespace NSG
             }
             else if (event.type == SDL_JOYBUTTONUP)
             {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.jbutton.which)->second;
                 if (!state.pad_)
@@ -846,7 +862,7 @@ namespace NSG
             }
             else if (event.type == SDL_JOYAXISMOTION)
             {
-                SDLWindow* window = static_cast<SDLWindow*>(mainWindow_);
+                SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;
                 auto& state = window->joysticks_.find(event.jaxis.which)->second;
                 if (!state.pad_)

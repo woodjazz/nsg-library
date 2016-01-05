@@ -1,6 +1,8 @@
+-------------------------------------------------------------------------------
+Engine
+-------------------------------------------------------------------------------
 Copyright (c) 2014-2016 Néstor Silveira Gorski
 
--------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
@@ -16,4 +18,15 @@ appreciated but is not required.
 2. Altered source versions must be plainly marked as such, and must not be
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
+-------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------
+Samples
+-------------------------------------------------------------------------------
+Some samples use artwork from Yo Frankie! (apricot.blender.org)
+Yo Frankie! is licensed under the Creative Commons Attribution license 3.0. 
+In short, this means you can freely reuse and distribute this content, 
+also commercially, for as long you provide a proper attribution.
+The attribution is: (c) copyright Blender Foundation | apricot.blender.org.
 -------------------------------------------------------------------------------
