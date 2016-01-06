@@ -45,7 +45,7 @@ namespace NSG
 		PWeakObject obj_;
 		std::string type_;
 		std::string nameAttValue_;
-		PResource resource_;
+		PResourceFile resource_;
 		pugi::xml_node node_;
 	};
 }

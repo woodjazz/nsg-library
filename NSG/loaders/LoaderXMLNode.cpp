@@ -102,7 +102,13 @@ namespace NSG
     {
 		auto obj = obj_.lock();
 		if (resource_)
-			std::dynamic_pointer_cast<Resource>(obj)->SetBuffer(resource_->GetBuffer());
+		{
+			auto resourceFile = std::dynamic_pointer_cast<ResourceFile>(obj);
+			if(resourceFile)
+				resourceFile->SetPath(resource_->GetPath());
+			else
+				std::dynamic_pointer_cast<Resource>(obj)->SetBuffer(resource_->GetBuffer());
+		}
 		else
             obj->Load(node_);
     }

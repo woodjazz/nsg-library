@@ -130,10 +130,6 @@ namespace NSG
 
     void Path::ReDoState()
     {
-        #if defined(EMSCRIPTEN)
-        Path::ReplaceString(filePath_, "%20", " ");
-        #endif
-
         Path::ReplaceChar(filePath_, '\\', '/');
         path_ = Path::ExtractPath(filePath_);
         filename_ = Path::ExtractFilename(filePath_, true);

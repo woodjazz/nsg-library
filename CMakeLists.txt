@@ -128,7 +128,7 @@ set_property(TARGET imgui PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 ##################################
 # glew
 ##################################
-if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
+if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB AND NOT IS_TARGET_OSX)
 	find_package(OpenGL REQUIRED)
 	add_definitions(-DGLEW_STATIC)
 	include_directories(${DEPENDENCIES_DIR}/glew/include)

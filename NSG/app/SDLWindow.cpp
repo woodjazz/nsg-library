@@ -232,11 +232,19 @@ namespace NSG
         const int BLUE_SIZE = 8;
         const int ALPHA_SIZE = 8;
         const int STENCIL_SIZE = 8;
+        #if 0//defined(IS_TARGET_OSX)
+        const int CONTEXT_MAJOR_VERSION = 3;
+        const int CONTEXT_MINOR_VERSION = 2;
+        const int CONTEXT_PROFILE_CORE = SDL_GL_CONTEXT_PROFILE_CORE;
+        #else
         const int CONTEXT_MAJOR_VERSION = 2;
         const int CONTEXT_MINOR_VERSION = 0;
+        const int CONTEXT_PROFILE_CORE = 0;
+        #endif
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, CONTEXT_MAJOR_VERSION);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, CONTEXT_MINOR_VERSION);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, CONTEXT_PROFILE_CORE);        
 
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, DOUBLE_BUFFER);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, MAX_DEPTH_SIZE);
