@@ -232,20 +232,11 @@ namespace NSG
         const int BLUE_SIZE = 8;
         const int ALPHA_SIZE = 8;
         const int STENCIL_SIZE = 8;
-        #if 0//defined(IS_TARGET_OSX)
-        const int CONTEXT_MAJOR_VERSION = 3;
-        const int CONTEXT_MINOR_VERSION = 2;
-        const int CONTEXT_PROFILE_CORE = SDL_GL_CONTEXT_PROFILE_CORE;
-        #else
         const int CONTEXT_MAJOR_VERSION = 2;
         const int CONTEXT_MINOR_VERSION = 0;
-        const int CONTEXT_PROFILE_CORE = 0;
-        #endif
 
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, CONTEXT_MAJOR_VERSION);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, CONTEXT_MINOR_VERSION);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, CONTEXT_PROFILE_CORE);        
-
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, DOUBLE_BUFFER);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, MAX_DEPTH_SIZE);
         SDL_GL_SetAttribute(SDL_GL_RED_SIZE, RED_SIZE);
@@ -257,15 +248,6 @@ namespace NSG
         #if EMSCRIPTEN
         {
             CHECK_CONDITION( nullptr != SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE));
-            #if 0
-            SDL_Surface* surface = SDL_GetVideoSurface();
-            LOGI("BitsPerPixel=%d", surface->format->BitsPerPixel);
-            LOGI("BytesPerPixel=%d", surface->format->BytesPerPixel);
-            LOGI("Rmask=%d", surface->format->Rmask);
-            LOGI("Gmask=%d", surface->format->Gmask);
-            LOGI("Bmask=%d", surface->format->Bmask);
-            LOGI("Amask=%d", surface->format->Amask);
-            #endif
             isMainWindow_ = true;
             Window::SetMainWindow(this);
             emscripten_set_resize_callback(nullptr, nullptr, false, EmscriptenResizeCallback);

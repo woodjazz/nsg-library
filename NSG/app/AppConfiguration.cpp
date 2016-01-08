@@ -33,8 +33,8 @@ namespace NSG
     #if EMSCRIPTEN
       static const int WindowPosX = 0;
       static const int WindowPosY = 0;
-      static const int WindowWidth = 640;
-      static const int WindowHeight = 480;
+      static const int WindowWidth = 1024;
+      static const int WindowHeight = 768;
     #else
       #if SDL
       static const int WindowPosX = SDL_WINDOWPOS_CENTERED;
