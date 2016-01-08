@@ -8,8 +8,9 @@
 ---------------------------
 BUILDING: ALL PLATFORMS
 ---------------------------
-Install CMake 2.8 or superior
-You need a c++11 compliant compiler
+Install CMake 2.8 or superior.
+
+You need a c++11 compliant compiler.
 
 ---------------------------
 BUILDING: ANDROID
@@ -68,4 +69,4 @@ They can run them in your browser...
 - [momohome](http://woodjazz.github.io/samples/momohome/momohome.html)
 - [planet](http://woodjazz.github.io/samples/planet/planet.html)
 
-For more info see me: [Néstor Silveira in GitHub](http://woodjazz.github.io/)
+For more info see me in: [Néstor Silveira in GitHub](http://woodjazz.github.io/)
