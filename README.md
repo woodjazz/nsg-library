@@ -60,7 +60,6 @@ Install last XCode
 Samples
 -------------------------
 These are some examples (from the samples folder) generated with the Emscripten toolchain.
-They can run them in your browser...
 
 - [animation](http://woodjazz.github.io/samples/animation/animation.html)
 - [loader](http://woodjazz.github.io/samples/loader/loader.html)
