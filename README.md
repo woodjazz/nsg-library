@@ -61,11 +61,11 @@ Samples
 These are some examples (from the samples folder) generated with the Emscripten toolchain.
 They can run them in your browser...
 
-- [animation](/samples/animation/animation.html)
-- [loader](/samples/loader/loader.html)
-- [momo](/samples/momo/momo.html)
-- [momoanimations](/samples/momoanimations/momoanimations.html)
-- [momohome](/samples/momohome/momohome.html)
-- [planet](/samples/planet/planet.html)
+- [animation](http://woodjazz.github.io/samples/animation/animation.html)
+- [loader](http://woodjazz.github.io/samples/loader/loader.html)
+- [momo](http://woodjazz.github.io/samples/momo/momo.html)
+- [momoanimations](http://woodjazz.github.io/samples/momoanimations/momoanimations.html)
+- [momohome](http://woodjazz.github.io/samples/momohome/momohome.html)
+- [planet](http://woodjazz.github.io/samples/planet/planet.html)
 
-For more info see me in [Néstor Silveira in GitHub](http://woodjazz.github.io/)
+For more info see me: [Néstor Silveira in GitHub](http://woodjazz.github.io/)
