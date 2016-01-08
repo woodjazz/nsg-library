@@ -4,8 +4,15 @@
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/6406/badge.svg"/>
 </a>
+
 ---------------------------
-ANDROID
+BUILDING: ALL PLATFORMS
+---------------------------
+Install CMake 2.8 or superior
+You need a c++11 compliant compiler
+
+---------------------------
+BUILDING: ANDROID
 ---------------------------
 
 Install SDK,NDK,Java(JDK 1.7)
@@ -21,7 +28,7 @@ Set the environment variables: ANDROID_SDK, ANDROID_NDK, ANT_HOME and JAVA_HOME
 IMPORTANT NOTE FOR WINDOWS' USERS: use UNIX syntax for paths when setting the environment variables. (Do not use \ use / instead)
 
 -------------------------
-Linux (Debian/Ubuntu)
+BUILDING: Linux (Debian/Ubuntu)
 -------------------------
 apt-get install xorg-dev
 
@@ -30,7 +37,7 @@ apt-get install libglu1-mesa-dev
 apt-get install libasound2-dev
 
 -------------------------
-Emscripten
+BUILDING: Emscripten
 -------------------------
 Install SDK: http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html
 
@@ -39,11 +46,26 @@ Set environment variable: HOME_EMSCRIPTEN
 For chrome you will need a HTTP server. For instance: python -m SimpleHTTPServer 8000
 
 -------------------------
-Windows
+BUILDING: Windows
 -------------------------
-Install Visual Studio
+Install last Visual Studio
 
 -------------------------
-OSX/IOS
+BUILDING: OSX/IOS
 -------------------------
-Install XCode
+Install last XCode
+
+-------------------------
+Samples
+-------------------------
+These are some examples (from the samples folder) generated with the Emscripten toolchain.
+They can run them in your browser...
+
+- [animation](/samples/animation/animation.html)
+- [loader](/samples/loader/loader.html)
+- [momo](/samples/momo/momo.html)
+- [momoanimations](/samples/momoanimations/momoanimations.html)
+- [momohome](/samples/momohome/momohome.html)
+- [planet](/samples/planet/planet.html)
+
+For more info see me in [Néstor Silveira in GitHub](http://woodjazz.github.io/)
