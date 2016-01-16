@@ -25,27 +25,20 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "Object.h"
 #include "pugixml.hpp"
 
 namespace NSG
 {
-	class LoaderXMLNode : public Object
+	class LoaderXMLNode
 	{
 	public:
-		LoaderXMLNode(const std::string& name);
+		LoaderXMLNode(LoaderXML* loaderXML, PObject obj, const std::string& type, const std::string& nameAttValue);
 		~LoaderXMLNode();
-		void Set(LoaderXML* loaderXML, PObject obj, const std::string& type, const std::string& nameAttValue);
 		bool Load();
 	private:
-		bool IsValid() override;
-		void AllocateResources() override;
-		void ReleaseResources() override;
 		LoaderXML* loaderXML_;
 		PWeakObject obj_;
 		std::string type_;
 		std::string nameAttValue_;
-		PResourceFile resource_;
-		pugi::xml_node node_;
 	};
 }

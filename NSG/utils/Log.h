@@ -31,7 +31,7 @@ misrepresented as being the original software.
 #include <string>
 #include <stdlib.h>
 
-#if _WIN32
+#if IS_TARGET_WINDOWS
 #include <windows.h>
 #define snprintf _snprintf
 #endif
@@ -87,7 +87,7 @@ misrepresented as being the original software.
 
 #else //(defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
 
-	#if _WIN32
+	#if IS_TARGET_WINDOWS
 		#define SHOWINDEBUGWINDOW(format, ...) {\
 					int n = snprintf(nullptr, 0, format "\n", ##__VA_ARGS__);\
 					fflush(stdout);\

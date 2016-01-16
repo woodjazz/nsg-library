@@ -92,7 +92,7 @@ namespace NSG
     {
         if (!get_)
         {
-            #if defined(EMSCRIPTEN)
+            #if defined(EMSCRIPTEN) || !defined(SDL)
             {
                 auto filename = path_.GetFilePath();
                 std::ifstream file(filename.c_str(), std::ios::binary);
@@ -105,7 +105,7 @@ namespace NSG
                     file.read(&buffer_[0], filelength);
                     CHECK_ASSERT(file.gcount() == filelength);
                     file.close();
-                    LOGI("%s has been loaded with size=%d", filename.c_str(), buffer_.size());
+                    LOGI("%s has been loaded with size=%u", filename.c_str(), (unsigned)buffer_.size());
                 }
                 else
                 {

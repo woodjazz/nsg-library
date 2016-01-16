@@ -26,12 +26,11 @@ misrepresented as being the original software.
 #include "GUI.h"
 #include "imgui.h"
 #include "Check.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Camera.h"
 #include "Texture2D.h"
 #include "Window.h"
 #include "Engine.h"
-#include "Pass.h"
 #include "Keys.h"
 #include "Program.h"
 #include "Camera.h"
@@ -46,12 +45,11 @@ namespace NSG
 
     GUI::GUI(const std::string& name)
         : Object(name),
-          graphics_(Graphics::GetPtr()),
+          graphics_(RenderingContext::GetPtr()),
           fontTexture_(std::make_shared<Texture2D>(name + "GUIFontTexture")),
-          pass_(std::make_shared<Pass>()),
           program_(Program::GetOrCreate("IMGUI\n")),
-          vBuffer_(std::make_shared<VertexBuffer>(GL_STREAM_DRAW)),
-          iBuffer_(std::make_shared<IndexBuffer>(GL_STREAM_DRAW)),
+          vBuffer_(new VertexBuffer(GL_STREAM_DRAW)),
+          iBuffer_(new IndexBuffer(GL_STREAM_DRAW)),
           window_(nullptr),
           state_(new char[ImGui::GetInternalStateSize()]),
           configured_(false)
@@ -61,10 +59,10 @@ namespace NSG
         camera_ = std::make_shared<Camera>(name + "IMGUICamera");
         program_->Set(camera_.get());
 
-        pass_->SetBlendMode(BLEND_MODE::ALPHA);
-        pass_->EnableScissorTest(false);
-        pass_->EnableDepthTest(false);
-        pass_->SetCullFace(CullFaceMode::DISABLED);
+        pass_.SetBlendMode(BLEND_MODE::ALPHA);
+        pass_.EnableScissorTest(false);
+        pass_.EnableDepthTest(false);
+        pass_.SetCullFace(CullFaceMode::DISABLED);
 
         camera_->EnableOrtho();
         ImGuiIO& io = ImGui::GetIO();
@@ -129,7 +127,7 @@ namespace NSG
         const float height = io.DisplaySize.y;
         camera_->SetWindow(window_);
         camera_->SetOrthoProjection({ 0, width, height, 0, -1, 1 });
-        graphics_->SetupPass(pass_.get());
+        graphics_->SetupPass(&pass_);
         CHECK_CONDITION(graphics_->SetProgram(program_.get()));
         graphics_->SetVertexBuffer(vBuffer_.get());
         graphics_->SetIndexBuffer(iBuffer_.get());

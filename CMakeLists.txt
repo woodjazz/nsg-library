@@ -30,7 +30,7 @@ set (CMAKE_MODULE_PATH ${ROOT_SOURCE_DIR}/cmake/modules) # Set CMake modules sea
 include (Common) # Include NSG cmake common module
 setup_common() #has to be called before anything
 
-set(USE_SDL ON)
+option(USE_SDL "Use SDL" ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ###########################
@@ -165,26 +165,28 @@ set_property(TARGET StanHull PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 ###########################
 # SDL
 ###########################
-add_definitions(-DSDL)
-if((NOT EMSCRIPTEN) AND (NOT USING_BLENDER_FILES)) #EMSCRIPTEN supports/includes SDL 1.2
-	include (CheckIncludeFiles)	
-	set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
-	include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})
-	add_subdirectory(${DEPENDENCIES_DIR}/SDL)
-    if (WIN32)
-        list (APPEND LIBRARIES_2_LINK user32 gdi32 winmm imm32 ole32 oleaut32 version uuid )
-    endif()
+if (USE_SDL)
+	add_definitions(-DSDL)
+	if((NOT EMSCRIPTEN) AND (NOT USING_BLENDER_FILES)) #EMSCRIPTEN supports/includes SDL 1.2
+		include (CheckIncludeFiles)	
+		set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
+		include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})
+		add_subdirectory(${DEPENDENCIES_DIR}/SDL)
+	    if (WIN32)
+	        list (APPEND LIBRARIES_2_LINK user32 gdi32 winmm imm32 ole32 oleaut32 version uuid )
+	    endif()
 
-	###########################
-	# SDL_mixer
-	###########################
-	add_subdirectory(${DEPENDENCIES_DIR}/SDL_mixer)
-	include_directories(${DEPENDENCIES_DIR}/SDL_mixer)
-	list(APPEND LIBRARIES_2_LINK SDL_mixer) # this shall go before SDL to avoid undefined SDL references
-	list(APPEND LIBRARIES_2_LINK SDL)
-	set_property(TARGET SDL_mixer PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-	set_property(TARGET SDL PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-endif()
+		###########################
+		# SDL_mixer
+		###########################
+		add_subdirectory(${DEPENDENCIES_DIR}/SDL_mixer)
+		include_directories(${DEPENDENCIES_DIR}/SDL_mixer)
+		list(APPEND LIBRARIES_2_LINK SDL_mixer) # this shall go before SDL to avoid undefined SDL references
+		list(APPEND LIBRARIES_2_LINK SDL)
+		set_property(TARGET SDL_mixer PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+		set_property(TARGET SDL PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+	endif()
+endif(USE_SDL)
 
 ###########################
 # stb

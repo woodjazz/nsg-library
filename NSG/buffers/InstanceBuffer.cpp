@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "InstanceBuffer.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Batch.h"
 #include "SceneNode.h"
 #include "Util.h"
@@ -35,14 +35,15 @@ namespace NSG
     InstanceBuffer::InstanceBuffer()
         : Buffer(0, 0, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
 		maxInstances_(0),
-		graphics_(Graphics::GetPtr())
+		graphics_(RenderingContext::GetPtr())
     {
     }
 
     InstanceBuffer::~InstanceBuffer()
     {
-		if (graphics_->GetVertexBuffer() == this)
-            graphics_->SetVertexBuffer(nullptr);
+		auto ctx = RenderingContext::GetPtr();
+		if (ctx && ctx->GetVertexBuffer() == this)
+			ctx->SetVertexBuffer(nullptr);
     }
 
     void InstanceBuffer::Unbind()

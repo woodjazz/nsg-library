@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "Util.h"
 #include "Check.h"
-#ifndef WIN32
+#ifndef IS_TARGET_WINDOWS
 #include <unistd.h>
 #include <cerrno>
 #else

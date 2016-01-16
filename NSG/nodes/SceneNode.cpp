@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "SceneNode.h"
 #include "Check.h"
 #include "Skeleton.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Material.h"
 #include "ModelMesh.h"
 #include "Octree.h"

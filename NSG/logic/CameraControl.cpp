@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "Scene.h"
 #include "Frustum.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Ray.h"
 #include "PointOnSphere.h"
 #include "Keys.h"
@@ -60,11 +60,11 @@ namespace NSG
         altKeyDown_ = false;
         shiftKeyDown_ = false;
 
-        auto graphics = Graphics::GetPtr();
+        auto graphics = RenderingContext::GetPtr();
         if (graphics)
             SetWindow(graphics->GetWindow());
 
-        slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
+        slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);

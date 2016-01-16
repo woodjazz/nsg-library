@@ -4,7 +4,7 @@
 #include "TextMesh.h"
 #include "ResourceFile.h"
 #include "Mesh.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Window.h"
 #include "UTF8String.h"
 #include "SharedFromPointer.h"
@@ -25,7 +25,7 @@ namespace NSG
           viewHeight_(0),
           height_(0)
     {
-        auto graphics = Graphics::GetPtr();
+        auto graphics = RenderingContext::GetPtr();
         if(graphics)
         {
             auto window = graphics->GetWindow();

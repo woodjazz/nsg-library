@@ -26,7 +26,7 @@ misrepresented as being the original software.
 
 #include "IndexBuffer.h"
 #include "Types.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Check.h"
 #include <vector>
 #include <algorithm>

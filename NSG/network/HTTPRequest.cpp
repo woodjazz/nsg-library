@@ -33,7 +33,7 @@ misrepresented as being the original software.
 #include "emscripten.h"
 #endif
 
-#if defined(_WIN32)
+#if defined(IS_TARGET_WINDOWS)
 #include <winsock.h>
 #endif
 
@@ -44,7 +44,7 @@ namespace NSG
     {
         InitializeComms()
         {
-            #if defined(_WIN32)
+            #if defined(IS_TARGET_WINDOWS)
             WSADATA data;
             WSAStartup(MAKEWORD(2, 2), &data);
             #endif
@@ -52,7 +52,7 @@ namespace NSG
 
         ~InitializeComms()
         {
-            #if defined(_WIN32)
+            #if defined(IS_TARGET_WINDOWS)
             WSACleanup();
             #endif
         }

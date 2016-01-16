@@ -33,10 +33,10 @@ Editor::Editor()
 	editorCamera_(std::make_shared<Camera>("NSGEditorCamera"))
 {
 	const FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
-	previewFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("PreviewFrameBuffer"), frameBufferFlags);
+	previewFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("PreviewFrameBuffer"), frameBufferFlags));
 	previewFrameBuffer_->SetSize(128, 128);
-	sceneFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("SceneFrameBuffer"), frameBufferFlags);
-	gameFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("GameFrameBuffer"), frameBufferFlags);
+	sceneFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("SceneFrameBuffer"), frameBufferFlags));
+	gameFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("GameFrameBuffer"), frameBufferFlags));
 
     scenePreview_->CreateChild<Camera>();
     auto light = scenePreview_->CreateChild<Light>();
@@ -293,7 +293,7 @@ void Editor::ShowScene()
 
 void Editor::ShowGame()
 {
-    auto graphics = Graphics::GetPtr();
+    auto graphics = RenderingContext::GetPtr();
     auto currentWindow = graphics->GetWindow();
     auto scene = currentWindow->GetScene();
     auto camera = scene->GetMainCamera();
@@ -311,7 +311,7 @@ void Editor::ShowGame()
 
 void Editor::RenderGame()
 {
-	auto graphics = Graphics::GetPtr();
+	auto graphics = RenderingContext::GetPtr();
 	auto currentWindow = graphics->GetWindow();
 	auto scene = currentWindow->GetScene();
 	auto camera = scene->GetMainCamera();
@@ -360,7 +360,7 @@ PTexture Editor::GetMaterialPreview(PMaterial material)
 {
     if (previewFrameBuffer_->IsReady())
     {
-        auto graphics = Graphics::GetPtr();
+        auto graphics = RenderingContext::GetPtr();
         auto angle = 0.2f * Engine::GetPtr()->GetDeltaTime();
         auto q = AngleAxis(angle, Vertex3(0, 1, 0));
         auto rot = previewNode_->GetOrientation();
@@ -384,7 +384,7 @@ PTexture Editor::GetScenePreview(Scene* scene, Camera* camera)
     sceneFrameBuffer_->SetSize((int)size.x, (int)size.y);
     if (sceneFrameBuffer_->IsReady())
     {
-        auto graphics = Graphics::GetPtr();
+        auto graphics = RenderingContext::GetPtr();
         auto oldFrameBuffer = graphics->SetFrameBuffer(sceneFrameBuffer_.get());
         auto currentWindow = graphics->GetWindow();
         auto renderer = Renderer::GetPtr();
@@ -402,7 +402,7 @@ PTexture Editor::GetGamePreview(Scene* scene, Camera* camera)
 {
     if (gameFrameBuffer_->IsReady())
     {
-        auto graphics = Graphics::GetPtr();
+        auto graphics = RenderingContext::GetPtr();
         auto oldFrameBuffer = graphics->SetFrameBuffer(gameFrameBuffer_.get());
         auto currentWindow = graphics->GetWindow();
         auto renderer = Renderer::GetPtr();

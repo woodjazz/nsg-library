@@ -61,32 +61,23 @@ namespace NSG
     {
         std::string name = node.attribute("name").as_string();
         pugi::xml_node dataNode = node.child("data");
-        if (!dataNode)
-        {
-			ResourceFile resFile(name);
-			CHECK_CONDITION(resFile.IsReady());
-            SetBuffer(resFile.GetBuffer());
-        }
-        else
-        {
-			size_t bytes = dataNode.attribute("dataSize").as_uint();
-			std::string buffer;
-			if (bytes)
-			{
-				const pugi::char_t* data = dataNode.child_value();
-				buffer.resize(bytes);
-				memcpy(&buffer[0], data, bytes);
-			}
-
-			std::string decoded_binary;
-			decoded_binary.resize(bytes);
-			base64::base64_decodestate state;
-			base64::base64_init_decodestate(&state);
-			CHECK_ASSERT(bytes < std::numeric_limits<int>::max());
-			auto decoded_length = base64::base64_decode_block(buffer.c_str(), (int)bytes, &decoded_binary[0], &state);
-			decoded_binary.resize(decoded_length);
-			SetBuffer(decoded_binary);
-        }
+        CHECK_ASSERT(dataNode);
+		size_t bytes = dataNode.attribute("dataSize").as_uint();
+		std::string buffer;
+		if (bytes)
+		{
+			const pugi::char_t* data = dataNode.child_value();
+			buffer.resize(bytes);
+			memcpy(&buffer[0], data, bytes);
+		}
+		std::string decoded_binary;
+		decoded_binary.resize(bytes);
+		base64::base64_decodestate state;
+		base64::base64_init_decodestate(&state);
+		CHECK_ASSERT(bytes < std::numeric_limits<int>::max());
+		auto decoded_length = base64::base64_decode_block(buffer.c_str(), (int)bytes, &decoded_binary[0], &state);
+		decoded_binary.resize(decoded_length);
+		SetBuffer(decoded_binary);
     }
 
     void Resource::ReleaseResources()

@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #include "Engine.h"
 #include "UniformsUpdate.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Window.h"
 #include "FileSystem.h"
 #include "Resource.h"
@@ -58,7 +58,6 @@ namespace NSG
 
     Engine::~Engine()
     {
-        Engine::Destroy();
     }
 
     void Engine::InitializeTicks()
@@ -150,5 +149,8 @@ namespace NSG
         Program::Clear();
         LoaderXML::Clear();
         ISignal::FreeAllDestroyedSlots();
+		auto ctx = RenderingContext::GetPtr();
+		if (ctx)
+			ctx->ResetCachedState();
     }
 }

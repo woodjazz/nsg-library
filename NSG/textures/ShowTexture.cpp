@@ -29,8 +29,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "QuadMesh.h"
 #include "Camera.h"
-#include "Pass.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Program.h"
 #include "Scene.h"
 #include "SceneNode.h"
@@ -43,8 +42,7 @@ namespace NSG
     {
         material_ = Material::GetOrCreate(GetUniqueName("NSGShowTexture"));
         //material->SetSerializable(false);
-        pass_ = std::make_shared<Pass>();
-        pass_->EnableDepthTest(false);
+        pass_.EnableDepthTest(false);
     }
 
     ShowTexture::~ShowTexture()
@@ -66,6 +64,6 @@ namespace NSG
 
     void ShowTexture::Show()
     {
-        Renderer::GetPtr()->Render(pass_.get(), QuadMesh::GetNDC().get(), material_.get());
+        Renderer::GetPtr()->Render(&pass_, QuadMesh::GetNDC().get(), material_.get());
     }
 }

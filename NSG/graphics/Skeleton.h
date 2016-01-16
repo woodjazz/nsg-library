@@ -37,24 +37,18 @@ namespace NSG
     public:
 		Skeleton(const std::string& name);
         virtual ~Skeleton();
-        void SetScene(PWeakScene scene) { scene_ = scene; }
-		void SetShaderOrder(const std::vector<std::string>& shaderOrder) { shaderOrder_ = shaderOrder; }
 		size_t GetNumberOfBones() const;
         void Save(pugi::xml_node& node);
         void Load(const pugi::xml_node& node) override;
 		const std::vector<std::string>& GetShaderOrder() const { return shaderOrder_; }
-        const std::string& GetName() const { return name_; }
-		void SetBoneOffsetMatrix(const std::string& name, const Matrix4& offset);
 		const Matrix4& GetBoneOffsetMatrix(const std::string& name) const;
 		bool IsEmpty() const { return shaderOrder_.empty(); }
 		static void SaveSkeletons(pugi::xml_node& node);
 		void Set(PResource resource);
-		void AddRootBone(PBone bone);
 		void CreateBonesFor(PSceneNode sceneNode) const;
-		PBone GetBone(const std::string& name) const;
     private:
+		void SetBoneOffsetMatrix(const std::string& name, const Matrix4& offset);
 		void CreateBonesFor(PNode parent, PBone bone) const;
-        PWeakScene scene_;
         std::vector<std::string> shaderOrder_;
 		// Offset matrix that converts from vertex space to bone space
 		std::map<std::string, Matrix4> offsets_;

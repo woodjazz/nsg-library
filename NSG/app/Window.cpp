@@ -31,13 +31,14 @@ misrepresented as being the original software.
 #include "SignalSlots.h"
 #include "TextMesh.h"
 #include "Scene.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Music.h"
 #include "FrameBuffer.h"
 #include "Program.h"
 #include "Material.h"
 #include "ShowTexture.h"
 #include "SDLWindow.h"
+#include "WinWindow.h"
 #include "Keys.h"
 #include "Texture.h"
 #include "UTF8String.h"
@@ -48,7 +49,7 @@ misrepresented as being the original software.
 #include "imgui.h"
 #include <algorithm>
 #include <thread>
-
+#include <memory>
 #ifndef __GNUC__
 #include <codecvt>
 #endif
@@ -68,6 +69,8 @@ namespace NSG
           height_(0),
           filtersEnabled_(true),
           scene_(nullptr),
+          graphics_(nullptr),
+          renderer_(nullptr),
           signalViewChanged_(new Signal<int, int>()),
           signalFloatFloat_(new Signal<float, float>()),
           signalMouseMoved_(new Signal<int, int>()),
@@ -102,9 +105,16 @@ namespace NSG
     {
         if (Window::AllowWindowCreation())
         {
+            #if defined(SDL)
             auto window = std::make_shared<SDLWindow>(name, flags);
+            #elif defined(IS_TARGET_WINDOWS)
+            auto window = std::make_shared<WinWindow>(name, flags);
+            #else
+#error("Unknown platform!!!")
+            #endif
             Window::AddWindow(window);
             return window;
+
         }
         return nullptr;
     }
@@ -113,7 +123,13 @@ namespace NSG
     {
         if (Window::AllowWindowCreation())
         {
+            #if defined(SDL)
             auto window = std::make_shared<SDLWindow>(name, x, y, width, height, flags);
+            #elif defined(IS_TARGET_WINDOWS)
+            auto window = std::make_shared<WinWindow>(name, x, y, width, height, flags);
+            #else
+#error("Unknown platform!!!")
+            #endif
             Window::AddWindow(window);
             return window;
         }
@@ -125,11 +141,11 @@ namespace NSG
         CHECK_ASSERT(!frameBuffer_);
         FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH | FrameBuffer::Flag::DEPTH_USE_TEXTURE));
         //frameBufferFlags |= FrameBuffer::STENCIL;
-        frameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("WindowFrameBuffer"), frameBufferFlags);
+        frameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("WindowFrameBuffer"), frameBufferFlags));
         frameBuffer_->SetWindow(this);
 
         CHECK_ASSERT(!filterFrameBuffer_);
-        filterFrameBuffer_ = std::make_shared<FrameBuffer>(GetUniqueName("WindowFilterFrameBuffer"), frameBufferFlags);
+        filterFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("WindowFilterFrameBuffer"), frameBufferFlags));
         filterFrameBuffer_->SetDepthTexture(frameBuffer_->GetDepthTexture());
         filterFrameBuffer_->SetWindow(this);
 
@@ -178,7 +194,7 @@ namespace NSG
                     graphics_->SetFrameBuffer(filterFrameBuffer_.get());
                     filter->SetTexture(MaterialTexture::DIFFUSE_MAP, frameBuffer_->GetColorTexture());
                     filter->FlipYTextureCoords(true);
-                    Renderer::GetPtr()->Render(showMap_->GetPass().get(), QuadMesh::GetNDC().get(), filter.get());
+                    Renderer::GetPtr()->Render(&showMap_->GetPass(), QuadMesh::GetNDC().get(), filter.get());
                     graphics_->SetFrameBuffer(frameBuffer_.get());
                     showMap_->SetColortexture(filterFrameBuffer_->GetColorTexture());
                     showMap_->Show();
@@ -225,7 +241,7 @@ namespace NSG
 
     void Window::OnReady()
     {
-        graphics_ = Graphics::Create();
+        graphics_ = RenderingContext::Create();
         renderer_ = Renderer::Create();
         graphics_->SetWindow(this);
         CreateFrameBuffer(); // used when filters are enabled
@@ -259,6 +275,11 @@ namespace NSG
     void Window::OnMouseMove(int x, int y)
     {
         signalMouseMoved_->Run(x, y);
+        auto mx = (float)x;
+        auto my = (float)y;
+        auto width = GetWidth();
+        auto height = GetHeight();
+        OnMouseMove(-1 + 2 * mx / width, 1 + -2 * my / height);
     }
 
     void Window::OnMouseDown(int button, float x, float y)
@@ -269,6 +290,11 @@ namespace NSG
     void Window::OnMouseDown(int button, int x, int y)
     {
         signalMouseDownInt_->Run(button, x, y);
+        float mx = (float)x;
+        float my = (float)y;
+        auto width = GetWidth();
+        auto height = GetHeight();
+        OnMouseDown(button, -1 + 2 * mx / width, 1 + -2 * my / height);
     }
 
     void Window::OnMouseUp(int button, float x, float y)
@@ -279,6 +305,11 @@ namespace NSG
     void Window::OnMouseUp(int button, int x, int y)
     {
         signalMouseUpInt_->Run(button, x, y);
+        float mx = (float)x;
+        float my = (float)y;
+        auto width = GetWidth();
+        auto height = GetHeight();
+        OnMouseUp(button, -1 + 2 * mx / width, 1 + -2 * my / height);
     }
 
     void Window::OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
@@ -498,8 +529,10 @@ namespace NSG
     {
         #if SDL
         SDLWindow::HandleEvents();
+        #elif IS_TARGET_WINDOWS
+        WinWindow::HandleEvents();
         #else
-        CHEKC_ASSERT(!"So far only support for SDL...!!!");
+#error("Unknown platform!!!")
         #endif
     }
 
@@ -511,5 +544,30 @@ namespace NSG
     void Window::NotifyOneWindow2Remove()
     {
         ++nWindows2Remove_;
+    }
+
+    void Window::SetupImgui()
+    {
+        // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
+        ImGuiIO& io = ImGui::GetIO();
+        io.KeyMap[ImGuiKey_Tab] = NSG_KEY_TAB;
+        io.KeyMap[ImGuiKey_LeftArrow] = NSG_KEY_LEFT;
+        io.KeyMap[ImGuiKey_RightArrow] = NSG_KEY_RIGHT;
+        io.KeyMap[ImGuiKey_UpArrow] = NSG_KEY_UP;
+        io.KeyMap[ImGuiKey_DownArrow] = NSG_KEY_DOWN;
+        io.KeyMap[ImGuiKey_PageUp] = NSG_KEY_PAGEUP;
+        io.KeyMap[ImGuiKey_PageDown] = NSG_KEY_PAGEDOWN;
+        io.KeyMap[ImGuiKey_Home] = NSG_KEY_HOME;
+        io.KeyMap[ImGuiKey_End] = NSG_KEY_END;
+        io.KeyMap[ImGuiKey_Delete] = NSG_KEY_DELETE;
+        io.KeyMap[ImGuiKey_Backspace] = NSG_KEY_BACKSPACE;
+        io.KeyMap[ImGuiKey_Enter] = NSG_KEY_ENTER;
+        io.KeyMap[ImGuiKey_Escape] = NSG_KEY_ESC;
+        io.KeyMap[ImGuiKey_A] = NSG_KEY_A;
+        io.KeyMap[ImGuiKey_C] = NSG_KEY_C;
+        io.KeyMap[ImGuiKey_V] = NSG_KEY_V;
+        io.KeyMap[ImGuiKey_X] = NSG_KEY_X;
+        io.KeyMap[ImGuiKey_Y] = NSG_KEY_Y;
+        io.KeyMap[ImGuiKey_Z] = NSG_KEY_Z;
     }
 }

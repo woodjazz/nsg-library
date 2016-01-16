@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Mesh.h"
 #include "SceneNode.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Pass.h"
 #include "RigidBody.h"
 #include "Check.h"
@@ -71,7 +71,7 @@ namespace NSG
 
 	bool Batch::AllowInstancing() const
 	{
-		return Graphics::GetPtr()->HasInstancedArrays() && allowInstancing_ && mesh_->IsStatic();
+		return RenderingContext::GetPtr()->HasInstancedArrays() && allowInstancing_ && mesh_->IsStatic();
 	}
 
 	void Batch::Clear()

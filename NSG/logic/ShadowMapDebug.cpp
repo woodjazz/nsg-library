@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "ShadowMapDebug.h"
 #include "Light.h"
 #include "ShadowCamera.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Keys.h"
 #include "Window.h"
 #include "Renderer.h"
@@ -42,11 +42,11 @@ namespace NSG
     {
         CHECK_ASSERT(light_);
 
-        auto graphics = Graphics::GetPtr();
+        auto graphics = RenderingContext::GetPtr();
         if (graphics)
             SetWindow(graphics->GetWindow());
 
-        slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
+        slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);

@@ -40,7 +40,7 @@ misrepresented as being the original software.
 #include "glm/gtx/matrix_decompose.hpp"
 #include "glm/gtx/vector_angle.hpp"
 #include "SharedPointers.h"
-#include "GLES2Includes.h"
+#include "GLIncludes.h"
 #include "FlagSet.h"
 #include "SignalSlots.h"
 #include <string>

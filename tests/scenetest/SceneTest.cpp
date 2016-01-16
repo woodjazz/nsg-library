@@ -516,32 +516,32 @@ static void Test09()
     std::vector<SceneNode*> visibles;
     scene->GetVisibleNodes(camera.get(), visibles);
 	CHECK_CONDITION(visibles.size() == Boxes);
-	std::vector<PBatch> batches;
+	std::vector<Batch> batches;
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
 	CHECK_CONDITION(batches.size() == 1);
-	CHECK_CONDITION(batches[0]->GetMesh() == boxMesh.get());
+	CHECK_CONDITION(batches[0].GetMesh() == boxMesh.get());
 
 	auto material2 = Material::Create();
 	boxes[0]->SetMaterial(material2);
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
 	CHECK_CONDITION(batches.size() == 2);
-	CHECK_CONDITION(batches[0]->GetMesh() == boxMesh.get());
-	CHECK_CONDITION(batches[1]->GetMesh() == boxMesh.get());
-	CHECK_CONDITION(batches[0]->GetMaterial() != batches[1]->GetMaterial());
+	CHECK_CONDITION(batches[0].GetMesh() == boxMesh.get());
+	CHECK_CONDITION(batches[1].GetMesh() == boxMesh.get());
+	CHECK_CONDITION(batches[0].GetMaterial() != batches[1].GetMaterial());
 
     camera->SetGlobalLookAtPosition(Vector3(0, 0, 1));
     scene->GetVisibleNodes(camera.get(), visibles);
 	CHECK_CONDITION(visibles.size() == Spheres);
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
 	CHECK_CONDITION(batches.size() == 1);
-	CHECK_CONDITION(batches[0]->GetMesh() == sphereMesh.get());
+	CHECK_CONDITION(batches[0].GetMesh() == sphereMesh.get());
 	for (int i = 0; i < Spheres / 2; i++)
 		spheres[i]->SetMaterial(material2);
 	Renderer::GetPtr()->GenerateBatches(visibles, batches);
 	CHECK_CONDITION(batches.size() == 2);
-	CHECK_CONDITION(batches[0]->GetMesh() == sphereMesh.get());
-	CHECK_CONDITION(batches[1]->GetMesh() == sphereMesh.get());
-	CHECK_CONDITION(batches[0]->GetMaterial() != batches[1]->GetMaterial());
+	CHECK_CONDITION(batches[0].GetMesh() == sphereMesh.get());
+	CHECK_CONDITION(batches[1].GetMesh() == sphereMesh.get());
+	CHECK_CONDITION(batches[0].GetMaterial() != batches[1].GetMaterial());
 }
 
 static void Test0A()

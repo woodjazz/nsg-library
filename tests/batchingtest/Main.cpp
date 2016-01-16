@@ -30,7 +30,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create("window", 0, 0, 10, 10);
-	if (!Graphics::GetPtr()->HasInstancedArrays())
+	if (!RenderingContext::GetPtr()->HasInstancedArrays())
 		return 0;
     auto scene = std::make_shared<Scene>();
 	window->SetScene(scene.get());

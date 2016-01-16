@@ -118,11 +118,6 @@ namespace NSG
             obj->Save(child);
     }
 
-    void Skeleton::AddRootBone(PBone bone)
-    {
-        rootBones_.push_back(bone);
-    }
-
     void Skeleton::CreateBonesFor(PNode parent, PBone bone) const
     {
     	auto clone = bone->Clone();
@@ -135,17 +130,6 @@ namespace NSG
     {
         for (auto node : rootBones_)
             CreateBonesFor(sceneNode, node);
-    }
-
-    PBone Skeleton::GetBone(const std::string& name) const
-    {
-        for (auto bone : rootBones_)
-        {
-            auto child = bone->GetChild<Bone>(name, true);
-            if (child)
-                return child;
-        }
-        return nullptr;
     }
 
 	size_t Skeleton::GetNumberOfBones() const

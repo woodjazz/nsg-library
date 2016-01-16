@@ -4,7 +4,7 @@
 #include "Camera.h"
 #include "Texture2D.h"
 #include "Scene.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Pass.h"
 #include "Program.h"
 #include "Util.h"

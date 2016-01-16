@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #include "Camera.h"
 #include "Frustum.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Util.h"
 #include "Ray.h"
 #include "Program.h"
@@ -67,7 +67,7 @@ namespace NSG
           hasUserOrthoProjection_(false)
     {
         SetInheritScale(false);
-        slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
+        slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);

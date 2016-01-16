@@ -30,7 +30,6 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
-	class BufferManager;
 	class VertexBuffer : public Buffer
 	{
 	public:

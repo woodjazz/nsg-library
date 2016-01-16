@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if defined(WIN32) && defined(_MSC_VER)
+#if defined(IS_TARGET_WINDOWS) && defined(_MSC_VER)
 //http://msdn.microsoft.com/en-us/library/x98tx3cf.aspx
 // {,,msvcr100d.dll}_crtBreakAlloc
 #include <stdio.h>

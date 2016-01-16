@@ -5,7 +5,7 @@
 #include "Light.h"
 #include "Octree.h"
 #include "OctreeQuery.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Constants.h"
 #include "Material.h"
 #include "Mesh.h"
@@ -43,7 +43,7 @@ namespace NSG
           fogDepth_(25),
           fogHeight_(0)
     {
-        slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
+        slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);
@@ -83,7 +83,7 @@ namespace NSG
         slotPSBeingDestroy_ = nullptr;
         if (window_ && window_->GetScene() == this)
             window_->SetScene(nullptr);
-        auto graphics = Graphics::GetPtr();
+        auto graphics = RenderingContext::GetPtr();
         if (graphics)
         {
             auto window = graphics->GetWindow();

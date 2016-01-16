@@ -99,11 +99,14 @@ namespace NSG
     {
 		if (type_ == PhysicsShape::SH_EMPTY)
 			return true;
-
 		auto mesh = mesh_.lock();
-		if(mesh)
-			bb_ = mesh->GetBB(); 
-
+		if (mesh)
+		{
+			if (mesh->IsReady())
+				bb_ = mesh->GetBB();
+			else
+				return false;
+		}
         return bb_.IsDefined();
     }
 

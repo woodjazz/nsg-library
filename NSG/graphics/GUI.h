@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Pass.h"
 #include "Util.h"
 #include "StrongFactory.h"
 #include "Object.h"
@@ -45,7 +46,7 @@ namespace NSG
 		bool IsValid() override;
 		void Setup();
 		void InternalDraw(ImDrawData* draw_data);
-		PGraphics graphics_;
+		RenderingContext* graphics_;
 		PTexture2D fontTexture_;
 		SignalKey::PSlot slotKey_;
 		SignalText::PSlot slotText_;
@@ -56,7 +57,7 @@ namespace NSG
 		SignalMultiGesture::PSlot slotMultiGesture_;
 		SignalEmpty::PSlot slotTextureAllocated_;
 		SignalEmpty::PSlot slotTextureReleased_;
-		PPass pass_;
+		Pass pass_;
 		PProgram program_;
 		PVertexBuffer vBuffer_;
 		PIndexBuffer iBuffer_;

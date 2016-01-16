@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "ProceduralMesh.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 
 namespace NSG
 {
@@ -35,6 +35,6 @@ namespace NSG
 
 	bool ProceduralMesh::IsValid() 
 	{ 
-		return Graphics::GetPtr() != nullptr;// && Graphics::GetPtr()->GetWindow();
+		return RenderingContext::GetPtr() != nullptr;// && RenderingContext::GetPtr()->GetWindow();
 	}
 }

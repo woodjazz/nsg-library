@@ -35,7 +35,7 @@ static const char* TRANSFORMS_GLSL = \
 "		}	\n"\
 "		mat4 GetInstancedMatrix()\n"\
 "		{\n"\
-"		    // See Graphics::UpdateBatchBuffer\n"\
+"		    // See RenderingContext::UpdateBatchBuffer\n"\
 "		    // Since we are using rows instead of cols the instancing model matrix is a transpose\n"\
 "		    const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);\n"\
 "		    return Transpose(mat4(a_mMatrixRow0, a_mMatrixRow1, a_mMatrixRow2, lastColumn));\n"\

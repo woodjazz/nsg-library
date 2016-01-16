@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "ModelMesh.h"
 #include "Types.h"
 #include "Check.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "pugixml.hpp"
 
 namespace NSG

@@ -39,7 +39,7 @@ misrepresented as being the original software.
 #include <string>
 #include <cstdio>
 #include <thread>
-#ifndef WIN32
+#ifndef IS_TARGET_WINDOWS
 #include <unistd.h>
 #include <cerrno>
 #else

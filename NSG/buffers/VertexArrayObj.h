@@ -34,7 +34,7 @@ namespace NSG
 {
 	struct VAOKey
 	{
-		bool allowInstancing;
+		InstanceBuffer* instancesBuffer;
 		Program* program;
 		Mesh* mesh;
         bool solid;
@@ -62,6 +62,6 @@ namespace NSG
         SignalEmpty::PSlot slotMeshReleased_;
 		typedef std::map<VAOKey, PVertexArrayObj> VAOMap;
 		static VAOMap vaoMap_;
-        PGraphics graphics_;
+        RenderingContext* graphics_;
     };
 }

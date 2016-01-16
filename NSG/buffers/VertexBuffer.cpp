@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "VertexBuffer.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Check.h"
 
 namespace NSG

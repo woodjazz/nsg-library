@@ -104,24 +104,24 @@ namespace NSG
             Stop();
             Mix_PlayMusic(music_, loop ? -1 : 0);
             isPlaying_ = true;
-            return true;
+#else
+			isPlaying_ = true;
 #endif
+			return true;
         }
-
         return false;
     }
 
     void Music::Stop()
     {
-#ifdef SDL
         if (IsPlaying())
         {
+#ifdef SDL
             if (Mix_PlayingMusic())
                 Mix_HaltMusic();
-
+#endif
             isPlaying_ = false;
         }
-#endif
     }
 
     void Music::Pause()

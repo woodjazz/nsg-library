@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "Shader.h"
 #include <stdlib.h>
 #include <stdio.h>
-#if !defined(__APPLE__)
+#if !defined(IS_TARGET_APPLE)
 #include <malloc.h>
 #endif
 #include <assert.h>

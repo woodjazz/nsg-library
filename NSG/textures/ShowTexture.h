@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "SharedPointers.h"
+#include "Pass.h"
 
 namespace NSG
 {
@@ -36,10 +37,10 @@ namespace NSG
         void SetColortexture(PTexture texture);
         void SetFont(PTexture texture);
         void Show();
-        PPass GetPass() const { return pass_; }
+        const Pass& GetPass() const { return pass_; }
         PMaterial GetMaterial() const { return material_; }
     private:
-        PPass pass_;
+        Pass pass_;
         PMaterial material_;
     };
 }

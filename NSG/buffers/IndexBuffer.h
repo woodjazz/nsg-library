@@ -29,7 +29,6 @@ misrepresented as being the original software.
 
 namespace NSG 
 {
-	class BufferManager;
 	class IndexBuffer : public Buffer
 	{
 	public:

@@ -28,7 +28,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Texture2D.h"
 #include "TextureCube.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Util.h"
 #include "Window.h"
 #include <algorithm>
@@ -91,7 +91,7 @@ namespace NSG
 
         if (flags_ & Flag::DEPTH_USE_TEXTURE)
         {
-            if (Graphics::GetPtr()->HasDepthTexture())
+            if (RenderingContext::GetPtr()->HasDepthTexture())
             {
                 depthTexture_->SetSize(width_, height_);
                 if (flags_ & Flag::STENCIL)
@@ -129,7 +129,7 @@ namespace NSG
 
         glGenFramebuffers(1, &framebuffer_);
 
-		auto graphics = Graphics::GetPtr();
+		auto graphics = RenderingContext::GetPtr();
         auto oldFrameBuffer = graphics->SetFrameBuffer(this, GetDefaultTextureTarget());
 
         CHECK_GL_STATUS();
@@ -212,7 +212,7 @@ namespace NSG
     {
         CHECK_GL_STATUS();
 
-        Graphics::GetPtr()->UnboundTextures();
+        RenderingContext::GetPtr()->UnboundTextures();
 
         if (stencilRenderBuffer_)
         {
@@ -238,7 +238,7 @@ namespace NSG
 
         framebuffer_ = 0;
 
-        //Graphics::GetPtr()->SetFrameBuffer(nullptr);
+        //RenderingContext::GetPtr()->SetFrameBuffer(nullptr);
 
         CHECK_GL_STATUS();
     }
@@ -246,7 +246,7 @@ namespace NSG
     void FrameBuffer::SetSize(int width, int height)
     {
         CHECK_ASSERT(width >= 0 && height >= 0);
-        auto maxSize = Graphics::GetPtr()->GetMaxTextureSize();
+        auto maxSize = RenderingContext::GetPtr()->GetMaxTextureSize();
         width = Clamp(width, 0, maxSize);
         height = Clamp(height, 0, maxSize);
 
@@ -255,7 +255,7 @@ namespace NSG
             originalWidth_ = width;
             originalHeight_ = height;
 
-            if (!Graphics::GetPtr()->IsTextureSizeCorrect(width, height))
+            if (!RenderingContext::GetPtr()->IsTextureSizeCorrect(width, height))
                 GetPowerOfTwoValues(width, height);
 
             width_ = width;
@@ -309,7 +309,7 @@ namespace NSG
         if (flags_ & Flag::COLOR_USE_TEXTURE)
         {
             CHECK_ASSERT(colorTexTarget != TextureTarget::UNKNOWN);
-            CHECK_ASSERT(this == Graphics::GetPtr()->GetFrameBuffer());
+            CHECK_ASSERT(this == RenderingContext::GetPtr()->GetFrameBuffer());
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, (GLenum)colorTexTarget, colorTexture_->GetID(), 0);
         }
 

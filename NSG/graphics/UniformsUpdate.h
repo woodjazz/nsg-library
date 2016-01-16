@@ -29,11 +29,11 @@ namespace NSG
 {
 	struct UniformsUpdate
 	{
-		UniformsUpdate();
-		virtual ~UniformsUpdate();
-		bool UniformsNeedUpdate() const { return needUpdate_; }
-		void SetUniformsNeedUpdate() const { needUpdate_ = true; }
-		void ClearUniform() { needUpdate_ = false; }
+		UniformsUpdate() {}
+		~UniformsUpdate() {}
+		inline bool UniformsNeedUpdate() const { return needUpdate_; }
+		inline void SetUniformsNeedUpdate() const { needUpdate_ = true; }
+		inline void ClearUniform() { needUpdate_ = false; }
 	private:
 		mutable bool needUpdate_;
 	};

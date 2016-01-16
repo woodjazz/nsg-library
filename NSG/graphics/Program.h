@@ -195,6 +195,6 @@ namespace NSG
         const Light* light_;
 		const Camera* camera_;
 		const Scene* scene_;
-        PGraphics graphics_;
+        RenderingContext* graphics_;
     };
 }

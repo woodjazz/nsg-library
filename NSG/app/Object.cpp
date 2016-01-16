@@ -98,7 +98,7 @@ namespace NSG
     {
         if (!isValid_)
         {
-            isValid_ = (!nodeLoader_ || nodeLoader_->IsReady()) && IsValid();
+            isValid_ = (!nodeLoader_ || nodeLoader_->Load()) && IsValid();
 
             if (isValid_)
             {
@@ -139,13 +139,4 @@ namespace NSG
             }
         }
     }
-
-    void Object::SetLoader(LoaderXML* loader, const char* collectionType, PObject obj, const std::string& name)
-    {
-        auto nodeLoader = std::make_shared<LoaderXMLNode>(name);
-        nodeLoader->Set(loader, obj, collectionType, name);
-        obj->SetLoader(nodeLoader);
-
-    }
-
 }

@@ -29,6 +29,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    class Buffer;
+
     class Worker;
     typedef std::shared_ptr<Worker> PWorker;
 
@@ -83,8 +85,7 @@ namespace NSG
     typedef std::shared_ptr<Scene> PScene;
     typedef std::weak_ptr<Scene> PWeakScene;
 
-    class Graphics;
-    typedef std::shared_ptr<Graphics> PGraphics;
+    class RenderingContext;
 
     class Frustum;
     typedef std::shared_ptr<Frustum> PFrustum;
@@ -99,29 +100,8 @@ namespace NSG
     typedef std::shared_ptr<Sound> PSound;
     typedef std::weak_ptr<Sound> PWeakSound;
 
-    class Buffer;
-    typedef std::shared_ptr<Buffer> PBuffer;
-
-    struct Context;
-    typedef std::unique_ptr<Context> PContext;
-
     struct AppConfiguration;
     typedef std::shared_ptr<AppConfiguration> PAppConfiguration;
-
-    class Technique;
-    typedef std::shared_ptr<Technique> PTechnique;
-    typedef std::weak_ptr<Technique> PWeakTechnique;
-
-    class Pass2Texture;
-    typedef std::shared_ptr<Pass2Texture> PPass2Texture;
-
-    class Pass;
-    typedef std::shared_ptr<Pass> PPass;
-
-    class Pass2Stencil;
-    typedef std::shared_ptr<Pass2Stencil> PPass2Stencil;
-
-    typedef std::vector<PPass> PASSES;
 
     namespace FSM
     {
@@ -129,9 +109,8 @@ namespace NSG
         typedef std::shared_ptr<Machine> PMachine;
     }
 
+    class Pass;
     class Batch;
-    typedef std::shared_ptr<Batch> PBatch;
-    typedef std::weak_ptr<Batch> PWeakBatch;
 
     class ResourceFile;
     typedef std::shared_ptr<ResourceFile> PResourceFile;
@@ -158,7 +137,6 @@ namespace NSG
     class Texture2D;
     typedef std::shared_ptr<Texture2D> PTexture2D;
 
-
     class Material;
     typedef std::shared_ptr<Material> PMaterial;
     typedef std::weak_ptr<Material> PWeakMaterial;
@@ -172,12 +150,6 @@ namespace NSG
 
     class App;
     typedef std::unique_ptr<App> PApp;
-
-    struct InternalApp;
-    typedef std::unique_ptr<InternalApp> PInternalApp;
-
-    struct Behavior;
-    typedef std::shared_ptr<Behavior> PBehavior;
 
     class CameraControl;
     typedef std::shared_ptr<CameraControl> PCameraControl;
@@ -210,18 +182,14 @@ namespace NSG
     class EllipseMesh;
     typedef std::shared_ptr<EllipseMesh> PEllipseMesh;
 
-    class Filter;
-    typedef std::shared_ptr<Filter> PFilter;
-    typedef std::weak_ptr<Filter> PWeakFilter;
-
     class FrameBuffer;
-    typedef std::shared_ptr<FrameBuffer> PFrameBuffer;
+    typedef std::unique_ptr<FrameBuffer> PFrameBuffer;
 
     class FragmentShader;
-    typedef std::shared_ptr<FragmentShader> PFragmentShader;
+    typedef std::unique_ptr<FragmentShader> PFragmentShader;
 
     class IndexBuffer;
-    typedef std::shared_ptr<IndexBuffer> PIndexBuffer;
+    typedef std::unique_ptr<IndexBuffer> PIndexBuffer;
 
     class VertexArrayObj;
     typedef std::shared_ptr<VertexArrayObj> PVertexArrayObj;
@@ -269,13 +237,13 @@ namespace NSG
     typedef std::weak_ptr<TextMesh> PWeakTextMesh;
 
     class VertexBuffer;
-    typedef std::shared_ptr<VertexBuffer> PVertexBuffer;
+    typedef std::unique_ptr<VertexBuffer> PVertexBuffer;
 
     class InstanceBuffer;
-    typedef std::shared_ptr<InstanceBuffer> PInstanceBuffer;
+    typedef std::unique_ptr<InstanceBuffer> PInstanceBuffer;
 
     class VertexShader;
-    typedef std::shared_ptr<VertexShader> PVertexShader;
+    typedef std::unique_ptr<VertexShader> PVertexShader;
 
     class Node;
     typedef std::shared_ptr<Node> PNode;
@@ -283,7 +251,6 @@ namespace NSG
 
     class Bone;
     typedef std::shared_ptr<Bone> PBone;
-    typedef std::weak_ptr<Bone> PWeakBone;
 
     class Resource;
     typedef std::shared_ptr<Resource> PResource;
@@ -313,7 +280,6 @@ namespace NSG
     typedef std::shared_ptr<Image> PImage;
 
     class Renderer;
-    typedef std::shared_ptr<Renderer> PRenderer;
 
     class Plane;
     typedef std::shared_ptr<Plane> PPlane;
@@ -325,7 +291,6 @@ namespace NSG
     typedef std::shared_ptr<LoaderXMLNode> PLoaderXMLNode;
 
     class Engine;
-    typedef std::shared_ptr<Engine> PEngine;
 
     class HTTPRequest;
     typedef std::shared_ptr<HTTPRequest> PHTTPRequest;

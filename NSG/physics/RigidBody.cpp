@@ -32,7 +32,7 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "Check.h"
 #include "PhysicsWorld.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Engine.h"
 #include "StringConverter.h"
 #include "pugixml.hpp"

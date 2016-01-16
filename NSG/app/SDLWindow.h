@@ -42,7 +42,6 @@ namespace NSG
         void Destroy() override;
         static void HandleEvents();
         void EnterBackground() override;
-        void EnterForeground() override;
         void RestoreContext();
     private:
         #if defined(EMSCRIPTEN)

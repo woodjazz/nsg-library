@@ -34,18 +34,19 @@ namespace NSG
 	{
 	public:
 
-		static std::shared_ptr<T> Create()
+		static T* Create()
 		{
 	        std::call_once(onceFlag_, [&]()
 	        {
-	            this_ = std::shared_ptr<T>(new T);
+	            this_ = std::unique_ptr<T>(new T);
+	            p_ = this_.get();
 	        });
-	        return this_;
+	        return p_;
 	    }
 
-		static std::shared_ptr<T> GetPtr()
+		inline static T* GetPtr()
 		{
-	        return this_;
+	        return p_;
 	    }
 
 	protected:
@@ -53,15 +54,17 @@ namespace NSG
 		{
 		}
 
-		static void Destroy()
+		~Singleton()
 		{
-			this_ = nullptr;
+			p_ = nullptr;
 		}
 
-		static std::shared_ptr<T> this_;
+		static T* p_;
+		static std::unique_ptr<T> this_;
 		static std::once_flag onceFlag_;
 	};
 
-	template<typename T> std::shared_ptr<T> Singleton<T>::this_;
+	template<typename T> T* Singleton<T>::p_ = nullptr;
+	template<typename T> std::unique_ptr<T> Singleton<T>::this_;
 	template<typename T> std::once_flag Singleton<T>::onceFlag_;
 }

@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "PlayerControl.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Keys.h"
 #include "Window.h"
 #include "Engine.h"
@@ -49,10 +49,10 @@ namespace NSG
           leftFingerId_{false, 0},
           rightFingerId_{false, 0}
     {
-        auto graphics = Graphics::GetPtr();
+        auto graphics = RenderingContext::GetPtr();
         if (graphics)
             SetWindow(graphics->GetWindow());
-        slotWindow_ = Graphics::SigWindow()->Connect([this](Window * window)
+        slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
         {
             if (!window_)
                 SetWindow(window);

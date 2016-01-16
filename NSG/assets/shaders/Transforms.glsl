@@ -35,7 +35,7 @@
 
 		mat4 GetInstancedMatrix()
 		{
-		    // See Graphics::UpdateBatchBuffer
+		    // See RenderingContext::UpdateBatchBuffer
 		    // Since we are using rows instead of cols the instancing model matrix is a transpose
 
 		    const vec4 lastColumn = vec4(0.0, 0.0, 0.0, 1.0);

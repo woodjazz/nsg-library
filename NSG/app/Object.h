@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "LoaderXMLNode.h"
 #include <string>
 #include <functional>
 namespace NSG
@@ -53,7 +54,7 @@ namespace NSG
             auto adder = [&](const std::string& name)
             {
 				auto obj = T:: template GetOrCreateClass<U>(name);
-				Object::SetLoader(loader, collectionType, obj, name);
+				obj->SetLoader(std::make_shared<LoaderXMLNode>(loader, obj, collectionType, name));
 	            result.push_back(obj);
             };
             Object::LoadAll(loader, collectionType, adder);
@@ -65,7 +66,6 @@ namespace NSG
     private:
     	typedef std::function<void(const std::string&)> AdderFunction;
     	static void LoadAll(LoaderXML* loader, const char* collectionType, AdderFunction adder);
-		static void SetLoader(LoaderXML* loader, const char* collectionType, PObject obj, const std::string& name);
         static SignalEmpty::PSignal SigInvalidateAll();
         virtual bool IsValid() { return true; }
         virtual void AllocateResources() {}

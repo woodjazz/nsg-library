@@ -55,7 +55,7 @@ misrepresented as being the original software.
 #include "Texture2D.h"
 #include "Light.h"
 #include "ShadowCamera.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Material.h"
 #include "RectangleMesh.h"
 #include "ShowTexture.h"

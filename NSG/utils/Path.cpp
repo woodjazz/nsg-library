@@ -26,12 +26,12 @@ misrepresented as being the original software.
 #include "Path.h"
 #include "Check.h"
 #include "Log.h"
-#if WIN32
+#if IS_TARGET_WINDOWS
 #include <Windows.h>
 #elif defined(EMSCRIPTEN)
 #include <emscripten.h>
 #include <unistd.h>
-#elif defined(__APPLE__) && defined(SDL)
+#elif defined(IS_TARGET_APPLE) && defined(SDL)
 #include "SDL.h"
 #undef main
 #else
@@ -140,7 +140,7 @@ namespace NSG
 
         isAbsolutePath_ = filePath_.size() && (filePath_[0] == '/');
 
-        #if WIN32
+        #if IS_TARGET_WINDOWS
         {
             if (!isAbsolutePath_ && filePath_.size() > 2)
                 isAbsolutePath_ = std::isalpha(filePath_[0]) && filePath_[1] == ':' && filePath_[2] == '/';
@@ -262,7 +262,7 @@ namespace NSG
 
     std::string Path::GetCurrentDir()
     {
-        #if WIN32
+        #if IS_TARGET_WINDOWS
         {
             char buffer[MAX_PATH_SIZE];
             DWORD n = ::GetCurrentDirectoryA(sizeof(buffer), buffer);
@@ -274,7 +274,7 @@ namespace NSG
             Path::ReplaceChar(result, '\\', '/');
             return result;
         }
-        #elif (defined(ANDROID) || defined(__APPLE__)) && defined(SDL)
+        #elif (defined(ANDROID) || defined(IS_TARGET_APPLE)) && defined(SDL)
         {
             std::string path;
             char* base_path = SDL_GetBasePath();
@@ -363,7 +363,7 @@ namespace NSG
 
     std::string Path::GetModificationTime() const
     {
-        #if defined WIN32 && !defined __GNUC__
+        #if defined IS_TARGET_WINDOWS && !defined __GNUC__
         struct _stat fileStat;
         int err = _stat(fullFilePath_.c_str(), &fileStat);
         #else

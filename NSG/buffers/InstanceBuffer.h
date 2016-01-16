@@ -41,7 +41,7 @@ namespace NSG
 	private:
 		void UpdateData(const std::vector<InstanceData>& data);
 		size_t maxInstances_;
-		PGraphics graphics_;
+		RenderingContext* graphics_;
 	};
 }
 

@@ -39,7 +39,7 @@ namespace NSG
         void Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light);
         void Render(Window* window, Scene* scene, Camera* camera);
         void Render(Window* window, Scene* scene);
-        void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<PBatch>& batches);
+        void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<Batch>& batches);
         void DrawShadowPass(Batch* batch, const Light* light, const ShadowCamera* camera);
         void EnableDebugPhysics(bool enable) { debugPhysics_ = enable; }
         PDebugRenderer GetDebugRenderer() const { return debugRenderer_; }
@@ -50,7 +50,7 @@ namespace NSG
         void SortTransparentBackToFront(std::vector<SceneNode*>& objs);
         void SortSolidFrontToBack(std::vector<SceneNode*>& objs);
         void SortOverlaysBackToFront(std::vector<SceneNode*>& objs);
-        void Draw(Batch* batch, const Pass* pass, const Light* light, const Camera* camera);
+        void Draw(const Batch* batch, const Pass* pass, const Light* light, const Camera* camera);
         void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
         void GenerateShadowMapCubeFace(const Light* light, const std::vector<SceneNode*>& shadowCasters);
         void GenerateCubeShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
@@ -58,7 +58,7 @@ namespace NSG
         std::vector<SceneNode*> ExtractTransparent(const std::vector<SceneNode*>& objs);
         std::vector<SceneNode*> ExtractFiltered(const std::vector<SceneNode*>& objs);
         void RemoveFrom(std::vector<SceneNode*>& from, const std::vector<SceneNode*>& objs);
-        void GetLightedBatches(const std::vector<SceneNode*>& nodes, const std::vector<PBatch>& iBatches, std::vector<PBatch>& result) const;
+        void GetLightedBatches(const std::vector<SceneNode*>& nodes, const std::vector<Batch>& iBatches, std::vector<const Batch*>& result) const;
         void ShadowGenerationPass();
         void OpaquePasses(std::vector<SceneNode*>& objs);
         void TransparentPasses(std::vector<SceneNode*>& objs);
@@ -68,16 +68,16 @@ namespace NSG
         void DebugRendererPass();
         void RenderOverlays();
         void RenderFiltered(const std::vector<SceneNode*>& objs);
-        PGraphics graphics_;
+        RenderingContext* graphics_;
         Window* window_;
         Scene* scene_;
         Camera* camera_;
-        PPass shadowPass_;
-        PPass defaultOpaquePass_;
-        PPass litOpaquePass_;
-        PPass defaultTransparentPass_;
-        PPass litTransparentPass_;
-        PPass debugPass_;
+        Pass shadowPass_;
+        Pass defaultOpaquePass_;
+        Pass litOpaquePass_;
+        Pass defaultTransparentPass_;
+        Pass litTransparentPass_;
+        Pass debugPass_;
         Pass filterPass_;
         Pass addPass_;
         bool debugPhysics_;

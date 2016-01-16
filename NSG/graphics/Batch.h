@@ -36,7 +36,7 @@ namespace NSG
 		Batch(Material* material, Mesh* mesh);
     	~Batch();
 		bool operator == (const Batch& obj) const;
-		Batch(const Batch&) = delete;
+		//Batch(const Batch&) = delete;
 		//Batch& operator = (const Batch&) = delete;
     	bool IsReady();
 		void Add(SceneNode* node);

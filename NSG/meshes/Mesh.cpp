@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "Mesh.h"
 #include "Log.h"
 #include "Check.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "VertexArrayObj.h"
 #include "InstanceBuffer.h"
 #include "Util.h"
@@ -65,7 +65,7 @@ namespace NSG
 
     bool Mesh::IsValid()
     {
-		return Graphics::GetPtr() && Graphics::GetPtr()->GetWindow() && !vertexsData_.empty();
+		return RenderingContext::GetPtr() && RenderingContext::GetPtr()->GetWindow() && !vertexsData_.empty();
     }
 
     void Mesh::AllocateResources()
@@ -85,9 +85,9 @@ namespace NSG
         GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
 
         if (isStatic_)
-            pVBuffer_ = std::make_shared<VertexBuffer>(bytesNeeded, bytesNeeded, vertexsData_, GL_STATIC_DRAW);
+            pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_STATIC_DRAW));
 		else if (!pVBuffer_)
-			pVBuffer_ = std::make_shared<VertexBuffer>(bytesNeeded, bytesNeeded, vertexsData_, GL_DYNAMIC_DRAW);
+			pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_DYNAMIC_DRAW));
 		else
 			pVBuffer_->UpdateData(vertexsData_);
 
@@ -95,9 +95,9 @@ namespace NSG
         {
             GLsizeiptr bytesNeeded = sizeof(IndexType) * indexes_.size();
             if (isStatic_)
-                pIBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexes_, GL_STATIC_DRAW);
+                pIBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexes_, GL_STATIC_DRAW));
 			else if (!pIBuffer_)
-				pIBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW);
+				pIBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW));
 			else
 				pIBuffer_->UpdateData(indexes_);
         }
@@ -106,9 +106,9 @@ namespace NSG
         {
             GLsizeiptr bytesNeeded = sizeof(IndexType) * indexesWireframe_.size();
             if (isStatic_)
-                pIWireBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_STATIC_DRAW);
+                pIWireBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexesWireframe_, GL_STATIC_DRAW));
 			else if (!pIWireBuffer_)
-				pIWireBuffer_ = std::make_shared<IndexBuffer>(bytesNeeded, bytesNeeded, indexesWireframe_, GL_DYNAMIC_DRAW);
+				pIWireBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexesWireframe_, GL_DYNAMIC_DRAW));
 			else
 				pIWireBuffer_->UpdateData(indexesWireframe_);
 		}

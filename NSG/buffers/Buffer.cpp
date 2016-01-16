@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #include "Buffer.h"
 #include "Check.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include <assert.h>
 
 namespace NSG
@@ -35,7 +35,7 @@ namespace NSG
           usage_(usage),
           bufferSize_(0),
           dynamic_(usage != GL_STATIC_DRAW),
-          graphics_(Graphics::GetPtr())
+          graphics_(RenderingContext::GetPtr())
     {
 		glGenBuffers(1, &id_);
     }
@@ -45,7 +45,7 @@ namespace NSG
           usage_(usage),
           bufferSize_(bufferSize),
           dynamic_(usage != GL_STATIC_DRAW),
-		  graphics_(Graphics::GetPtr())
+		  graphics_(RenderingContext::GetPtr())
     {
         CHECK_GL_STATUS();
 
@@ -67,7 +67,7 @@ namespace NSG
         CHECK_ASSERT(offset + size <= bufferSize_);
 
         #if !defined(ANDROID) && !defined(EMSCRIPTEN)
-        if (Graphics::GetPtr()->HasMapBufferRange())
+        if (RenderingContext::GetPtr()->HasMapBufferRange())
         {
             void* old_data = glMapBufferRange(type_, offset, size,
                                               GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);

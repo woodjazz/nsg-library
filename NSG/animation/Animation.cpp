@@ -229,7 +229,6 @@ namespace NSG
         : Object(name),
           length_(0)
     {
-
     }
 
     Animation::~Animation()

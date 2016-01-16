@@ -31,7 +31,7 @@ misrepresented as being the original software.
 #endif
 #undef main
 #include "Engine.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Tick.h"
 #include "Keys.h"
 #include "Log.h"
@@ -39,7 +39,7 @@ misrepresented as being the original software.
 #include "UTF8String.h"
 #include "AppConfiguration.h"
 #include "Object.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Scene.h"
 #include "imgui.h"
 #include <memory>
@@ -436,11 +436,6 @@ namespace NSG
         #endif
     }
 
-    void SDLWindow::EnterForeground()
-    {
-        Window::EnterForeground();
-    }
-
     SDLWindow* SDLWindow::GetWindowFromID(uint32_t windowID)
     {
         #if EMSCRIPTEN
@@ -669,7 +664,7 @@ namespace NSG
                 {
                     if (key == SDL_SCANCODE_AC_BACK)
                     {
-                        Graphics::GetPtr()->ResetCachedState();
+                        RenderingContext::GetPtr()->ResetCachedState();
                         window->Close();
                         exit(0);
                     }
@@ -706,34 +701,18 @@ namespace NSG
                 SDLWindow* window = GetWindowFromID(event.button.windowID);
                 if (!window) continue;
                 window->OnMouseDown(event.button.button, event.button.x, event.button.y);
-                float x = (float)event.button.x;
-                float y = (float)event.button.y;
-                auto width = window->GetWidth();
-                auto height = window->GetHeight();
-                window->OnMouseDown(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
             }
             else if (event.type == SDL_MOUSEBUTTONUP)
             {
                 SDLWindow* window = GetWindowFromID(event.button.windowID);
                 if (!window) continue;
                 window->OnMouseUp(event.button.button, event.button.x, event.button.y);
-                float x = (float)event.button.x;
-                float y = (float)event.button.y;
-                auto width = window->GetWidth();
-                auto height = window->GetHeight();
-                window->OnMouseUp(event.button.button, -1 + 2 * x / width, 1 + -2 * y / height);
-
             }
             else if (event.type == SDL_MOUSEMOTION)
             {
                 SDLWindow* window = GetWindowFromID(event.button.windowID);
                 if (!window) continue;
                 window->OnMouseMove(event.motion.x, event.motion.y);
-                float x = (float)event.motion.x;
-                float y = (float)event.motion.y;
-                auto width = window->GetWidth();
-                auto height = window->GetHeight();
-                window->OnMouseMove(-1 + 2 * x / width, 1 + -2 * y / height);
             }
             else if (event.type == SDL_MOUSEWHEEL)
             {
@@ -756,7 +735,7 @@ namespace NSG
                 }
                 else if (event.type == SDL_FINGERUP)
                 {
-                    window->OnMouseDown(NSG_BUTTON_LEFT, x, y);
+                    window->OnMouseUp(NSG_BUTTON_LEFT, x, y);
                     touchEvent.type = TouchFingerEvent::Type::UP;
                 }
                 else
@@ -901,27 +880,8 @@ namespace NSG
 
     void SDLWindow::SetupImgui()
     {
+        Window::SetupImgui();
         ImGuiIO& io = ImGui::GetIO();
-        io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;                 // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
-        io.KeyMap[ImGuiKey_LeftArrow] = SDL_SCANCODE_LEFT;
-        io.KeyMap[ImGuiKey_RightArrow] = SDL_SCANCODE_RIGHT;
-        io.KeyMap[ImGuiKey_UpArrow] = SDL_SCANCODE_UP;
-        io.KeyMap[ImGuiKey_DownArrow] = SDL_SCANCODE_DOWN;
-        io.KeyMap[ImGuiKey_PageUp] = SDL_SCANCODE_PAGEUP;
-        io.KeyMap[ImGuiKey_PageDown] = SDL_SCANCODE_PAGEDOWN;
-        io.KeyMap[ImGuiKey_Home] = SDL_SCANCODE_HOME;
-        io.KeyMap[ImGuiKey_End] = SDL_SCANCODE_END;
-        io.KeyMap[ImGuiKey_Delete] = SDLK_DELETE;
-        io.KeyMap[ImGuiKey_Backspace] = SDLK_BACKSPACE;
-        io.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
-        io.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
-        io.KeyMap[ImGuiKey_A] = SDLK_a;
-        io.KeyMap[ImGuiKey_C] = SDLK_c;
-        io.KeyMap[ImGuiKey_V] = SDLK_v;
-        io.KeyMap[ImGuiKey_X] = SDLK_x;
-        io.KeyMap[ImGuiKey_Y] = SDLK_y;
-        io.KeyMap[ImGuiKey_Z] = SDLK_z;
-
         io.SetClipboardTextFn = ImGuiSetClipboardText;
         io.GetClipboardTextFn = ImGuiGetClipboardText;
     }

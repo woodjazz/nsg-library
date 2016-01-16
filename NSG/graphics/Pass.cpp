@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Mesh.h"
 #include "Check.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Camera.h"
 #include "BoundingBox.h"
 #include "Frustum.h"

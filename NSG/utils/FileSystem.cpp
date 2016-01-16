@@ -38,7 +38,7 @@ misrepresented as being the original software.
 #include <html5.h>
 #endif
 
-#ifndef WIN32
+#ifndef IS_TARGET_WINDOWS
 #include <unistd.h>
 #include <cerrno>
 #else
@@ -162,7 +162,7 @@ namespace NSG
     {
         if (!path.empty())
         {
-            #ifdef WIN32
+            #ifdef IS_TARGET_WINDOWS
             {
                 if (::SetCurrentDirectory(path.c_str()) == FALSE)
                 {

@@ -10,7 +10,7 @@
 #include "Frustum.h"
 #include "Renderer.h"
 #include "Window.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Sphere.h"
 #include "Texture.h"
 #include "ShadowCamera.h"
@@ -49,8 +49,8 @@ namespace NSG
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
         for (int i = 0; i < MAX_SPLITS; i++)
         {
-            shadowCamera_[i] = std::make_shared<ShadowCamera>(this);
-            shadowFrameBuffer_[i] = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
+            shadowCamera_[i] = PShadowCamera(new ShadowCamera(this));
+            shadowFrameBuffer_[i] = PFrameBuffer(new FrameBuffer(GetUniqueName("LightCubeFrameBuffer"), flags));
             CHECK_ASSERT(TextureWrapMode::CLAMP_TO_EDGE == GetShadowMap(i)->GetWrapMode());
             shadowFrameBuffer_[i]->EnableAutoSize(false);
         }
@@ -141,12 +141,12 @@ namespace NSG
                 if (type == LightType::POINT)
                 {
                     FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
-                    shadowFrameBuffer_[i] = std::make_shared<FrameBuffer>(GetUniqueName("LightCubeFrameBuffer"), flags);
+                    shadowFrameBuffer_[i] = PFrameBuffer(new FrameBuffer(GetUniqueName("LightCubeFrameBuffer"), flags));
                 }
                 else if (type_ == LightType::POINT)
                 {
                     FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
-                    shadowFrameBuffer_[i] = std::make_shared<FrameBuffer>(GetUniqueName("Light2DFrameBuffer"), flags);
+                    shadowFrameBuffer_[i] = PFrameBuffer(new FrameBuffer(GetUniqueName("Light2DFrameBuffer"), flags));
                 }
 
                 //GetShadowMap(i)->SetWrapMode(TextureWrapMode::REPEAT);
@@ -332,7 +332,7 @@ namespace NSG
         shadowFrameBuffer->SetSize(splitMapsize, splitMapsize);
         if (shadowFrameBuffer->IsReady())
         {
-            auto graphics = Graphics::GetPtr();
+            auto graphics = RenderingContext::GetPtr();
             auto shadowCamera = GetShadowCamera(split);
             std::vector<SceneNode*> shadowCasters;
             shadowCamera->GetVisiblesShadowCasters(shadowCasters);
@@ -340,11 +340,11 @@ namespace NSG
             graphics->ClearBuffers(true, true, false);
             if (!shadowCamera->IsDisabled())
             {
-                std::vector<PBatch> batches;
+                std::vector<Batch> batches;
                 Renderer::GetPtr()->GenerateBatches(shadowCasters, batches);
                 for (auto& batch : batches)
-                    if (batch->GetMaterial()->CastShadow())
-                        Renderer::GetPtr()->DrawShadowPass(batch.get(), this, shadowCamera);
+                    if (batch.GetMaterial()->CastShadow())
+                        Renderer::GetPtr()->DrawShadowPass(&batch, this, shadowCamera);
             }
             graphics->SetFrameBuffer(oldFrameBuffer);
         }
@@ -355,14 +355,14 @@ namespace NSG
         auto shadowCamera = GetShadowCamera(0);
         std::vector<SceneNode*> shadowCasters;
         shadowCamera->GetVisiblesShadowCasters(shadowCasters);
-        std::vector<PBatch> batches;
+        std::vector<Batch> batches;
         auto renderer = Renderer::GetPtr();
         renderer->GenerateBatches(shadowCasters, batches);
-        auto graphics = Graphics::GetPtr();
+        auto graphics = RenderingContext::GetPtr();
         graphics->ClearBuffers(true, true, false);
         for (auto& batch : batches)
-            if (batch->GetMaterial()->CastShadow())
-                renderer->DrawShadowPass(batch.get(), this, shadowCamera);
+            if (batch.GetMaterial()->CastShadow())
+                renderer->DrawShadowPass(&batch, this, shadowCamera);
     }
 
     int Light::GetShadowFrameBufferSize(int split) const
@@ -380,7 +380,7 @@ namespace NSG
         if (shadowFrameBuffer->IsReady())
         {
             auto shadowCamera = GetShadowCamera(0);
-            auto graphics = Graphics::GetPtr();
+            auto graphics = RenderingContext::GetPtr();
             for (unsigned i = 0; i < (unsigned)CubeMapFace::MAX_CUBEMAP_FACES; i++)
             {
                 TextureTarget face = (TextureTarget)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);

@@ -40,17 +40,13 @@ namespace NSG
         static PWindow Create(const std::string& name = GetUniqueName("Window"), WindowFlags flags = (int)WindowFlag::SHOWN);
         static PWindow Create(const std::string& name, int x, int y, int width, int height, WindowFlags flags = (int)WindowFlag::SHOWN);
         virtual ~Window();
-        float GetDeltaTime() const;
         virtual void ViewChanged(int width, int height);
         virtual void Show() = 0;
         virtual void Hide() = 0;
         virtual void Raise() = 0;
-        void OnMouseMove(float x, float y);
         void OnMouseMove(int x, int y);
         void OnMouseWheel(float x, float y);
-        void OnMouseDown(int button, float x, float y);
         void OnMouseDown(int button, int x, int y);
-        void OnMouseUp(int button, float x, float y);
         void OnMouseUp(int button, int x, int y);
         void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
         void OnKey(int key, int action, int modifier);
@@ -63,7 +59,6 @@ namespace NSG
         virtual void SwapWindowBuffers() = 0;
         virtual void EnterBackground();
         virtual void EnterForeground();
-        void InvalidateContext();
         void DropFile(const std::string& filePath);
         int GetWidth() const { return width_; }
         int GetHeight() const { return height_; }
@@ -76,8 +71,8 @@ namespace NSG
         const std::string& GetName() const { return name_; }
         bool HasFilters() const { return !filters_.empty() && filtersEnabled_; }
         void EnableFilters(bool enable);
-        PFrameBuffer GetFrameBuffer() const { return frameBuffer_; }
-        PFrameBuffer GetFilterFrameBuffer() const { return filterFrameBuffer_; }
+        FrameBuffer* GetFrameBuffer() const { return frameBuffer_.get(); }
+        FrameBuffer* GetFilterFrameBuffer() const { return filterFrameBuffer_.get(); }
         void SetScene(Scene* scene);
         Scene* GetScene() const { return scene_; }
         void ShowMap(PTexture texture);
@@ -111,7 +106,7 @@ namespace NSG
         PixelFormat GetPixelFormat() const { return pixelFormat_; }
         void SetPixelFormat(PixelFormat value) { pixelFormat_ = value; }
         void RenderFilters();
-        virtual void SetupImgui() = 0;
+        virtual void SetupImgui();
         virtual void BeginImguiRender() = 0;
         virtual void SetContext() = 0;
         void SetRender(IRender* render);
@@ -135,9 +130,12 @@ namespace NSG
         Scene* scene_; //scene to render in this window
         static std::vector<PWeakWindow> windows_;
         static Window* mainWindow_;
-        PGraphics graphics_;
-        PRenderer renderer_;
+        RenderingContext* graphics_;
+        Renderer* renderer_;
     private:
+		void OnMouseMove(float x, float y);
+		void OnMouseDown(int button, float x, float y);
+		void OnMouseUp(int button, float x, float y);
         void CreateFrameBuffer();
         bool BeginFrameRender();
         std::vector<PWeakMaterial> filters_;

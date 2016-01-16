@@ -27,7 +27,7 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "Image.h"
 #include "Check.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "ResourceFile.h"
 #include "Texture.h"
 #include "Path.h"
@@ -45,8 +45,8 @@ namespace NSG
           texture_(0),
           width_(0),
           height_(0),
-          format_(Graphics::GetTexelFormatType()),
-          type_(Graphics::GetTexelDataType()),
+          format_(RenderingContext::GetTexelFormatType()),
+          type_(RenderingContext::GetTexelDataType()),
           channels_(0),
           serializable_(false),
           wrapMode_(TextureWrapMode::CLAMP_TO_EDGE),
@@ -67,8 +67,8 @@ namespace NSG
           pResource_(resource),
           width_(0),
           height_(0),
-          format_(Graphics::GetTexelFormatType()),
-          type_(Graphics::GetTexelDataType()),
+          format_(RenderingContext::GetTexelFormatType()),
+          type_(RenderingContext::GetTexelDataType()),
           channels_(0),
           serializable_(true),
           wrapMode_(TextureWrapMode::CLAMP_TO_EDGE),
@@ -132,12 +132,12 @@ namespace NSG
     {
         CHECK_GL_STATUS();
         glGenTextures(1, &texture_);
-        Graphics::GetPtr()->SetTexture(0, this);
+        RenderingContext::GetPtr()->SetTexture(0, this);
 
-		auto maxSize = Graphics::GetPtr()->GetMaxTextureSize();
+		auto maxSize = RenderingContext::GetPtr()->GetMaxTextureSize();
 		width_ = Clamp(width_, 0, maxSize);
 		height_ = Clamp(height_, 0, maxSize);
-		if (!Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_))
+		if (!RenderingContext::GetPtr()->IsTextureSizeCorrect(width_, height_))
 			GetPowerOfTwoValues(width_, height_);
 
         if (image_)
@@ -181,8 +181,8 @@ namespace NSG
             width_ = height_ = value;
         }
 
-        CHECK_ASSERT(Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_));
-        CHECK_ASSERT(Graphics::GetPtr()->GetMaxTextureSize() >= width_ && Graphics::GetPtr()->GetMaxTextureSize() >= height_);
+        CHECK_ASSERT(RenderingContext::GetPtr()->IsTextureSizeCorrect(width_, height_));
+        CHECK_ASSERT(RenderingContext::GetPtr()->GetMaxTextureSize() >= width_ && RenderingContext::GetPtr()->GetMaxTextureSize() >= height_);
 
         switch (wrapMode_)
         {

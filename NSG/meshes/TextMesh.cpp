@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "TextMesh.h"
 #include "Program.h"
 #include "FontAtlas.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Window.h"
 #include "SignalSlots.h"
 #include <algorithm>

@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "GLES2Includes.h"
+#include "GLIncludes.h"
 #include <stdlib.h>
 #include <sstream>
 #include <cassert>

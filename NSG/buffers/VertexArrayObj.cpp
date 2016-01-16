@@ -30,7 +30,7 @@ misrepresented as being the original software.
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "InstanceBuffer.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "Check.h"
 
 namespace NSG
@@ -39,13 +39,13 @@ namespace NSG
 	{
 		return program < obj.program ||
 			(!(obj.program < program) && mesh < obj.mesh) ||
-			(!(obj.program < program) && !(obj.mesh < mesh) && allowInstancing < obj.allowInstancing) ||
-            (!(obj.program < program) && !(obj.mesh < mesh) && !(obj.allowInstancing < allowInstancing) && solid < obj.solid);
+			(!(obj.program < program) && !(obj.mesh < mesh) && instancesBuffer < obj.instancesBuffer) ||
+            (!(obj.program < program) && !(obj.mesh < mesh) && !(obj.instancesBuffer < instancesBuffer) && solid < obj.solid);
 	}
 
 	std::string VAOKey::GetName() const
 	{
-		if(allowInstancing)
+		if(instancesBuffer)
 			return program->GetName() + mesh->GetName() + "_VAOI";
 		else
 			return program->GetName() + mesh->GetName() + "_VAO";
@@ -57,7 +57,7 @@ namespace NSG
         : Object(key.GetName()),
           vao_(0),
           key_(key),
-          graphics_(Graphics::GetPtr())
+          graphics_(RenderingContext::GetPtr())
     {
     }
 
@@ -126,8 +126,11 @@ namespace NSG
 
         graphics_->SetIndexBuffer(iBuffer, true);
 
-        if (key_.allowInstancing)
+        if (key_.instancesBuffer)
+        {
+            graphics_->SetVertexBuffer(key_.instancesBuffer);
             graphics_->SetInstanceAttrPointers(program);
+        }
 
         CHECK_GL_STATUS();
 

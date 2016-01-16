@@ -30,7 +30,7 @@ misrepresented as being the original software.
 #include "Decompress.h"
 #include "Path.h"
 #include "Log.h"
-#include "Graphics.h"
+#include "RenderingContext.h"
 #include "image_helper.h"
 #include "DDS.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -81,7 +81,7 @@ namespace NSG
 
     bool Image::IsValid()
     {
-        if (Graphics::GetPtr() && resource_->IsReady())
+        if (RenderingContext::GetPtr() && resource_->IsReady())
         {
             auto dataSize = resource_->GetBytes();
             return dataSize > 4; // at least we have to read the type of image
@@ -143,14 +143,14 @@ namespace NSG
     {
         ReadResource();
 
-        if (compressed_ && Graphics::GetPtr()->NeedsDecompress(format_))
+        if (compressed_ && RenderingContext::GetPtr()->NeedsDecompress(format_))
             Decompress();
 
-        if (!compressed_ && !Graphics::GetPtr()->IsTextureSizeCorrect(width_, height_))
+        if (!compressed_ && !RenderingContext::GetPtr()->IsTextureSizeCorrect(width_, height_))
             Resize2PowerOf2();
 
-        if (Graphics::GetPtr()->GetMaxTextureSize() < width_ || Graphics::GetPtr()->GetMaxTextureSize() < height_)
-            Reduce(Graphics::GetPtr()->GetMaxTextureSize());
+        if (RenderingContext::GetPtr()->GetMaxTextureSize() < width_ || RenderingContext::GetPtr()->GetMaxTextureSize() < height_)
+            Reduce(RenderingContext::GetPtr()->GetMaxTextureSize());
     }
 
     void Image::ReleaseResources()
