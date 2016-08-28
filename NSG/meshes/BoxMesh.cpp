@@ -29,7 +29,13 @@ misrepresented as being the original software.
 namespace NSG
 {
     BoxMesh::BoxMesh(const std::string& name)
-        : ProceduralMesh(name)
+        : ProceduralMesh(name),
+          width_(0),
+          height_(0),
+          depth_(0),
+          resX_(0),
+          resY_(0),
+          resZ_(0)
     {
         Set();
         SetSerializable(false);

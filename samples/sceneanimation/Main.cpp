@@ -68,7 +68,7 @@ int NSG_MAIN(int argc, char* argv[])
         //sunLight->SetShadowColor(Color(1, 0, 0, 1));
         sunLight->SetBias(.666f);
         //window->ShowMap(sunLight->GetShadowMap(3));
-        window->SetScene(scene.get());
+        window->SetScene(scene);
     });
     return Engine::Create()->Run();
 }

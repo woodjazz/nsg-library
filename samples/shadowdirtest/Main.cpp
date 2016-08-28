@@ -157,7 +157,7 @@ int NSG_MAIN(int argc, char* argv[])
         //LOGI("%s", ToString(camera->GetPosition()).c_str());
         //LOGI("q=%s", ToString(camera->GetOrientation()).c_str());
     });
-    window->SetScene(scene.get());
+    window->SetScene(scene);
     return engine->Run();
 }
 

@@ -245,7 +245,7 @@ int NSG_MAIN(int argc, char* argv[])
         walkBack.AddTransition(idle).When([&]() { return speed >= 0; });
         run.AddTransition(walk).When([&]() { return speed == 0 && run.time_ > 1; });
         run.AddTransition(jump).When([&]() { return buttonA; });
-        window->SetScene(scene.get());
+        window->SetScene(scene);
         fsm.Go();
 
         static auto playerControl = std::make_shared<PlayerControl>();
@@ -283,7 +283,7 @@ int NSG_MAIN(int argc, char* argv[])
     loadingNode->SetMesh(font->GetOrCreateMesh("Loading...", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT));
     loadingMaterial->SetTextMap(atlasTexture);
     loadingNode->SetMaterial(loadingMaterial);
-    window->SetScene(scene.get());
+    window->SetScene(scene);
     auto engine = Engine::Create();
     return engine->Run();
 }

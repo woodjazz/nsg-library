@@ -32,7 +32,9 @@ misrepresented as being the original software.
 namespace NSG
 {
     SphereMesh::SphereMesh(const std::string& name)
-        : ProceduralMesh(name)
+        : ProceduralMesh(name),
+          radius_(0),
+          rings_(0)
     {
         Set();
         SetSerializable(false);

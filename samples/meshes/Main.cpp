@@ -77,7 +77,7 @@ int NSG_MAIN(int argc, char* argv[])
 	auto obj = CreateObject(Mesh::Create<CylinderMesh>(), ColorRGB(0.5f, 0, 0), Vector3(50, 0, 0));
 	//control->AutoZoom();
 	control->Track(obj.first);
-	window->SetScene(scene.get());
+    window->SetScene(scene);
 	auto r = Engine::Create()->Run();
 	scene = nullptr;
 	return r;

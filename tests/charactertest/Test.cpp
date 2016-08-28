@@ -137,7 +137,7 @@ static void Test01()
     static auto scene = std::make_shared<Scene>();
     static auto character = SetupScene(scene);
     static auto window = Window::Create("0", 0, 0, 10, 10, (int)WindowFlag::HIDDEN);
-    window->SetScene(scene.get());
+    window->SetScene(scene);
 
     struct GoForward : FSM::State
     {
@@ -191,7 +191,7 @@ static void Test02()
     auto scene = std::make_shared<Scene>();
     auto character = SetupScene(scene);
     auto window = Window::Create();
-    window->SetScene(scene.get());
+    window->SetScene(scene);
 
     bool buttonA = false;
     float speed = 0;

@@ -101,7 +101,7 @@ int NSG_MAIN(int argc, char* argv[])
 		}
     });
 
-	window->SetScene(scene.get());
+    window->SetScene(scene);
 	return Engine::Create()->Run();
 }
 

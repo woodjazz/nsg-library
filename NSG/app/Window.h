@@ -73,8 +73,8 @@ namespace NSG
         void EnableFilters(bool enable);
         FrameBuffer* GetFrameBuffer() const { return frameBuffer_.get(); }
         FrameBuffer* GetFilterFrameBuffer() const { return filterFrameBuffer_.get(); }
-        void SetScene(Scene* scene);
-        Scene* GetScene() const { return scene_; }
+        void SetScene(PWeakScene scene);
+        PWeakScene GetScene() const { return scene_; }
         void ShowMap(PTexture texture);
         static bool AllowWindowCreation();
         static void NotifyOneWindow2Remove();
@@ -127,7 +127,7 @@ namespace NSG
         int width_;
         int height_;
         bool filtersEnabled_;
-        Scene* scene_; //scene to render in this window
+        PWeakScene scene_; //scene to render in this window
         static std::vector<PWeakWindow> windows_;
         static Window* mainWindow_;
         RenderingContext* graphics_;

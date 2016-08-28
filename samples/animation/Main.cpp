@@ -87,7 +87,7 @@ int NSG_MAIN(int argc, char* argv[])
 
 		acontrol = std::make_shared<AnimationController>(camera);
         acontrol->Play(animation->GetName(), false);
-        window->SetScene(scene.get());
+        window->SetScene(scene);
     });
 
     return Engine::Create()->Run();

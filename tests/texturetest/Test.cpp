@@ -133,7 +133,7 @@ static void Test05()
 {
     auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto scene = std::make_shared<Scene>();
-    window->SetScene(scene.get());
+    window->SetScene(scene);
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 5));
     auto texture = std::make_shared<Texture2D>("texture");

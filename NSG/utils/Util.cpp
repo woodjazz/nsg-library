@@ -78,12 +78,12 @@ namespace NSG
 
     bool IsNaN(const Quaternion& q)
     {
-        return isnan(q.w) || isnan(q.x) || isnan(q.y) || isnan(q.z);
+        return std::isnan(q.w) || std::isnan(q.x) || std::isnan(q.y) || std::isnan(q.z);
     }
 
     bool IsNaN(const Vector3& v)
     {
-        return isnan(v.x) || isnan(v.y) || isnan(v.z);
+        return std::isnan(v.x) || std::isnan(v.y) || std::isnan(v.z);
     }
 
     Quaternion QuaternionFromLookRotation(const Vector3& direction, const Vector3& upDirection)

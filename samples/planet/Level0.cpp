@@ -41,7 +41,7 @@ Level0::Level0(PWindow window)
     camera_ = player_->GetCameraNode()->CreateChild<Camera>();
     camera_->SetPosition(Vertex3(0, 0, 10));
     camera_->SetWindow(window.get());
-    window->SetScene(scene_.get());
+    window->SetScene(scene_);
     //control_ = std::make_shared<CameraControl>(camera_);
 }
 

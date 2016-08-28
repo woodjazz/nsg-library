@@ -97,7 +97,7 @@ int NSG_MAIN(int argc, char* argv[])
 		ImGui::ShowTestWindow(&show_test_window);
 	});
 
-	window->SetScene(scene.get());
+    window->SetScene(scene);
 	return Engine::Create()->Run();
 }
 

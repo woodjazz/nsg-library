@@ -68,7 +68,7 @@ namespace NSG
           width_(0),
           height_(0),
           filtersEnabled_(true),
-          scene_(nullptr),
+          //scene_(nullptr),
           graphics_(nullptr),
           renderer_(nullptr),
           signalViewChanged_(new Signal<int, int>()),
@@ -444,8 +444,9 @@ namespace NSG
             auto window(obj.lock());
             if (window)
             {
-                if (window->scene_)
-                    window->scene_->UpdateAll(delta);
+                auto scene = window->scene_.lock();
+                if (scene)
+                    scene->UpdateAll(delta);
             }
         }
     }
@@ -470,7 +471,9 @@ namespace NSG
                 render_->Render();
             else
             {
-                Renderer::GetPtr()->Render(this, scene_);
+                auto scene = scene_.lock();
+                //if(scene)
+                Renderer::GetPtr()->Render(this, scene.get());
                 if (SigDrawIMGUI()->HasSlots())
                     gui_->Render(this, [this]() { SigDrawIMGUI()->Run(); });
             }
@@ -536,7 +539,7 @@ namespace NSG
         #endif
     }
 
-    void Window::SetScene(Scene* scene)
+    void Window::SetScene(PWeakScene scene)
     {
         scene_ = scene;
     }

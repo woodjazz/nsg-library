@@ -48,7 +48,7 @@ int NSG_MAIN(int argc, char* argv[])
             auto scene = loader->GetScene(0);
             if (scene)
             {
-                window->SetScene(scene.get());
+                window->SetScene(scene);
                 auto camera = scene->GetMainCamera();
                 if (camera)
                     control = std::make_shared<CameraControl>(camera);

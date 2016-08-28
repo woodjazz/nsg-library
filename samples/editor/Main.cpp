@@ -35,7 +35,7 @@ int NSG_MAIN(int argc, char* argv[])
 	auto window = Window::Create();
     auto scene = std::make_shared<Scene>();
 	scene->SetWindow(window.get());
-	window->SetScene(scene.get());
+    window->SetScene(scene);
     auto camera = scene->CreateChild<Camera>("Camera");
 	camera->SetPosition(Vector3(0, 0, 10));
 	Editor editor;

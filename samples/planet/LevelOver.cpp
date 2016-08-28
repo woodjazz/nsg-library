@@ -33,7 +33,7 @@ LevelOver::LevelOver(PWindow window)
 	loadingNode->SetText("Over", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
 	loadingNode->SetFont("data/AnonymousPro32.xml", "data/AnonymousPro32.png");
 	loadingNode->SetMaterialName("loadingMaterial");
-	window->SetScene(scene_.get());
+    window->SetScene(scene_);
 
     slotKey_ = window->SigKey()->Connect([&](int key, int action, int modifier)
     {

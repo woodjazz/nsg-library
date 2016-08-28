@@ -149,8 +149,8 @@ namespace NSG
         Program::Clear();
         LoaderXML::Clear();
         ISignal::FreeAllDestroyedSlots();
-		auto ctx = RenderingContext::GetPtr();
-		if (ctx)
-			ctx->ResetCachedState();
+        //auto ctx = RenderingContext::GetPtr();
+        //if (ctx)
+            //ctx->ResetCachedState();
     }
 }

@@ -42,7 +42,7 @@ int NSG_MAIN(int argc, char* argv[])
         armature = scene->GetChild<SceneNode>("RigMomo", true);
         control->Track(armature);
 
-        window->SetScene(scene.get());
+        window->SetScene(scene);
 
         static auto drawGUISlot = window->SigDrawIMGUI()->Connect([&]()
         {

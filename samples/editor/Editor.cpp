@@ -296,7 +296,7 @@ void Editor::ShowGame()
     auto graphics = RenderingContext::GetPtr();
     auto currentWindow = graphics->GetWindow();
     auto scene = currentWindow->GetScene();
-    auto camera = scene->GetMainCamera();
+    auto camera = scene.lock()->GetMainCamera();
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
 	auto size = ImGui::GetContentRegionAvail();
@@ -313,9 +313,9 @@ void Editor::RenderGame()
 {
 	auto graphics = RenderingContext::GetPtr();
 	auto currentWindow = graphics->GetWindow();
-	auto scene = currentWindow->GetScene();
+    auto scene = currentWindow->GetScene().lock();
 	auto camera = scene->GetMainCamera();
-	gTexture_ = GetGamePreview(scene, camera.get());
+    gTexture_ = GetGamePreview(scene.get(), camera.get());
 }
 
 void Editor::ShowInspector()

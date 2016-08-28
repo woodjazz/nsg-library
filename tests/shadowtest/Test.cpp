@@ -73,7 +73,7 @@ static void Test01()
 	auto scene = std::make_shared<Scene>();
 	auto light = SetupScene(scene);
 	auto window = Window::Create("0", 0, 0, 10, 10, (int)WindowFlag::HIDDEN);
-	window->SetScene(scene.get());
+    window->SetScene(scene);
 
 	auto engine = Engine::Create();
 //	engine->Run();
@@ -91,7 +91,7 @@ static void Test02()
 	auto light = SetupScene(scene);
 	light->SetGlobalLookAtDirection(Vector3(0, -1, 0.05f));
 	auto window = Window::Create();
-	window->SetScene(scene.get());
+    window->SetScene(scene);
 	auto box = scene->GetChild<SceneNode>("Box", false);
 	auto camera = scene->GetChild<Camera>("Camera", false);
 	

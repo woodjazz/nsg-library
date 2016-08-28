@@ -33,7 +33,7 @@ int NSG_MAIN(int argc, char* argv[])
 	if (!RenderingContext::GetPtr()->HasInstancedArrays())
 		return 0;
     auto scene = std::make_shared<Scene>();
-	window->SetScene(scene.get());
+    window->SetScene(scene);
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
     auto mesh = Mesh::Create<SphereMesh>();

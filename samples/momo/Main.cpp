@@ -49,7 +49,7 @@ int NSG_MAIN(int argc, char* argv[])
             auto controller = armature->GetOrCreateAnimationController();
             controller->Play("Momo_Run", true);
         }
-        window->SetScene(scene.get());
+        window->SetScene(scene);
     });
     auto engine = Engine::Create();
     return engine->Run();

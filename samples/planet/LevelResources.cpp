@@ -32,7 +32,7 @@ LevelResources::LevelResources(PWindow window, std::vector<const char*> resource
     loadingNode_ = scene_->CreateOverlay("loadingNode");
 	loadingNode_->SetMaterialName("loadingMaterial");
 	loadingNode_->SetFont("data/AnonymousPro32.xml", "data/AnonymousPro32.png");
-    window->SetScene(scene_.get());
+    window->SetScene(scene_);
 
     auto resource = Resource::Create("LevelResources");
     std::string data = "<App><Resources>";
