@@ -39,6 +39,7 @@ namespace NSG
 		mesh_(nullptr),
 		allowInstancing_(true)
 	{
+
 	}
 
 	Batch::Batch(Material* material, Mesh* mesh)

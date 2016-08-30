@@ -130,7 +130,14 @@ namespace NSG
 
 		static bool Has(const K& key)
 		{
-			return objsMap_.find(key) != objsMap_.end();
+            auto it = objsMap_.find(key);
+            if(it != objsMap_.end())
+            {
+                if(it->second.lock())
+                    return true;
+                objsMap_.erase(it);
+            }
+            return false;
 		}
 
         static void Clear()

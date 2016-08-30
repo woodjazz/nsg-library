@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
-#include <mutex>
 
 namespace NSG
 {
@@ -34,19 +33,21 @@ namespace NSG
 	{
 	public:
 
-		static T* Create()
+        static std::shared_ptr<T> Create()
 		{
-	        std::call_once(onceFlag_, [&]()
-	        {
-	            this_ = std::unique_ptr<T>(new T);
-	            p_ = this_.get();
-	        });
-	        return p_;
+            if(!p_.lock())
+            {
+                auto p = std::shared_ptr<T>(new T);
+                p_ = p;
+                return p;
+            }
+            else
+                return p_.lock();
 	    }
 
 		inline static T* GetPtr()
 		{
-	        return p_;
+            return p_.lock().get();
 	    }
 
 	protected:
@@ -56,15 +57,10 @@ namespace NSG
 
 		~Singleton()
 		{
-			p_ = nullptr;
 		}
 
-		static T* p_;
-		static std::unique_ptr<T> this_;
-		static std::once_flag onceFlag_;
+        static std::weak_ptr<T> p_;
 	};
 
-	template<typename T> T* Singleton<T>::p_ = nullptr;
-	template<typename T> std::unique_ptr<T> Singleton<T>::this_;
-	template<typename T> std::once_flag Singleton<T>::onceFlag_;
+    template<typename T> std::weak_ptr<T> Singleton<T>::p_;
 }

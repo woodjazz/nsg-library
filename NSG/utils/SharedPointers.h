@@ -86,6 +86,7 @@ namespace NSG
     typedef std::weak_ptr<Scene> PWeakScene;
 
     class RenderingContext;
+    typedef std::shared_ptr<RenderingContext> PRenderingContext;
 
     class Frustum;
     typedef std::shared_ptr<Frustum> PFrustum;
@@ -280,6 +281,7 @@ namespace NSG
     typedef std::shared_ptr<Image> PImage;
 
     class Renderer;
+    typedef std::shared_ptr<Renderer> PRenderer;
 
     class Plane;
     typedef std::shared_ptr<Plane> PPlane;

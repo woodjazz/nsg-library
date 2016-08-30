@@ -130,8 +130,8 @@ namespace NSG
         PWeakScene scene_; //scene to render in this window
         static std::vector<PWeakWindow> windows_;
         static Window* mainWindow_;
-        RenderingContext* graphics_;
-        Renderer* renderer_;
+        PRenderingContext graphics_;
+        PRenderer renderer_;
     private:
 		void OnMouseMove(float x, float y);
 		void OnMouseDown(int button, float x, float y);

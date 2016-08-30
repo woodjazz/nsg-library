@@ -68,7 +68,6 @@ namespace NSG
           width_(0),
           height_(0),
           filtersEnabled_(true),
-          //scene_(nullptr),
           graphics_(nullptr),
           renderer_(nullptr),
           signalViewChanged_(new Signal<int, int>()),
@@ -472,7 +471,6 @@ namespace NSG
             else
             {
                 auto scene = scene_.lock();
-                //if(scene)
                 Renderer::GetPtr()->Render(this, scene.get());
                 if (SigDrawIMGUI()->HasSlots())
                     gui_->Render(this, [this]() { SigDrawIMGUI()->Run(); });
