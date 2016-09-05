@@ -41,6 +41,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "DebugRenderer.h"
 #include "imgui.h"
+#include "SharedFromPointer.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -55,7 +56,6 @@ namespace NSG
           viewWidth_(0),
           viewHeight_(0),
           aspectRatio_(1),
-          window_(nullptr),
           orthoScale_(2.f),
           sensorFit_(CameraSensorFit::HORIZONTAL),
           isDirty_(true),
@@ -69,8 +69,8 @@ namespace NSG
         SetInheritScale(false);
         slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
         {
-            if (!window_)
-                SetWindow(window);
+            if (!window_.lock())
+                SetWindow(SharedFromPointer(window));
         });
     }
 
@@ -86,9 +86,9 @@ namespace NSG
         SetWindow(nullptr);
     }
 
-    void Camera::SetWindow(Window* window)
+    void Camera::SetWindow(PWindow window)
     {
-        if (window_ != window)
+        if (window_.lock() != window)
         {
             window_ = window;
             if (window)

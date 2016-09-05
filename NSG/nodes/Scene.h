@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "SharedPointers.h"
 #include "SceneNode.h"
 #include "Overlay.h"
 #include "Light.h"
@@ -39,7 +40,7 @@ namespace NSG
     public:
 		Scene(const std::string& name = GetUniqueName("scene"));
         ~Scene();
-        void SetWindow(Window* window);
+        void SetWindow(PWindow window);
         void SetAmbientColor(ColorRGB ambient);
         void SetHorizonColor(ColorRGB horizon);
         const ColorRGB& GetAmbientColor() const { return ambient_; }
@@ -102,7 +103,7 @@ namespace NSG
 		POctree octree_;
         mutable std::set<SceneNode*> octreeNeedsUpdate_;
         PPhysicsWorld physicsWorld_;
-        Window* window_;
+        PWeakWindow window_;
         SignalNodeMouseMoved::PSignal signalNodeMouseMoved_;
         SignalNodeMouseButton::PSignal signalNodeMouseDown_;
         SignalNodeMouseButton::PSignal signalNodeMouseUp_;

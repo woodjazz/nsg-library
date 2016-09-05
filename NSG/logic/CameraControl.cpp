@@ -42,7 +42,6 @@ namespace NSG
     CameraControl::CameraControl(PCamera camera, PScene scene)
         : camera_(camera),
           scene_(scene),
-          window_(nullptr),
           originalPosition_(camera->GetGlobalPosition()),
           originalOrientation_(camera->GetGlobalOrientation()),
           enableDebugPhysics_(false),
@@ -62,12 +61,12 @@ namespace NSG
 
         auto graphics = RenderingContext::GetPtr();
         if (graphics)
-            SetWindow(graphics->GetWindow());
+            SetWindow(graphics->GetWindow().lock());
 
         slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
         {
-            if (!window_)
-                SetWindow(window);
+            if (!window_.lock())
+                SetWindow(SharedFromPointer(window));
         });
 
         slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
@@ -91,8 +90,11 @@ namespace NSG
     {
         if (viewRect_ != VECTOR4_ZERO)
         {
-            auto width = window_->GetWidth();
-            auto height = window_->GetHeight();
+			auto window = window_.lock().get();
+			if (!window)
+				return false;
+            auto width = window->GetWidth();
+            auto height = window->GetHeight();
 			auto x1 = (x + 1) * 0.5f;
 			auto y1 = (-y + 1) * 0.5f;
 			auto vWidth = viewRect_[2] - viewRect_[0];
@@ -117,9 +119,9 @@ namespace NSG
 		return true;
     }
 
-    void CameraControl::SetWindow(Window* window)
+    void CameraControl::SetWindow(PWindow window)
     {
-        if (window_ != window)
+        if (window_.lock() != window)
         {
             window_ = window;
 

@@ -35,7 +35,7 @@ namespace NSG
     public:
         Camera(const std::string& name = GetUniqueName("Camera"));
         ~Camera();
-        void SetWindow(Window* window);
+        void SetWindow(PWindow window);
         void EnableOrtho();
         void DisableOrtho();
         void SetFOVDegrees(float fovy);
@@ -119,7 +119,7 @@ namespace NSG
         float aspectRatio_;
         mutable PFrustum frustum_;
         SignalSizeChanged::PSlot slotViewChanged_;
-        Window* window_;
+        PWeakWindow window_;
         SignalWindow::PSlot slotWindow_;
         float orthoScale_;
         CameraSensorFit sensorFit_;

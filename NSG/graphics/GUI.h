@@ -40,7 +40,7 @@ namespace NSG
 	public:
 		GUI(const std::string& name = GetUniqueName("GUI"));
 		~GUI();
-		void Render(Window* window, std::function<void(void)> callback);
+		void Render(PWindow window, std::function<void(void)> callback);
 		void SetArea(const Rect& area);
 	private:
 		bool IsValid() override;
@@ -62,7 +62,7 @@ namespace NSG
 		PVertexBuffer vBuffer_;
 		PIndexBuffer iBuffer_;
 		PCamera camera_;
-		Window* window_;
+		PWeakWindow window_;
 		char* state_;
 		bool configured_;
 		//Area related to the window where the GUI is painted.

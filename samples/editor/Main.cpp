@@ -34,7 +34,7 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
 	auto window = Window::Create();
     auto scene = std::make_shared<Scene>();
-	scene->SetWindow(window.get());
+	scene->SetWindow(window);
     window->SetScene(scene);
     auto camera = scene->CreateChild<Camera>("Camera");
 	camera->SetPosition(Vector3(0, 0, 10));
@@ -42,7 +42,7 @@ int NSG_MAIN(int argc, char* argv[])
 	editor.SetWindow(window);
 	editor.SetScene(scene);
 	//editor.SetCamera(camera);
-	camera->SetWindow(window.get());
+	camera->SetWindow(window);
 	camera->CreateChild<EditorCamera>("EditorCamera");
 	auto mesh = Mesh::Create<SphereMesh>("sphereMesh");
 	{

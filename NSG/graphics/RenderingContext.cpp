@@ -93,7 +93,6 @@ namespace NSG
           lastMesh_(nullptr),
           lastProgram_(nullptr),
           activeMesh_(nullptr),
-          activeWindow_(nullptr),
           has_discard_framebuffer_ext_(false),
           has_vertex_array_object_ext_(false),
           has_map_buffer_range_ext_(false),
@@ -401,7 +400,6 @@ namespace NSG
         lastMesh_ = nullptr;
         lastProgram_ = nullptr;
         activeMesh_ = nullptr;
-        activeWindow_ = nullptr;
 
         CHECK_GL_STATUS();
 
@@ -974,16 +972,16 @@ namespace NSG
         return true;
     }
 
-    void RenderingContext::SetWindow(Window* window)
+    void RenderingContext::SetWindow(PWindow window)
     {
-        if (activeWindow_ != window)
+        if (activeWindow_.lock() != window)
         {
             activeWindow_ = window;
             if (window)
             {
                 window->SetContext();
                 SetUpViewport();
-                RenderingContext::SigWindow()->Run(window);
+                RenderingContext::SigWindow()->Run(window.get());
             }
         }
     }
@@ -996,10 +994,11 @@ namespace NSG
             auto height = currentFbo_->GetHeight();
             SetViewport(Recti(0, 0, width, height), false);
         }
-        else if (activeWindow_)
+        else if (activeWindow_.lock())
         {
-            auto width = activeWindow_->GetWidth();
-            auto height = activeWindow_->GetHeight();
+			auto window = activeWindow_.lock().get();
+            auto width = window->GetWidth();
+            auto height = window->GetHeight();
             SetViewport(Recti(0, 0, width, height), false);
         }
         else

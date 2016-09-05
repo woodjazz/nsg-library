@@ -48,7 +48,6 @@ namespace NSG
           colorRenderbuffer_(0),
           depthStencilRenderBuffer_(0),
           stencilRenderBuffer_(0),
-          window_(nullptr),
           autoSize_(true)
     {
         if (Flag::COLOR_CUBE_TEXTURE & flags_)
@@ -264,9 +263,9 @@ namespace NSG
         }
     }
 
-    void FrameBuffer::SetWindow(Window* window)
+    void FrameBuffer::SetWindow(PWindow window)
     {
-        if (window_ != window)
+        if (window_.lock() != window)
         {
             window_ = window;
             if (window)

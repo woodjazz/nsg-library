@@ -32,24 +32,24 @@ misrepresented as being the original software.
 #include "Renderer.h"
 #include "DebugRenderer.h"
 #include "Check.h"
+#include "SharedFromPointer.h"
 
 namespace NSG
 {
     ShadowMapDebug::ShadowMapDebug(PLight light)
         : light_(light),
-          window_(nullptr),
           debugRendererEnabled_(false)
     {
         CHECK_ASSERT(light_);
 
         auto graphics = RenderingContext::GetPtr();
         if (graphics)
-            SetWindow(graphics->GetWindow());
+            SetWindow(graphics->GetWindow().lock());
 
         slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
         {
-            if (!window_)
-                SetWindow(window);
+            if (!window_.lock())
+                SetWindow(SharedFromPointer(window));
         });
 
         slotDebugRenderer_ = Renderer::GetPtr()->SigDebugRenderer()->Connect([&](DebugRenderer * renderer)
@@ -79,9 +79,9 @@ namespace NSG
 
     }
 
-    void ShadowMapDebug::SetWindow(Window* window)
+    void ShadowMapDebug::SetWindow(PWindow window)
     {
-        if (window_ != window)
+        if (window_.lock() != window)
         {
             window_ = window;
 
@@ -103,28 +103,32 @@ namespace NSG
     {
         if(modifier)
             return;
+
+		auto window = window_.lock().get();
+		if (!window)
+			return;
         
         if (NSG_KEY_0 == key && action)
-            window_->ShowMap(nullptr);
+            window->ShowMap(nullptr);
         else if (NSG_KEY_1 == key && action)
         {
-            window_->ShowMap(nullptr);
-			window_->ShowMap(light_->GetShadowMap(0));
+            window->ShowMap(nullptr);
+			window->ShowMap(light_->GetShadowMap(0));
         }
         else if (NSG_KEY_2 == key && action)
         {
-            window_->ShowMap(nullptr);
-			window_->ShowMap(light_->GetShadowMap(1));
+            window->ShowMap(nullptr);
+			window->ShowMap(light_->GetShadowMap(1));
         }
         else if (NSG_KEY_3 == key && action)
         {
-            window_->ShowMap(nullptr);
-			window_->ShowMap(light_->GetShadowMap(2));
+            window->ShowMap(nullptr);
+			window->ShowMap(light_->GetShadowMap(2));
         }
         else if (NSG_KEY_4 == key && action)
         {
-            window_->ShowMap(nullptr);
-			window_->ShowMap(light_->GetShadowMap(3));
+            window->ShowMap(nullptr);
+			window->ShowMap(light_->GetShadowMap(3));
         }
 		else if (NSG_KEY_M == key && action)
 			debugRendererEnabled_ = !debugRendererEnabled_;

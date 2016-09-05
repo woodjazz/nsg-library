@@ -47,6 +47,7 @@ misrepresented as being the original software.
 #include "Pass.h"
 #include "QuadMesh.h"
 #include "imgui.h"
+#include "SharedFromPointer.h"
 #include <algorithm>
 #include <thread>
 #include <memory>
@@ -111,6 +112,7 @@ namespace NSG
             #else
 #error("Unknown platform!!!")
             #endif
+			window->OnReady();
             Window::AddWindow(window);
             return window;
 
@@ -129,6 +131,7 @@ namespace NSG
             #else
 #error("Unknown platform!!!")
             #endif
+			window->OnReady();
             Window::AddWindow(window);
             return window;
         }
@@ -141,12 +144,12 @@ namespace NSG
         FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH | FrameBuffer::Flag::DEPTH_USE_TEXTURE));
         //frameBufferFlags |= FrameBuffer::STENCIL;
         frameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("WindowFrameBuffer"), frameBufferFlags));
-        frameBuffer_->SetWindow(this);
+        frameBuffer_->SetWindow(SharedFromPointer(this));
 
         CHECK_ASSERT(!filterFrameBuffer_);
         filterFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("WindowFilterFrameBuffer"), frameBufferFlags));
         filterFrameBuffer_->SetDepthTexture(frameBuffer_->GetDepthTexture());
-        filterFrameBuffer_->SetWindow(this);
+        filterFrameBuffer_->SetWindow(SharedFromPointer(this));
 
         CHECK_ASSERT(!showMap_);
         showMap_ = std::make_shared<ShowTexture>();
@@ -242,7 +245,7 @@ namespace NSG
     {
         graphics_ = RenderingContext::Create();
         renderer_ = Renderer::Create();
-        graphics_->SetWindow(this);
+        graphics_->SetWindow(SharedFromPointer(this));
         CreateFrameBuffer(); // used when filters are enabled
     }
 
@@ -254,7 +257,7 @@ namespace NSG
             width_ = width;
             height_ = height;
 
-            if (graphics_ && graphics_->GetWindow() == this)
+            if (graphics_ && graphics_->GetWindow().lock().get() == this)
                 graphics_->SetViewport(GetViewport(), true);
 
             signalViewChanged_->Run(width, height);
@@ -473,7 +476,7 @@ namespace NSG
                 auto scene = scene_.lock();
                 Renderer::GetPtr()->Render(this, scene.get());
                 if (SigDrawIMGUI()->HasSlots())
-                    gui_->Render(this, [this]() { SigDrawIMGUI()->Run(); });
+                    gui_->Render(SharedFromPointer(this), [this]() { SigDrawIMGUI()->Run(); });
             }
             SwapWindowBuffers();
         }

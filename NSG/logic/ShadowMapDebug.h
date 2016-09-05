@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "SharedPointers.h"
 
 namespace NSG
 {
@@ -33,11 +34,11 @@ namespace NSG
 	public:
 		ShadowMapDebug(PLight light);
 		~ShadowMapDebug();
-		void SetWindow(Window* window);
+		void SetWindow(PWindow window);
 		void OnKey(int key, int action, int modifier);
 	private:
 		PLight light_;
-		Window* window_;
+		PWeakWindow window_;
 		SignalWindow::PSlot slotWindow_;
 		SignalKey::PSlot slotKey_;
 		SignalDebugRenderer::PSlot slotDebugRenderer_;

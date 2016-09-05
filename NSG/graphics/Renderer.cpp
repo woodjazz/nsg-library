@@ -44,6 +44,7 @@ misrepresented as being the original software.
 #include "DebugRenderer.h"
 #include "Texture.h"
 #include "QuadMesh.h"
+#include "SharedFromPointer.h"
 
 namespace NSG
 {
@@ -446,7 +447,7 @@ namespace NSG
         window_ = window;
         scene_ = scene;
         camera_ = camera;
-        graphics_->SetWindow(window);
+        graphics_->SetWindow(SharedFromPointer(window));
         if (!scene)
             graphics_->ClearAllBuffers();
         else if (scene->GetDrawablesNumber())

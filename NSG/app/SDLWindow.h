@@ -35,9 +35,9 @@ namespace NSG
     class SDLWindow : public Window
     {
     public:
-        SDLWindow(const std::string& name, WindowFlags flags);
-        SDLWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-        ~SDLWindow();
+		SDLWindow(const std::string& name, WindowFlags flags);
+		SDLWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
+		~SDLWindow();
         void SwapWindowBuffers() override;
         void Destroy() override;
         static void HandleEvents();

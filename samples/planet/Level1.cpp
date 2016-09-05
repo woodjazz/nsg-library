@@ -40,7 +40,7 @@ Level1::Level1(PWindow window)
     GenerateEnemies();
     camera_ = player_->GetCameraNode()->CreateChild<Camera>();
     camera_->SetPosition(Vertex3(0, 0, 10));
-    camera_->SetWindow(window.get());
+    camera_->SetWindow(window);
     window->SetScene(scene_);
 }
 

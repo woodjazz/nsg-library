@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "SharedPointers.h"
 
 namespace NSG
 {
@@ -33,7 +34,7 @@ namespace NSG
     public:
         PlayerControl();
         ~PlayerControl();
-        void SetWindow(Window* window);
+        void SetWindow(PWindow window);
 		SignalFloatFloat::PSignal SigMoved() { return signalMoved_; }
         SignalFloatFloat::PSignal SigLeftStickMoved() { return signalLeftStickMoved_; }
         SignalFloatFloat::PSignal SigRightStickMoved() { return signalRightStickMoved_; }
@@ -62,7 +63,7 @@ namespace NSG
 		SignalJoystickButton::PSlot slotJoystickUp_;
         SignalJoystickAxisMotion::PSlot slotJoystickAxisMotion_;
         SignalTouchFinger::PSlot slotTouchFinger_;
-        Window* window_;
+        PWeakWindow window_;
         SignalWindow::PSlot slotWindow_;
         float leftHorizontalAxis_;
         float leftVerticalAxis_;

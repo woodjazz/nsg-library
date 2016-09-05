@@ -31,7 +31,6 @@ namespace NSG
           ambient_(0.3f, 0.3f, 0.3f),
           horizon_(0.f, 0.f, 0.f),
           octree_(std::make_shared<Octree>()),
-          window_(nullptr),
           signalNodeMouseMoved_(new Signal<SceneNode *, float, float>()),
           signalNodeMouseDown_(new Signal<SceneNode *, int, float, float>()),
           signalNodeMouseUp_(new Signal<SceneNode *, int, float, float>()),
@@ -45,8 +44,8 @@ namespace NSG
     {
         slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
         {
-            if (!window_)
-                SetWindow(window);
+            if (!window_.lock())
+                SetWindow(SharedFromPointer(window));
         });
 
         slotLightBeingDestroy_ = Light::SignalBeingDestroy()->Connect([this](Light * light)
@@ -81,16 +80,17 @@ namespace NSG
         slotLightBeingDestroy_ = nullptr;
         slotCameraBeingDestroy_ = nullptr;
         slotPSBeingDestroy_ = nullptr;
-        if (window_)
+		auto window = window_.lock().get();
+        if (window)
         {
-            auto scene = window_->GetScene().lock();
+            auto scene = window->GetScene().lock();
             if(scene.get() == this)
-                window_->SetScene(PWeakScene());
+                window->SetScene(PWeakScene());
         }
         auto graphics = RenderingContext::GetPtr();
         if (graphics)
         {
-            auto window = graphics->GetWindow();
+            auto window = graphics->GetWindow().lock();
             if (window)
             {
                 auto scene = window->GetScene().lock();
@@ -100,9 +100,9 @@ namespace NSG
         }
     }
 
-    void Scene::SetWindow(Window* window)
+    void Scene::SetWindow(PWindow window)
     {
-        if (window_ != window)
+        if (window_.lock() != window)
         {
             if (window)
             {

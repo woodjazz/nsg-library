@@ -136,7 +136,7 @@ namespace NSG
 
     SDLWindow::~SDLWindow()
     {
-        if (this == graphics_->GetWindow())
+        if (this == graphics_->GetWindow().lock().get())
             graphics_->SetWindow(nullptr);
         Close();
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -357,8 +357,6 @@ namespace NSG
             CHECK_CONDITION(GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil)
         }
         #endif
-
-        OnReady();
 
         #if !defined(EMSCRIPTEN)
         SDL_SetWindowData(SDL_GetWindowFromID(windowID_), InternalPointer, this);

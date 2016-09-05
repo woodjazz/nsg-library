@@ -29,8 +29,7 @@ namespace NSG
         if(graphics)
         {
             auto window = graphics->GetWindow();
-            if (window)
-                SetWindow(window);
+			SetWindow(window.lock());
         }
     }
 
@@ -56,7 +55,7 @@ namespace NSG
         }
     }
 
-    void FontAtlas::SetWindow(Window* window)
+    void FontAtlas::SetWindow(PWindow window)
     {
         if (window)
         {

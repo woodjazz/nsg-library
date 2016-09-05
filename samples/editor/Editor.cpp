@@ -121,7 +121,7 @@ void Editor::SetWindow(PWindow window)
 void Editor::Render()
 {
     auto window = window_.lock();
-	editorGUI_.Render(window.get(), [this](){ShowWindows(); });
+	editorGUI_.Render(window, [this](){ShowWindows(); });
 	RenderGame();
 }
 
@@ -295,7 +295,7 @@ void Editor::ShowGame()
 {
     auto graphics = RenderingContext::GetPtr();
     auto currentWindow = graphics->GetWindow();
-    auto scene = currentWindow->GetScene();
+    auto scene = currentWindow.lock()->GetScene();
     auto camera = scene.lock()->GetMainCamera();
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
@@ -312,7 +312,7 @@ void Editor::ShowGame()
 void Editor::RenderGame()
 {
 	auto graphics = RenderingContext::GetPtr();
-	auto currentWindow = graphics->GetWindow();
+	auto currentWindow = graphics->GetWindow().lock();
     auto scene = currentWindow->GetScene().lock();
 	auto camera = scene->GetMainCamera();
     gTexture_ = GetGamePreview(scene.get(), camera.get());
@@ -370,7 +370,7 @@ PTexture Editor::GetMaterialPreview(PMaterial material)
         auto currentWindow = graphics->GetWindow();
         Renderer::GetPtr()->Render(nullptr, scenePreview_.get());
         graphics->SetFrameBuffer(oldFrameBuffer);
-        graphics->SetWindow(currentWindow);
+        graphics->SetWindow(currentWindow.lock());
         return previewFrameBuffer_->GetColorTexture();
     }
     return nullptr;
@@ -392,7 +392,7 @@ PTexture Editor::GetScenePreview(Scene* scene, Camera* camera)
         renderer->Render(nullptr, scene, camera);
         renderer->SetContext(context);
         graphics->SetFrameBuffer(oldFrameBuffer);
-        graphics->SetWindow(currentWindow);
+        graphics->SetWindow(currentWindow.lock());
         return sceneFrameBuffer_->GetColorTexture();
     }
     return nullptr;
@@ -408,10 +408,11 @@ PTexture Editor::GetGamePreview(Scene* scene, Camera* camera)
         auto renderer = Renderer::GetPtr();
         auto context = renderer->SetContext(RendererContext::DEFAULT);
         renderer->Render(nullptr, scene, camera);
-		gameGUI_.Render(currentWindow, [&](){currentWindow->SigDrawIMGUI()->Run(); });
+		auto window = currentWindow.lock();
+		gameGUI_.Render(window, [&](){window->SigDrawIMGUI()->Run(); });
         renderer->SetContext(context);
         graphics->SetFrameBuffer(oldFrameBuffer);
-        graphics->SetWindow(currentWindow);
+        graphics->SetWindow(window);
         return gameFrameBuffer_->GetColorTexture();
     }
     return nullptr;

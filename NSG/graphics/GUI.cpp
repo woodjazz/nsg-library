@@ -50,7 +50,6 @@ namespace NSG
           program_(Program::GetOrCreate("IMGUI\n")),
           vBuffer_(new VertexBuffer(GL_STREAM_DRAW)),
           iBuffer_(new IndexBuffer(GL_STREAM_DRAW)),
-          window_(nullptr),
           state_(new char[ImGui::GetInternalStateSize()]),
           configured_(false)
     {
@@ -125,7 +124,7 @@ namespace NSG
         auto& io = ImGui::GetIO();
         const float width = io.DisplaySize.x;
         const float height = io.DisplaySize.y;
-        camera_->SetWindow(window_);
+        camera_->SetWindow(window_.lock());
         camera_->SetOrthoProjection({ 0, width, height, 0, -1, 1 });
         graphics_->SetupPass(&pass_);
         CHECK_CONDITION(graphics_->SetProgram(program_.get()));
@@ -171,7 +170,7 @@ namespace NSG
         CHECK_GL_STATUS();
     }
 
-    void GUI::Render(Window* window, std::function<void(void)> callback)
+    void GUI::Render(PWindow window, std::function<void(void)> callback)
     {
         if (!window || !IsReady())
             return;

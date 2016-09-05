@@ -65,8 +65,8 @@ namespace NSG
 		Buffer* GetIndexBuffer() const { return indexBuffer_; }
 		bool SetProgram(Program* program);
 		Program* GetProgram() const { return activeProgram_; }
-		void SetWindow(Window* window);
-		Window* GetWindow() const { return activeWindow_; }
+		void SetWindow(PWindow window);
+		PWeakWindow GetWindow() const { return activeWindow_; }
 		FrameBuffer* SetFrameBuffer(FrameBuffer* buffer);
 		FrameBuffer* SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget);
 		FrameBuffer* GetFrameBuffer() const { return currentFbo_; }
@@ -127,7 +127,7 @@ namespace NSG
 		const Mesh* lastMesh_; // last mesh drawn
 		Program* lastProgram_; // last used program
 		Mesh* activeMesh_; // mesh that is going to be drawn
-		Window* activeWindow_;
+		PWeakWindow activeWindow_;
 		bool has_discard_framebuffer_ext_;
 		bool has_vertex_array_object_ext_;
 		bool has_map_buffer_range_ext_;

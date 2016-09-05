@@ -40,7 +40,7 @@ namespace NSG
 		FontAtlas(const std::string& name = GetUniqueName("FontAtlas"));
 		~FontAtlas();
 		void Set(PResourceFile xmlResource);
-		void SetWindow(Window* window);
+		void SetWindow(PWindow window);
 		void GenerateMeshData(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
 		void SetTexture(PTexture texture);
 		PTexture GetTexture() const { return texture_; }

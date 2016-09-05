@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Window.h"
 #include "Engine.h"
 #include "Log.h"
+#include "SharedFromPointer.h"
 
 namespace NSG
 {
@@ -37,7 +38,6 @@ namespace NSG
           signalLeftStickMoved_(new SignalFloatFloat),
           signalRightStickMoved_(new SignalFloatFloat),
           signalButtonA_(new SignalBool),
-          window_(nullptr),
           leftHorizontalAxis_(0),
           leftVerticalAxis_(0),
           rightHorizontalAxis_(0),
@@ -51,11 +51,11 @@ namespace NSG
     {
         auto graphics = RenderingContext::GetPtr();
         if (graphics)
-            SetWindow(graphics->GetWindow());
+            SetWindow(graphics->GetWindow().lock());
         slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
         {
-            if (!window_)
-                SetWindow(window);
+            if (!window_.lock())
+                SetWindow(SharedFromPointer(window));
         });
 
         slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
@@ -68,9 +68,9 @@ namespace NSG
     {
     }
 
-    void PlayerControl::SetWindow(Window* window)
+    void PlayerControl::SetWindow(PWindow window)
     {
-        if (window_ != window)
+        if (window_.lock() != window)
         {
             window_ = window;
 

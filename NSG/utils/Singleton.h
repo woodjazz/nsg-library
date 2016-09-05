@@ -57,6 +57,7 @@ namespace NSG
 
 		~Singleton()
 		{
+			p_.reset();
 		}
 
         static std::weak_ptr<T> p_;

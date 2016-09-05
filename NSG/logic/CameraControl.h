@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "SharedPointers.h"
 
 namespace NSG
 {
@@ -35,7 +36,7 @@ namespace NSG
 		CameraControl(PCamera camera);
 		~CameraControl();
 		void Track(PNode node);
-		void SetWindow(Window* window);
+		void SetWindow(PWindow window);
 		void AutoZoom();
 		void OnUpdate(float deltaTime);
 		void OnKey(int key, int action, int modifier);
@@ -62,7 +63,7 @@ namespace NSG
 		PCamera camera_;
 		PScene scene_;
 		bool updateOrientation_;
-		Window* window_;
+		PWeakWindow window_;
 		Vector3 originalPosition_;
 		Quaternion originalOrientation_;
 		PNode trackNode_;

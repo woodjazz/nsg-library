@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <memory>
+#include "Check.h"
 
 namespace NSG
 {
