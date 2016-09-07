@@ -45,7 +45,7 @@ namespace NSG
 
     GUI::GUI(const std::string& name)
         : Object(name),
-          graphics_(RenderingContext::GetPtr()),
+          graphics_(RenderingContext::GetSharedPtr()),
           fontTexture_(std::make_shared<Texture2D>(name + "GUIFontTexture")),
           program_(Program::GetOrCreate("IMGUI\n")),
           vBuffer_(new VertexBuffer(GL_STREAM_DRAW)),
@@ -126,14 +126,15 @@ namespace NSG
         const float height = io.DisplaySize.y;
         camera_->SetWindow(window_.lock());
         camera_->SetOrthoProjection({ 0, width, height, 0, -1, 1 });
-        graphics_->SetupPass(&pass_);
-        CHECK_CONDITION(graphics_->SetProgram(program_.get()));
-        graphics_->SetVertexBuffer(vBuffer_.get());
-        graphics_->SetIndexBuffer(iBuffer_.get());
+		auto ctx = graphics_.lock();
+		ctx->SetupPass(&pass_);
+        CHECK_CONDITION(ctx->SetProgram(program_.get()));
+		ctx->SetVertexBuffer(vBuffer_.get());
+		ctx->SetIndexBuffer(iBuffer_.get());
         program_->SetVariables(false);
 
-        graphics_->SetVertexBuffer(vBuffer_.get());
-        graphics_->SetAttributes([&]()
+		ctx->SetVertexBuffer(vBuffer_.get());
+		ctx->SetAttributes([&]()
         {
             auto attribLocationPosition = program_->GetAttPositionLoc();
             auto attribLocationUV = program_->GetAttTextCoordLoc0();
@@ -160,9 +161,9 @@ namespace NSG
                 }
                 else
                 {
-                    graphics_->SetTexture(0, (GLuint)(intptr_t)pcmd->TextureId);
-                    graphics_->SetScissorTest(true, (int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-                    graphics_->DrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, GL_UNSIGNED_SHORT, idx_buffer_offset);
+					ctx->SetTexture(0, (GLuint)(intptr_t)pcmd->TextureId);
+					ctx->SetScissorTest(true, (int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+					ctx->DrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, GL_UNSIGNED_SHORT, idx_buffer_offset);
                 }
                 idx_buffer_offset += pcmd->ElemCount;
             }

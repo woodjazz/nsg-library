@@ -119,7 +119,7 @@ namespace NSG
           light_(nullptr),
           camera_(nullptr),
 		  scene_(nullptr),
-          graphics_(RenderingContext::GetPtr())
+          graphics_(RenderingContext::GetSharedPtr())
     {
         memset(&textureLoc_, -1, sizeof(textureLoc_));
         memset(&u_uvTransformLoc_, -1, sizeof(u_uvTransformLoc_));
@@ -196,7 +196,7 @@ namespace NSG
         pFShader_ = PFragmentShader(new FragmentShader(fShader.c_str()));
         if (Initialize())
         {
-            graphics_->SetProgram(this);
+            graphics_.lock()->SetProgram(this);
             SetUniformLocations();
         }
     }
@@ -212,8 +212,9 @@ namespace NSG
         pFShader_ = nullptr;
         glDeleteProgram(id_);
 
-        if (graphics_->GetProgram() == this)
-            graphics_->SetProgram(nullptr);
+		auto ctx = graphics_.lock();
+        if (ctx && ctx->GetProgram() == this)
+			ctx->SetProgram(nullptr);
 
         activeSkeleton_ = nullptr;
         activeNode_ = nullptr;
@@ -483,7 +484,7 @@ namespace NSG
                 {
                     MaterialTexture type = (MaterialTexture)index;
                     auto texture = material_->GetTexture(type).get();
-                    graphics_->SetTexture(index, texture);
+                    graphics_.lock()->SetTexture(index, texture);
 
                     if (u_uvTransformLoc_[index] != -1)
                         glUniform4fv(u_uvTransformLoc_[index], 1, &texture->GetUVTransform()[0]);
@@ -550,7 +551,7 @@ namespace NSG
             const std::vector<std::string>& names = skeleton_->GetShaderOrder();
             size_t nBones = names.size();
             PNode armatureNode = node_->GetArmature();
-            CHECK_ASSERT(graphics_->GetMesh()->HasDeformBones());
+            CHECK_ASSERT(graphics_.lock()->GetMesh()->HasDeformBones());
             CHECK_ASSERT(armatureNode);
             Matrix4 globalInverseModelMatrix(1);
             // In order to make all the bones relatives to the armature.
@@ -578,7 +579,7 @@ namespace NSG
     Matrix4 Program::AdjustProjection(const Matrix4& m) const
     {
         auto slopeScaledBias = material_->GetSlopeScaledBias() * light_->GetSlopeScaledBias();
-        graphics_->SetSlopeScaledBias(slopeScaledBias);
+        graphics_.lock()->SetSlopeScaledBias(slopeScaledBias);
 
         Matrix4 m1(m);
         // Add constant depth bias to the projection matrix
@@ -740,7 +741,7 @@ namespace NSG
                     if (textureLoc_[index] != -1)
                     {
                         auto shadowMap = light_->GetShadowMap(i).get();
-                        graphics_->SetTexture(index, shadowMap);
+                        graphics_.lock()->SetTexture(index, shadowMap);
                     }
                 }
             }

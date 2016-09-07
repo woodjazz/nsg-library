@@ -35,7 +35,7 @@ namespace NSG
           usage_(usage),
           bufferSize_(0),
           dynamic_(usage != GL_STATIC_DRAW),
-          graphics_(RenderingContext::GetPtr())
+          graphics_(RenderingContext::GetSharedPtr())
     {
 		glGenBuffers(1, &id_);
     }
@@ -45,7 +45,7 @@ namespace NSG
           usage_(usage),
           bufferSize_(bufferSize),
           dynamic_(usage != GL_STATIC_DRAW),
-		  graphics_(RenderingContext::GetPtr())
+		  graphics_(RenderingContext::GetSharedPtr())
     {
         CHECK_GL_STATUS();
 

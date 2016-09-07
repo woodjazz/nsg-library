@@ -102,7 +102,7 @@ static int Test02()
 
 static int Test03()
 {
-	auto window0 = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
+    auto window0 = Window::Create("hiddenWindow1", (int)WindowFlag::HIDDEN);
 
 	auto onLoad = [&](const std::string & data)
 	{

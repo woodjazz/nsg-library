@@ -45,7 +45,7 @@ namespace NSG
     {
         CHECK_GL_STATUS();
 
-        CHECK_CONDITION(graphics_->SetIndexBuffer(this));
+        CHECK_CONDITION(graphics_.lock()->SetIndexBuffer(this));
 
         glBufferData(type_, bufferSize, nullptr, usage_);
 
@@ -62,8 +62,9 @@ namespace NSG
 
     IndexBuffer::~IndexBuffer()
     {
-        if (graphics_->GetIndexBuffer() == this)
-            graphics_->SetIndexBuffer(nullptr);
+		auto context = graphics_.lock();
+		if (context && context->GetIndexBuffer() == this)
+			context->SetIndexBuffer(nullptr);
     }
 
     void IndexBuffer::Unbind()
@@ -74,7 +75,7 @@ namespace NSG
     void IndexBuffer::UpdateData(const Indexes& indexes)
     {
         CHECK_GL_STATUS();
-        graphics_->SetIndexBuffer(this, true);
+        graphics_.lock()->SetIndexBuffer(this, true);
         GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
         if (bytes2Set > bufferSize_)
         {
@@ -90,7 +91,7 @@ namespace NSG
     void IndexBuffer::SetData(GLsizeiptr size, const GLvoid * data)
     {
         CHECK_GL_STATUS();
-        graphics_->SetIndexBuffer(this, true);
+        graphics_.lock()->SetIndexBuffer(this, true);
         glBufferData(type_, size, data, usage_);
         bufferSize_ = size;
         CHECK_GL_STATUS();

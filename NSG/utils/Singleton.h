@@ -50,6 +50,11 @@ namespace NSG
             return p_.lock().get();
 	    }
 
+		inline static std::shared_ptr<T> GetSharedPtr()
+		{
+			return p_.lock();
+		}
+
 	protected:
 		Singleton()
 		{

@@ -42,7 +42,7 @@ namespace NSG
 
         CHECK_GL_STATUS();
 
-        CHECK_CONDITION(graphics_->SetVertexBuffer(this));
+        CHECK_CONDITION(graphics_.lock()->SetVertexBuffer(this));
 
         glBufferData(type_, bufferSize, nullptr, usage_);
 
@@ -60,8 +60,9 @@ namespace NSG
 
     VertexBuffer::~VertexBuffer()
     {
-        if (graphics_ && graphics_->GetVertexBuffer() == this)
-            graphics_->SetVertexBuffer(nullptr);
+		auto context = graphics_.lock();
+        if (context && context->GetVertexBuffer() == this)
+			context->SetVertexBuffer(nullptr);
     }
 
     void VertexBuffer::Unbind()
@@ -72,7 +73,7 @@ namespace NSG
     void VertexBuffer::UpdateData(const VertexsData& vertexes)
     {
         CHECK_GL_STATUS();
-        graphics_->SetVertexBuffer(this, true);
+        graphics_.lock()->SetVertexBuffer(this, true);
         GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
         if (bytes2Set > bufferSize_)
         {
@@ -88,7 +89,7 @@ namespace NSG
     void VertexBuffer::SetData(GLsizeiptr size, const GLvoid * data)
     {
         CHECK_GL_STATUS();
-        graphics_->SetVertexBuffer(this, true);
+        graphics_.lock()->SetVertexBuffer(this, true);
         glBufferData(type_, size, data, usage_);
         bufferSize_ = size;
         CHECK_GL_STATUS();

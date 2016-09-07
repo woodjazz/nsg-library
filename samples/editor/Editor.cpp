@@ -368,7 +368,7 @@ PTexture Editor::GetMaterialPreview(PMaterial material)
         previewNode_->SetMaterial(material);
         auto oldFrameBuffer = graphics->SetFrameBuffer(previewFrameBuffer_.get());
         auto currentWindow = graphics->GetWindow();
-        Renderer::GetPtr()->Render(nullptr, scenePreview_.get());
+        //Renderer::GetPtr()->Render(nullptr, scenePreview_.get());
         graphics->SetFrameBuffer(oldFrameBuffer);
         graphics->SetWindow(currentWindow.lock());
         return previewFrameBuffer_->GetColorTexture();
@@ -389,7 +389,7 @@ PTexture Editor::GetScenePreview(Scene* scene, Camera* camera)
         auto currentWindow = graphics->GetWindow();
         auto renderer = Renderer::GetPtr();
         auto context = renderer->SetContext(RendererContext::EDITOR);
-        renderer->Render(nullptr, scene, camera);
+       // renderer->Render(nullptr, scene, camera);
         renderer->SetContext(context);
         graphics->SetFrameBuffer(oldFrameBuffer);
         graphics->SetWindow(currentWindow.lock());
@@ -407,7 +407,7 @@ PTexture Editor::GetGamePreview(Scene* scene, Camera* camera)
         auto currentWindow = graphics->GetWindow();
         auto renderer = Renderer::GetPtr();
         auto context = renderer->SetContext(RendererContext::DEFAULT);
-        renderer->Render(nullptr, scene, camera);
+        //renderer->Render(nullptr, scene, camera);
 		auto window = currentWindow.lock();
 		gameGUI_.Render(window, [&](){window->SigDrawIMGUI()->Run(); });
         renderer->SetContext(context);

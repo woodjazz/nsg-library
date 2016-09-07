@@ -350,14 +350,6 @@ namespace NSG
             CHECK_ASSERT(value == STENCIL_SIZE);
         }
 
-        #if defined(IS_TARGET_WINDOWS) || defined(IS_TARGET_LINUX)
-        {
-            glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
-            CHECK_CONDITION(GLEW_OK == glewInit());
-            CHECK_CONDITION(GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil)
-        }
-        #endif
-
         #if !defined(EMSCRIPTEN)
         SDL_SetWindowData(SDL_GetWindowFromID(windowID_), InternalPointer, this);
         #endif

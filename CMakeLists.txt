@@ -124,17 +124,12 @@ include_directories(${IMGUI_INCLUDE_DIR})
 list(APPEND LIBRARIES_2_LINK imgui)
 set_property(TARGET imgui PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
-
 ##################################
-# glew
+# opengl
 ##################################
 if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB AND NOT IS_TARGET_OSX)
 	find_package(OpenGL REQUIRED)
-	add_definitions(-DGLEW_STATIC)
-	include_directories(${DEPENDENCIES_DIR}/glew/include)
-	add_subdirectory(${DEPENDENCIES_DIR}/glew)
-	list(APPEND LIBRARIES_2_LINK glew) 
-	set_property(TARGET glew PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
+	list(APPEND LIBRARIES_2_LINK ${OPENGL_LIBRARY})
 endif()
 
 ##################################

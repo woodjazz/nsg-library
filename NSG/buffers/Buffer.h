@@ -45,7 +45,7 @@ namespace NSG
 		GLenum usage_;
 		GLsizeiptr bufferSize_;
 		bool dynamic_;
-		RenderingContext* graphics_;
+		PWeakRenderingContext graphics_;
 	};
 }
 

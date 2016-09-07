@@ -49,7 +49,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     Renderer::Renderer()
-        : graphics_(RenderingContext::GetPtr()),
+        : graphics_(RenderingContext::GetSharedPtr()),
           window_(nullptr),
           scene_(nullptr),
           camera_(nullptr),
@@ -267,19 +267,20 @@ namespace NSG
 
     void Renderer::Draw(const Batch* batch, const Pass* pass, const Light* light, const Camera* camera)
     {
-        graphics_->SetMesh(batch->GetMesh());
+		auto ctx = graphics_.lock();
+		ctx->SetMesh(batch->GetMesh());
         if (batch->AllowInstancing())
         {
-            if (graphics_->SetupProgram(pass, scene_, camera, nullptr, batch->GetMaterial(), light))
-                graphics_->DrawInstancedActiveMesh(*batch, instanceBuffer_.get());
+            if (ctx->SetupProgram(pass, scene_, camera, nullptr, batch->GetMaterial(), light))
+				ctx->DrawInstancedActiveMesh(*batch, instanceBuffer_.get());
         }
         else
         {
             auto& nodes = batch->GetNodes();
             for (auto& node : nodes)
             {
-                if (graphics_->SetupProgram(pass, scene_, camera, node, batch->GetMaterial(), light))
-                    graphics_->DrawActiveMesh();
+                if (ctx->SetupProgram(pass, scene_, camera, node, batch->GetMaterial(), light))
+					ctx->DrawActiveMesh();
             }
         }
     }
@@ -346,9 +347,10 @@ namespace NSG
             auto meshLines = debugRenderer->GetDebugLines();
             if (!meshLines->IsEmpty())
             {
-                graphics_->SetMesh(meshLines.get());
-                if (graphics_->SetupProgram(&debugPass_, scene_, camera_, nullptr, debugMaterial_.get(), nullptr))
-                    graphics_->DrawActiveMesh();
+				auto ctx = graphics_.lock();
+				ctx->SetMesh(meshLines.get());
+                if (ctx->SetupProgram(&debugPass_, scene_, camera_, nullptr, debugMaterial_.get(), nullptr))
+					ctx->DrawActiveMesh();
                 debugRenderer->Clear();
             }
         }
@@ -360,25 +362,28 @@ namespace NSG
         auto meshLines = debugRenderer_->GetDebugLines();
         if (!meshLines->IsEmpty())
         {
-            graphics_->SetMesh(meshLines.get());
-            if (graphics_->SetupProgram(&debugPass_, scene_, camera_, nullptr, debugMaterial_.get(), nullptr))
-                graphics_->DrawActiveMesh();
+			auto ctx = graphics_.lock();
+			ctx->SetMesh(meshLines.get());
+            if (ctx->SetupProgram(&debugPass_, scene_, camera_, nullptr, debugMaterial_.get(), nullptr))
+				ctx->DrawActiveMesh();
             debugRenderer_->Clear();
         }
     }
 
     void Renderer::Render(const Pass* pass, Mesh* mesh, Material* material)
     {
-        graphics_->SetMesh(mesh);
-        if (graphics_->SetupProgram(pass, nullptr, nullptr, nullptr, material, nullptr))
-            graphics_->DrawActiveMesh();
+		auto ctx = graphics_.lock();
+		ctx->SetMesh(mesh);
+        if (ctx->SetupProgram(pass, nullptr, nullptr, nullptr, material, nullptr))
+			ctx->DrawActiveMesh();
     }
 
     void Renderer::Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light)
     {
-        graphics_->SetMesh(node->GetMesh().get());
-        if (graphics_->SetupProgram(pass, scene, camera, node, node->GetMaterial().get(), light))
-            graphics_->DrawActiveMesh();
+		auto ctx = graphics_.lock();
+        ctx->SetMesh(node->GetMesh().get());
+        if (ctx->SetupProgram(pass, scene, camera, node, node->GetMaterial().get(), light))
+            ctx->DrawActiveMesh();
     }
 
     void Renderer::Render(Window* window, Scene* scene)
@@ -418,13 +423,14 @@ namespace NSG
     void Renderer::RenderFiltered(const std::vector<SceneNode*>& objs)
     {
         auto filtered = objs;
-        auto oldFrameBuffer = graphics_->GetFrameBuffer();
+		auto ctx = graphics_.lock();
+        auto oldFrameBuffer = ctx->GetFrameBuffer();
         auto filterFrameBuffer = window_->GetFilterFrameBuffer();
         do
         {
-            graphics_->SetFrameBuffer(filterFrameBuffer);
-            graphics_->SetClearColor(Color(0, 0, 0, 0));
-            graphics_->ClearBuffers(true, false, false);
+            ctx->SetFrameBuffer(filterFrameBuffer);
+            ctx->SetClearColor(Color(0, 0, 0, 0));
+            ctx->ClearBuffers(true, false, false);
             auto filter = filtered[0]->GetFilter();
             auto it = std::partition(filtered.begin(), filtered.end(), [&](SceneNode * obj)
             {
@@ -434,7 +440,7 @@ namespace NSG
             std::vector<SceneNode*> nodesSameFilter(filtered.begin() , it);
             FilterPass(nodesSameFilter);
             filtered.erase(filtered.begin(), it);
-            graphics_->SetFrameBuffer(oldFrameBuffer);
+            ctx->SetFrameBuffer(oldFrameBuffer);
             filter->SetTexture(MaterialTexture::DIFFUSE_MAP, filterFrameBuffer->GetColorTexture());
             Renderer::GetPtr()->Render(&addPass_, QuadMesh::GetNDC().get(), filter.get());
         }
@@ -447,16 +453,17 @@ namespace NSG
         window_ = window;
         scene_ = scene;
         camera_ = camera;
-        graphics_->SetWindow(SharedFromPointer(window));
+		auto ctx = graphics_.lock();
+        ctx->SetWindow(SharedFromPointer(window));
         if (!scene)
-            graphics_->ClearAllBuffers();
+            ctx->ClearAllBuffers();
         else if (scene->GetDrawablesNumber())
         {
             std::vector<SceneNode*> visibles;
             if (camera_)
             {
                 scene->GetVisibleNodes(camera_, visibles);
-                graphics_->SetClearColor(Color(1));
+                ctx->SetClearColor(Color(1));
                 ShadowGenerationPass();
             }
             else
@@ -469,8 +476,8 @@ namespace NSG
                 auto hasFiltered = !filtered.empty() && window_->UseFrameRender();
                 auto transparent = ExtractTransparent(visibles);
                 RemoveFrom(visibles, transparent);
-                graphics_->SetClearColor(Color(scene->GetHorizonColor(), 1));
-                graphics_->ClearAllBuffers();
+                ctx->SetClearColor(Color(scene->GetHorizonColor(), 1));
+                ctx->ClearAllBuffers();
 
                 if (!visibles.empty())
                 {
@@ -502,7 +509,7 @@ namespace NSG
         }
         else
         {
-            graphics_->ClearAllBuffers();
+            ctx->ClearAllBuffers();
             camera_ = overlaysCamera_.get();
             RenderOverlays();
         }

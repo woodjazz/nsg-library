@@ -57,7 +57,7 @@ namespace NSG
         : Object(key.GetName()),
           vao_(0),
           key_(key),
-          graphics_(RenderingContext::GetPtr())
+          graphics_(RenderingContext::GetSharedPtr())
     {
     }
 
@@ -85,9 +85,9 @@ namespace NSG
 
         CHECK_ASSERT(vao_ != 0);
 
-        graphics_->SetVertexArrayObj(this);
-
-        graphics_->SetVertexBuffer(vBuffer, true);
+		auto ctx = graphics_.lock();
+		ctx->SetVertexArrayObj(this);
+		ctx->SetVertexBuffer(vBuffer, true);
 
         GLuint position_loc = program->GetAttPositionLoc();
         GLuint texcoord_loc0 = program->GetAttTextCoordLoc0();
@@ -122,14 +122,14 @@ namespace NSG
         if (bones_weight != -1)
             glEnableVertexAttribArray((int)AttributesLoc::BONES_WEIGHT);
 
-        graphics_->SetVertexAttrPointers();
+		ctx->SetVertexAttrPointers();
 
-        graphics_->SetIndexBuffer(iBuffer, true);
+		ctx->SetIndexBuffer(iBuffer, true);
 
         if (key_.instancesBuffer)
         {
-            graphics_->SetVertexBuffer(key_.instancesBuffer);
-            graphics_->SetInstanceAttrPointers(program);
+			ctx->SetVertexBuffer(key_.instancesBuffer);
+			ctx->SetInstanceAttrPointers(program);
         }
 
         CHECK_GL_STATUS();
@@ -147,8 +147,9 @@ namespace NSG
 
     void VertexArrayObj::ReleaseResources()
     {
-        if (graphics_->GetVertexArrayObj() == this)
-            graphics_->SetVertexArrayObj(nullptr);
+		auto ctx = graphics_.lock();
+        if (ctx && ctx->GetVertexArrayObj() == this)
+			ctx->SetVertexArrayObj(nullptr);
         glDeleteVertexArrays(1, &vao_);
         vao_ = 0;
     }
@@ -156,7 +157,7 @@ namespace NSG
     void VertexArrayObj::Use()
     {
         if (IsReady())
-            graphics_->SetVertexArrayObj(this);
+            graphics_.lock()->SetVertexArrayObj(this);
     }
 
     void VertexArrayObj::Bind()

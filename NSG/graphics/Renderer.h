@@ -68,7 +68,7 @@ namespace NSG
         void DebugRendererPass();
         void RenderOverlays();
         void RenderFiltered(const std::vector<SceneNode*>& objs);
-        RenderingContext* graphics_;
+		PWeakRenderingContext graphics_;
         Window* window_;
         Scene* scene_;
         Camera* camera_;

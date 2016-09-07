@@ -46,7 +46,7 @@ namespace NSG
 		bool IsValid() override;
 		void Setup();
 		void InternalDraw(ImDrawData* draw_data);
-		RenderingContext* graphics_;
+		PWeakRenderingContext graphics_;
 		PTexture2D fontTexture_;
 		SignalKey::PSlot slotKey_;
 		SignalText::PSlot slotText_;

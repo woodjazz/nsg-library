@@ -87,6 +87,7 @@ namespace NSG
 
     class RenderingContext;
     typedef std::shared_ptr<RenderingContext> PRenderingContext;
+	typedef std::weak_ptr<RenderingContext> PWeakRenderingContext;
 
     class Frustum;
     typedef std::shared_ptr<Frustum> PFrustum;
