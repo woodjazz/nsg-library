@@ -70,8 +70,6 @@ namespace NSG
 
     WinWindow::~WinWindow()
     {
-        if (this == graphics_->GetWindow())
-            graphics_->SetWindow(nullptr);
         Close();
     }
 
@@ -269,13 +267,7 @@ namespace NSG
             Window::SetMainWindow(this);
         }
 
-        glewExperimental = true; // Needed for core profile. Solves issue with glGenVertexArrays
-        CHECK_CONDITION(GLEW_OK == glewInit());
-        CHECK_CONDITION(GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil)
-
         SetSize(width, height);
-
-        OnReady();
     }
 
     void WinWindow::Close()

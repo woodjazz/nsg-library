@@ -24,7 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-
 #define GLM_FORCE_RADIANS
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
@@ -349,15 +348,6 @@ namespace NSG
     {
         SceneNode* collider_;
         Vector3 normalB_;
-        float appliedImpulse_;
-        float appliedImpulseLateral1_;
-        float appliedImpulseLateral2_;
-        float contactMotion1_;
-        float contactMotion2_;
-        float contactCFM1_;
-        float contactCFM2_;
-        Vector3 lateralFrictionDir1_;
-        Vector3 lateralFrictionDir2_;
     };
 
     enum class BlendFilterMode

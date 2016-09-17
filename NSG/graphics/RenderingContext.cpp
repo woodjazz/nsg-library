@@ -497,7 +497,44 @@ namespace NSG
 
     void RenderingContext::ResetCachedState()
     {
-        Program::Clear();
+        CHECK_GL_STATUS();
+
+        currentFbo_ = 0;
+        currentColorTarget_ = TextureTarget::UNKNOWN;
+        vertexArrayObj_ = nullptr;
+        vertexBuffer_ = nullptr;
+        indexBuffer_ = nullptr;
+        activeProgram_ = nullptr;
+        activeTexture_ = 0;
+        enabledAttributes_ = 0;
+        lastMesh_ = nullptr;
+        lastProgram_ = nullptr;
+        activeMesh_ = nullptr;
+        //has_discard_framebuffer_ext_ = false;
+        //has_vertex_array_object_ext_ = false;
+        //has_map_buffer_range_ext_ = false;
+        //has_depth_texture_ext_ = false;
+        //has_depth_component24_ext_ = false;
+        //has_texture_non_power_of_two_ext_ = false;
+        //has_instanced_arrays_ext_ = false;
+        //has_packed_depth_stencil_ext_ = false;
+        //has_texture_compression_dxt1_ext_ = false;
+        //has_texture_compression_dxt3_ext_ = false;
+        //has_texture_compression_dxt5_ext_ = false;
+        //has_compressed_ETC1_RGB8_texture_ext_ = false;
+        //has_texture_compression_pvrtc_ext_ = false;
+        cullFaceMode_ = CullFaceMode::DEFAULT;
+        frontFaceMode_ = FrontFaceMode::DEFAULT;
+        //maxVaryingVectors_ = 0;
+        //maxTexturesCombined_ = 0;
+        //maxVertexUniformVectors_ = 0;
+        //maxFragmentUniformVectors_ = 0;
+        //maxVertexAttribs_ = 0;
+        depthFunc_ = DepthFunc::LESS;
+        //maxTextureSize_ = 64;
+        slopeScaledDepthBias_ = 0;
+
+        //Program::Clear();
 
         viewport_ = Recti(0);
 
@@ -507,12 +544,7 @@ namespace NSG
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-        VertexArrayObj::Clear();
-        lastMesh_ = nullptr;
-        lastProgram_ = nullptr;
-        activeMesh_ = nullptr;
-
-        CHECK_GL_STATUS();
+        //VertexArrayObj::Clear();
 
         SetClearColor(Color(0, 0, 0, 1));
         SetClearDepth(1);
@@ -521,8 +553,6 @@ namespace NSG
         SetStencilTest(DEFAULT_STENCIL_ENABLE, DEFAULT_STENCIL_WRITEMASK, DEFAULT_STENCIL_SFAIL,
                        DEFAULT_STENCIL_DPFAIL, DEFAULT_STENCIL_DPPASS, DEFAULT_STENCIL_FUNC, DEFAULT_STENCIL_REF, DEFAULT_STENCIL_COMPAREMASK);
         SetScissorTest();
-
-        CHECK_GL_STATUS();
 
         SetColorMask(DEFAULT_COLOR_MASK);
         SetDepthMask(DEFAULT_DEPTH_MASK);
@@ -533,7 +563,6 @@ namespace NSG
         EnableCullFace(DEFAULT_CULL_FACE_ENABLE);
         SetCullFace(CullFaceMode::DEFAULT);
         SetFrontFace(FrontFaceMode::DEFAULT);
-        CHECK_GL_STATUS();
 
         UnboundTextures();
         SetVertexArrayObj(nullptr);

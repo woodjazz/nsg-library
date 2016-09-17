@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
 
-Copyright (c) 2014-2016 Néstor Silveira Gorski
+Copyright (c) 2014-2016 N?stor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
@@ -30,56 +30,56 @@ PScene scene;
 
 std::pair<PSceneNode, PSceneNode> CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
 {
-	PSceneNode obj1;
-	{
-		auto obj = scene->CreateChild<SceneNode>();
-		obj->SetPosition(pos);
-		auto material = Material::Create();
-		material->SetRenderPass(RenderPass::UNLIT);
-		material->SetDiffuseColor(color);
-		obj->SetMesh(mesh);
-		obj->SetMaterial(material);
-		obj1 = obj;
-	}
+    PSceneNode obj1;
+    {
+        auto obj = scene->CreateChild<SceneNode>();
+        obj->SetPosition(pos);
+        auto material = Material::Create();
+        material->SetRenderPass(RenderPass::UNLIT);
+        material->SetDiffuseColor(color);
+        obj->SetMesh(mesh);
+        obj->SetMaterial(material);
+        obj1 = obj;
+    }
 
-	PSceneNode obj2;
-	{
-		auto obj = scene->CreateChild<SceneNode>();
-		obj->SetPosition(pos + Vector3(5, 0, 0));
-		auto material = Material::Create();
-		material->SetRenderPass(RenderPass::UNLIT);
-		material->SetDiffuseColor(color);
-		material->SetFillMode(FillMode::WIREFRAME);
-		obj->SetMesh(mesh);
-		obj->SetMaterial(material);
-		obj2 = obj;
-	}
+    PSceneNode obj2;
+    {
+        auto obj = scene->CreateChild<SceneNode>();
+        obj->SetPosition(pos + Vector3(5, 0, 0));
+        auto material = Material::Create();
+        material->SetRenderPass(RenderPass::UNLIT);
+        material->SetDiffuseColor(color);
+        material->SetFillMode(FillMode::WIREFRAME);
+        obj->SetMesh(mesh);
+        obj->SetMaterial(material);
+        obj2 = obj;
+    }
 
-	return std::pair<PSceneNode, PSceneNode>{obj1, obj2};
+    return std::pair<PSceneNode, PSceneNode>{obj1, obj2};
 }
 
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-	auto window = Window::Create();
+    auto window = Window::Create();
     scene = std::make_shared<Scene>("scene");
     auto camera = scene->CreateChild<Camera>();
     auto control = std::make_shared<CameraControl>(camera);
 
 
-	CreateObject(Mesh::Create<PlaneMesh>(), ColorRGB(1, 0, 0), Vector3(-20, 0, 0));
-	CreateObject(Mesh::Create<CircleMesh>(), ColorRGB(0, 1, 0), Vector3(-10, 0, 0));
-	CreateObject(Mesh::Create<BoxMesh>(), ColorRGB(0, 0, 1), Vector3(0, 0, 0));
-	CreateObject(Mesh::Create<EllipseMesh>(), ColorRGB(1, 1, 0), Vector3(10, 0, 0));
-	CreateObject(Mesh::Create<RectangleMesh>(), ColorRGB(1, 0, 1), Vector3(20, 0, 0));
-	CreateObject(Mesh::Create<RoundedRectangleMesh>(), ColorRGB(1, 1, 1), Vector3(30, 0, 0));
-	CreateObject(Mesh::Create<SphereMesh>(), ColorRGB(0, 1, 1), Vector3(40, 0, 0));
-	auto obj = CreateObject(Mesh::Create<CylinderMesh>(), ColorRGB(0.5f, 0, 0), Vector3(50, 0, 0));
-	//control->AutoZoom();
-	control->Track(obj.first);
+    CreateObject(Mesh::Create<PlaneMesh>(), ColorRGB(1, 0, 0), Vector3(-20, 0, 0));
+    CreateObject(Mesh::Create<CircleMesh>(), ColorRGB(0, 1, 0), Vector3(-10, 0, 0));
+    CreateObject(Mesh::Create<BoxMesh>(), ColorRGB(0, 0, 1), Vector3(0, 0, 0));
+    CreateObject(Mesh::Create<EllipseMesh>(), ColorRGB(1, 1, 0), Vector3(10, 0, 0));
+    CreateObject(Mesh::Create<RectangleMesh>(), ColorRGB(1, 0, 1), Vector3(20, 0, 0));
+    CreateObject(Mesh::Create<RoundedRectangleMesh>(), ColorRGB(1, 1, 1), Vector3(30, 0, 0));
+    CreateObject(Mesh::Create<SphereMesh>(), ColorRGB(0, 1, 1), Vector3(40, 0, 0));
+    auto obj = CreateObject(Mesh::Create<CylinderMesh>(), ColorRGB(0.5f, 0, 0), Vector3(50, 0, 0));
+    //control->AutoZoom();
+    control->Track(obj.first);
     window->SetScene(scene);
-	auto r = Engine::Create()->Run();
-	scene = nullptr;
-	return r;
+    auto r = Engine::Create()->Run();
+    scene = nullptr;
+    return r;
 }
 

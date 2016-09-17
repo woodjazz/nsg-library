@@ -37,13 +37,14 @@ namespace NSG
     class Window : public std::enable_shared_from_this<Window>
     {
     public:
+        static PWindow CreateExternal(const std::string& name = GetUniqueName("ExternalWindow"));
         static PWindow Create(const std::string& name = GetUniqueName("Window"), WindowFlags flags = (int)WindowFlag::SHOWN);
         static PWindow Create(const std::string& name, int x, int y, int width, int height, WindowFlags flags = (int)WindowFlag::SHOWN);
         virtual ~Window();
         virtual void ViewChanged(int width, int height);
-        virtual void Show() = 0;
-        virtual void Hide() = 0;
-        virtual void Raise() = 0;
+        virtual void Show() {}
+        virtual void Hide() {}
+        virtual void Raise() {}
         void OnMouseMove(int x, int y);
         void OnMouseWheel(float x, float y);
         void OnMouseDown(int button, int x, int y);
@@ -56,7 +57,7 @@ namespace NSG
         void OnJoystickUp(int joystickID, JoystickButton button);
         void OnJoystickAxisMotion(int joystickID, JoystickAxis axis, float position);
         void RenderFrame();
-        virtual void SwapWindowBuffers() = 0;
+        virtual void SwapWindowBuffers() {}
         virtual void EnterBackground();
         virtual void EnterForeground();
         void DropFile(const std::string& filePath);
@@ -73,7 +74,7 @@ namespace NSG
         void EnableFilters(bool enable);
         FrameBuffer* GetFrameBuffer() const { return frameBuffer_.get(); }
         FrameBuffer* GetFilterFrameBuffer() const { return filterFrameBuffer_.get(); }
-        void SetScene(PWeakScene scene);
+        void SetScene(PScene scene);
         PWeakScene GetScene() const { return scene_; }
         void ShowMap(PTexture texture);
         static bool AllowWindowCreation();
@@ -107,8 +108,8 @@ namespace NSG
         void SetPixelFormat(PixelFormat value) { pixelFormat_ = value; }
         void RenderFilters();
         virtual void SetupImgui();
-        virtual void BeginImguiRender() = 0;
-        virtual void SetContext() = 0;
+        virtual void BeginImguiRender() {}
+        virtual void SetContext() {}
         void SetRender(IRender* render);
         void RemoveRender(IRender* render);
         PShowTexture GetShowMap() const { return showMap_; }
@@ -116,10 +117,10 @@ namespace NSG
         void RemoveFilter(PMaterial filter);
         bool UseFrameRender();
         void ShowMap();
+        void OnReady();
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);
-        void OnReady();
         std::string name_;
         bool isClosed_;
         bool minimized_;
@@ -133,10 +134,10 @@ namespace NSG
         PRenderingContext graphics_;
         PRenderer renderer_;
     private:
+        void CreateFrameBuffer();
 		void OnMouseMove(float x, float y);
 		void OnMouseDown(int button, float x, float y);
 		void OnMouseUp(int button, float x, float y);
-        void CreateFrameBuffer();
         bool BeginFrameRender();
         std::vector<PWeakMaterial> filters_;
         PFrameBuffer frameBuffer_;

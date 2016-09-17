@@ -36,7 +36,8 @@ cd ..
 cmake -E make_directory $1
 cd $1
 
-cmake $SOURCE_FOLDER -G "Xcode"
+#cmake $SOURCE_FOLDER -G "Xcode"
+cmake $SOURCE_FOLDER -G "Xcode" -DCMAKE_PREFIX_PATH="$HOME/Qt/5.7/clang_64/lib/cmake/Qt5Widgets;$HOME/Qt/5.7/clang_64/lib/cmake/Qt5Quick"
 #xcodebuild -list -project nsg-library.xcodeproj
 #xcodebuild -configuration Release
 #xcodebuild -configuration Debug

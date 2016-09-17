@@ -80,24 +80,6 @@ namespace NSG
         slotLightBeingDestroy_ = nullptr;
         slotCameraBeingDestroy_ = nullptr;
         slotPSBeingDestroy_ = nullptr;
-		auto window = window_.lock().get();
-        if (window)
-        {
-            auto scene = window->GetScene().lock();
-            if(scene.get() == this)
-                window->SetScene(PWeakScene());
-        }
-        auto graphics = RenderingContext::GetPtr();
-        if (graphics)
-        {
-            auto window = graphics->GetWindow().lock();
-            if (window)
-            {
-                auto scene = window->GetScene().lock();
-                if(scene.get() == this)
-                    window->SetScene(PWeakScene());
-            }
-        }
     }
 
     void Scene::SetWindow(PWindow window)

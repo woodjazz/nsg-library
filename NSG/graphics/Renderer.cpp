@@ -449,12 +449,14 @@ namespace NSG
 
     void Renderer::Render(Window* window, Scene* scene, Camera* camera)
     {
-        CHECK_ASSERT(window && "window cannot be null");
         window_ = window;
         scene_ = scene;
         camera_ = camera;
 		auto ctx = graphics_.lock();
-        ctx->SetWindow(SharedFromPointer(window));
+		if(window)
+			ctx->SetWindow(SharedFromPointer(window));
+		else
+			ctx->SetWindow(PWindow());
         if (!scene)
             ctx->ClearAllBuffers();
         else if (scene->GetDrawablesNumber())
@@ -499,7 +501,8 @@ namespace NSG
                     for (auto& obj : filtered)
                         obj->ClearUniform();
                 }
-                window->RenderFilters();
+				if(window)
+					window->RenderFilters();
                 if (debugPhysics_)
                     DebugPhysicsPass();
                 DebugRendererPass();
@@ -513,7 +516,8 @@ namespace NSG
             camera_ = overlaysCamera_.get();
             RenderOverlays();
         }
-        window->ShowMap();
+		if(window)
+			window->ShowMap();
     }
 
     SignalDebugRenderer::PSignal Renderer::SigDebugRenderer()

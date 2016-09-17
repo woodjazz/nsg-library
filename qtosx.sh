@@ -1,0 +1,1 @@
+open "qt/Qt Creator.app"

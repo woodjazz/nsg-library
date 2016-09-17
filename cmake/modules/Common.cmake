@@ -13,10 +13,14 @@ macro (setup_common)
         if (NOT CMAKE_BUILD_TYPE)
             message("Unknown build type. Building Release version by default")
             set (CMAKE_BUILD_TYPE Release)
-        else()
-            message(STATUS "Building ${CMAKE_BUILD_TYPE} version")
         endif ()
     endif()
+
+    message(STATUS "Building ${CMAKE_BUILD_TYPE} version")
+
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE})
+    #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE})
+    #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})    
 
     if(ANDROID)
         message(STATUS "detected ANDROID")
@@ -169,7 +173,7 @@ endmacro (setup_common_ios_properties)
 ##################################################################################
 ##################################################################################
 ##################################################################################
-macro (setup_executable)
+macro (setup_executable isQTProject)
 
     get_filename_component(PROJECT_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
     PROJECT(${PROJECT_NAME})
@@ -178,6 +182,25 @@ macro (setup_executable)
     file(GLOB hdr "*.h")
     set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/data)
     set(art_dir ${CMAKE_CURRENT_SOURCE_DIR}/art)
+
+    if(${isQTProject})
+        file(GLOB qrc_files "*.qrc")
+        qt5_add_resources(qt_resources ${qrc_files})
+        add_definitions (-DHAS_QT5)
+        # The Qt5Widgets_INCLUDES also includes the include directories for
+        # dependencies QtCore and QtGui
+        include_directories(${Qt5Widgets_INCLUDE_DIRS})
+        include_directories(${Qt5Quick_INCLUDES_DIRS})
+        # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
+        add_definitions(${Qt5Widgets_DEFINITIONS})
+        add_definitions(${Qt5Quick_DEFINITIONS})
+        # Executables fail to build with Qt 5 in the default configuration
+        # without -fPIE. We add that here.
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} ${Qt5Quick_EXECUTABLE_COMPILE_FLAGS}")
+        #message("${Qt5Widgets_INCLUDE_DIRS} ${Qt5Quick_INCLUDES_DIRS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} ${Qt5Quick_EXECUTABLE_COMPILE_FLAGS}")
+        list(APPEND LIBRARIES_2_LINK ${Qt5Widgets_LIBRARIES} ${Qt5Quick_LIBRARIES})
+        #message("${Qt5Widgets_LIBRARIES} ${Qt5Quick_LIBRARIES} ${qt_resources} ${src} ${Qt5Widgets_INCLUDES} ${Qt5Quick_INCLUDES}")
+    endif()
 
     if(ANDROID)
         
@@ -248,13 +271,13 @@ macro (setup_executable)
 
         if(EXISTS "${data_dir}")
             if(IS_EXECUTABLE_A_BUNDLE)
-                add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr} ${data_dir})
+                add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr} ${data_dir} ${qt_resources})
                 set_source_files_properties(${data_dir} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
             else()
-                add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr})
+                add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr} ${qt_resources})
             endif()
         else()
-            add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr})
+            add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr} ${qt_resources})
         endif()
 
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
@@ -270,7 +293,7 @@ macro (setup_executable)
     elseif(EMSCRIPTEN)
 
         set(CMAKE_EXECUTABLE_SUFFIX ".bc")
-        add_executable(${PROJECT_NAME} ${src} ${hdr} )
+        add_executable(${PROJECT_NAME} ${src} ${hdr})
         set_target_properties(${PROJECT_NAME} PROPERTIES ENABLE_EXPORTS "1")
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
@@ -301,7 +324,7 @@ macro (setup_executable)
 
     else()
 
-        add_executable(${PROJECT_NAME} ${src} ${hdr} )
+        add_executable(${PROJECT_NAME} ${src} ${hdr} ${qt_resources} )
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
         if(UNIX)
@@ -348,13 +371,13 @@ endmacro (setup_executable)
 ##################################################################################
 ##################################################################################
 macro (setup_tool)
-    setup_executable()
+    setup_executable(FALSE)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
 endmacro (setup_tool)
 
 macro (setup_app_tool)
     set(IS_EXECUTABLE_A_BUNDLE 1)   
-    setup_executable()
+    setup_executable(FALSE)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
 endmacro (setup_app_tool)
 
@@ -386,16 +409,38 @@ endmacro (setup_library)
 ##################################################################################
 macro (setup_sample)
     set(IS_EXECUTABLE_A_BUNDLE 1)
-    setup_executable()
+    setup_executable(FALSE)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "samples")
 endmacro (setup_sample)
 
 ##################################################################################
 ##################################################################################
 ##################################################################################
+macro (setup_qt_sample)
+    if (NOT CMAKE_GENERATOR STREQUAL Xcode)
+        find_package(Qt5Widgets)
+        if(Qt5Widgets_FOUND)
+            find_package(Qt5Quick REQUIRED)
+            set(IS_EXECUTABLE_A_BUNDLE 1)
+            aux_source_directory(. SRC_LIST)
+            # Tell CMake to run moc when necessary:
+            set(CMAKE_AUTOMOC ON)
+            # As moc files are generated in the binary dir, tell CMake
+            # to always look for includes there:
+            set(CMAKE_INCLUDE_CURRENT_DIR ON)
+            setup_executable(TRUE)
+            set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "samples")
+        endif()
+    endif()
+endmacro (setup_qt_sample)
+
+
+##################################################################################
+##################################################################################
+##################################################################################
 macro (setup_test)
     #set(IS_EXECUTABLE_A_BUNDLE 1)
-    setup_executable()
+    setup_executable(FALSE)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tests")
     add_test(${PROJECT_NAME} ${PROJECT_NAME})
 endmacro (setup_test)

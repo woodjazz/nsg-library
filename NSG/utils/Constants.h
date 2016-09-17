@@ -28,6 +28,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    static const float DEG2RAD = 0.01745329251994329576923690768489f;
+    static const float RAD2DEG = 57.295779513082320876798154814105f;
     static const float PI = 3.1415926535897932384626433832795028f;
     static const float TWO_PI = 2 * PI;
     static const float PI90 = PI / 2.f;

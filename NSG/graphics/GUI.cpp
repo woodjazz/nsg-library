@@ -50,10 +50,10 @@ namespace NSG
           program_(Program::GetOrCreate("IMGUI\n")),
           vBuffer_(new VertexBuffer(GL_STREAM_DRAW)),
           iBuffer_(new IndexBuffer(GL_STREAM_DRAW)),
-          state_(new char[ImGui::GetInternalStateSize()]),
+          state_(ImGui::CreateContext()),
           configured_(false)
     {
-        ImGui::SetInternalState(state_, true);
+        ImGui::SetCurrentContext(state_);
 
         camera_ = std::make_shared<Camera>(name + "IMGUICamera");
         program_->Set(camera_.get());
@@ -77,7 +77,7 @@ namespace NSG
 
         slotTextureReleased_ = fontTexture_->SigReleased()->Connect([this]()
         {
-            ImGui::SetInternalState(state_);
+            ImGui::SetCurrentContext(state_);
             unsigned char* pixels;
             int width, height;
             ImGuiIO& io = ImGui::GetIO();
@@ -89,7 +89,7 @@ namespace NSG
 
         slotTextureAllocated_ = fontTexture_->SigAllocated()->Connect([this]()
         {
-            ImGui::SetInternalState(state_);
+            ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             // Store our identifier
             io.Fonts->TexID = (void*)(intptr_t)fontTexture_->GetID();
@@ -103,9 +103,9 @@ namespace NSG
 
     GUI::~GUI()
     {
-        ImGui::SetInternalState(state_);
+        ImGui::SetCurrentContext(state_);
         ImGui::Shutdown();
-        delete[] state_;
+		ImGui::DestroyContext(state_);
     }
 
 	bool GUI::IsValid()
@@ -176,7 +176,7 @@ namespace NSG
         if (!window || !IsReady())
             return;
         Setup();
-        ImGui::SetInternalState(state_);
+        ImGui::SetCurrentContext(state_);
         window_ = window;
         window->BeginImguiRender();
         ImGuiIO& io = ImGui::GetIO();
@@ -207,7 +207,7 @@ namespace NSG
 
         slotKey_ = mainWindow->SigKey()->Connect([this](int key, int action, int modifier)
         {
-            ImGui::SetInternalState(state_);
+            ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             io.KeysDown[key] = action ? true : false;
             io.KeyShift = (modifier & NSG_KEY_MOD_SHIFT) != 0;
@@ -217,14 +217,14 @@ namespace NSG
 
         slotText_ = mainWindow->SigText()->Connect([this](std::string text)
         {
-            ImGui::SetInternalState(state_);
+            ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             io.AddInputCharactersUTF8(text.c_str());
         });
 
         slotMouseMoved_ = mainWindow->SigMouseMoved()->Connect([this](int x, int y)
         {
-            ImGui::SetInternalState(state_);
+            ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
             //LOGI("%s", ToString(area_).c_str());
@@ -232,7 +232,7 @@ namespace NSG
 
         slotMouseDown_ = mainWindow->SigMouseDownInt()->Connect([this](int button, int x, int y)
         {
-            ImGui::SetInternalState(state_);
+            ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             if (button == NSG_BUTTON_LEFT)
                 io.MouseDown[0] = true;
@@ -245,7 +245,7 @@ namespace NSG
 
         slotMouseUp_ = mainWindow->SigMouseUpInt()->Connect([this](int button, int x, int y)
         {
-            ImGui::SetInternalState(state_);
+            ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             if (button == NSG_BUTTON_LEFT)
                 io.MouseDown[0] = false;
@@ -258,7 +258,7 @@ namespace NSG
 
         slotMouseWheel_ = mainWindow->SigMouseWheel()->Connect([this](float x, float y)
         {
-            ImGui::SetInternalState(state_);
+            ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             if (y > 0)
                 io.MouseWheel = 1;

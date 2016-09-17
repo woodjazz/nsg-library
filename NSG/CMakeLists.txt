@@ -36,7 +36,8 @@ if(ANDROID AND NOT USE_SDL)
 	list(APPEND src $ENV{ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
 	include_directories($ENV{ANDROID_NDK}/sources/android/native_app_glue)
 endif()
-	
+
+
 setup_library()
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 

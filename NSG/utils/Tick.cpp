@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "Tick.h"
 #include "Check.h"
-#include <algorithm>
 
 namespace NSG
 {
@@ -76,6 +75,5 @@ namespace NSG
 		}
 
 		EndTicks();
-
 	}
 }

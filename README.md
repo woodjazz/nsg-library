@@ -12,17 +12,35 @@ Install CMake 2.8 or superior.
 
 You need a c++11 compliant compiler.
 
----------------------------
-BUILDING: ANDROID
----------------------------
+--------------------------------
+BUILDING: ANDROID (Ubuntu 14.04)
+--------------------------------
+
+sudo apt-get install openjdk-7-jdk
+
+In order to install Android SDK:
+sudo apt-get install lib32z1 lib32ncurses5 lib32bz2-1.0 lib32stdc++6
+
+Install SDK,NDK
+Set the environment variables: ANDROID_SDK, ANDROID_NDK
+
+For the SDK you will need Android 4.4.2 (API 19)
+In order to start developing applications, you must install the Platform-tools
+and at least one version (API 19) of the Android platform, using the SDK Manager.
+(Or run: $ANDROID_SDK/tools/android update sdk --no-ui)
+
+Install ant (http://ant.apache.org/bindownload.cgi)
+Set the environment variables: ANT_HOME
+
+--------------------------------
+BUILDING: ANDROID (Windows/OSX)
+--------------------------------
 
 Install SDK,NDK,Java(JDK 1.7)
 
 For the SDK you will need Android 4.4.2 (API 19)
 
 Install ant (http://ant.apache.org/bindownload.cgi)
-
-Linux also needed: sudo apt-get install openjdk-7-jdk
 
 Set the environment variables: ANDROID_SDK, ANDROID_NDK, ANT_HOME and JAVA_HOME 
 
@@ -55,6 +73,14 @@ Install last Visual Studio
 BUILDING: OSX/IOS
 -------------------------
 Install last XCode
+
+-------------------------
+Blender export
+-------------------------
+In order to convert .blend files to .xml you shall install blender (last version)
+and define the following environment variable: BLENDER_BIN. 
+BLENDER_BIN has to point to the directory where the blender executable is placed.
+(See ExportBlendTool.cmake to see how cmake is looking for the blender executable)
 
 -------------------------
 Samples

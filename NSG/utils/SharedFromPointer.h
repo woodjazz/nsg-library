@@ -63,7 +63,7 @@ namespace NSG
 		}
 		catch (...)
 		{
-			CHECK_CONDITION(!"shared_from_this has failed!!!");
+            //CHECK_CONDITION(!"shared_from_this has failed!!!");
 		}
 		return nullptr;
 	}

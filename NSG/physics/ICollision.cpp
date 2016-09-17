@@ -43,15 +43,6 @@ namespace NSG
                 btManifoldPoint& pt = manifold->getContactPoint(j);
                 cinf.collider_ = collider->GetSceneNode();
                 cinf.normalB_ = ToVector3(pt.m_normalWorldOnB);
-                cinf.appliedImpulse_ = pt.m_appliedImpulse;
-                cinf.appliedImpulseLateral1_ = pt.m_appliedImpulseLateral1;
-                cinf.appliedImpulseLateral2_ = pt.m_appliedImpulseLateral2;
-                cinf.contactMotion1_ = pt.m_contactMotion1;
-                cinf.contactMotion2_ = pt.m_contactMotion2;
-                cinf.contactCFM1_ = pt.m_contactCFM1;
-                cinf.contactCFM2_ = pt.m_contactCFM2;
-                cinf.lateralFrictionDir1_ = ToVector3(pt.m_lateralFrictionDir1);
-                cinf.lateralFrictionDir2_ = ToVector3(pt.m_lateralFrictionDir2);
                 sceneNode->OnCollision(cinf);
             }
         }

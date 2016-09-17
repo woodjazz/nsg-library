@@ -37,4 +37,14 @@ cmake -E make_directory $1
 cd $1
 
 #cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug"
+
+#In order for find_package to be successful, Qt 5 must be found below the 
+#CMAKE_PREFIX_PATH, or the Qt5<Module>_DIR must be set in the CMake cache 
+#to the location of the Qt5WidgetsConfig.cmake file. The easiest way to use 
+#CMake is to set the CMAKE_PREFIX_PATH environment variable to the install 
+#prefix of Qt 5.
+#(see http://doc.qt.io/qt-5/cmake-manual.html)
+
+#cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_PREFIX_PATH="$HOME/Qt/5.7/gcc_64/lib/cmake/Qt5Widgets;$HOME/Qt/5.7/gcc_64/lib/cmake/Qt5Quick"
+
 cmake $SOURCE_FOLDER -G "Unix Makefiles"

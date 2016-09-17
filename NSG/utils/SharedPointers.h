@@ -294,6 +294,7 @@ namespace NSG
     typedef std::shared_ptr<LoaderXMLNode> PLoaderXMLNode;
 
     class Engine;
+    typedef std::shared_ptr<Engine> PEngine;
 
     class HTTPRequest;
     typedef std::shared_ptr<HTTPRequest> PHTTPRequest;

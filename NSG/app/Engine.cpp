@@ -54,6 +54,7 @@ namespace NSG
         : Tick(conf_.fps_),
           deltaTime_(0)
     {
+        Tick::Initialize();
     }
 
     Engine::~Engine()
@@ -149,8 +150,8 @@ namespace NSG
         Program::Clear();
         LoaderXML::Clear();
         ISignal::FreeAllDestroyedSlots();
-        //auto ctx = RenderingContext::GetPtr();
-        //if (ctx)
-            //ctx->ResetCachedState();
+        auto ctx = RenderingContext::GetPtr();
+        if (ctx)
+            ctx->ResetCachedState();
     }
 }

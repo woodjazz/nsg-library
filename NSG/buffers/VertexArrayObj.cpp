@@ -79,7 +79,7 @@ namespace NSG
 		auto program = key_.program;
         auto mesh = key_.mesh;
 
-		CHECK_ASSERT(!vBuffer->IsDynamic() && (!iBuffer || !iBuffer->IsDynamic()));
+		//CHECK_ASSERT(!vBuffer->IsDynamic() && (!iBuffer || !iBuffer->IsDynamic()));
 
         glGenVertexArrays(1, &vao_);
 

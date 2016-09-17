@@ -44,6 +44,11 @@ namespace NSG
 	Quaternion QuaternionFromLookRotation(const Vector3& direction, const Vector3& upDirection);
 	Vector3 Translation(const Matrix4& m);
 	Vector3 Scale(const Matrix4& m);
+	Matrix4 Scale(const Matrix4& m, const Vector3& v);
+	Matrix4 Translate(const Matrix4& m, const Vector3& v);
+	Matrix3 Mat3Cast(const Quaternion& q);
+	Matrix4 Mat4Cast(const Quaternion& q);
+	Quaternion QuatCast(const Matrix3& m);
 	void DecomposeMatrix(const Matrix4& m, Vertex3& position, Quaternion& q, Vertex3& scale);
 	Matrix4 ComposeMatrix(const Vertex3& position, const Quaternion& q, const Vertex3& scale);
 	Matrix4 ComposeMatrix(const Vertex3& position, const Quaternion& q);
@@ -58,6 +63,7 @@ namespace NSG
 	std::string CompressBuffer(const std::string& buf);
 	std::string DecompressBuffer(const std::string& buffer);
 	bool IsScaleUniform(const Vector3& scale);
+	Vector3 Reflect(const Vector3& I, const Vector3& N);
 	Vector3 GetSlidingVector(const Vector3& dir2Target, const Vector3& hitNormal);
 	float Clamp(float value, float minVal, float maxVal);
 	int Clamp(int value, int minVal, int maxVal);
@@ -84,17 +90,18 @@ namespace NSG
     Matrix3 Inverse(const Matrix3& a);
     Matrix4 Inverse(const Matrix4& a);
     Matrix4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
-    Matrix4 Perspective(float fovyRadians, float aspectRatio, float zNear, float zFar);
-    Matrix4 LookAt(const Vector3& eye, const Vector3& center, const Vector3& up);
+    Matrix4 Perspective(float fovy, float aspectRatio, float zNear, float zFar);
     Quaternion Inverse(const Quaternion& a);
     Quaternion AngleAxis(float radians, const Vector3& axis);
 	Vector3 Lerp(const Vector3& a, const Vector3& b, float t);
 	float Lerp(float a, float b, float t);
+    float Mix(float a, float b, float t);
 	Quaternion Slerp(const Quaternion& a, const Quaternion& b, float t);
     float Abs(float value);
     float Cos(float value);
     float Floor(float value);
     Vector3 Floor(Vector3 value);
+	Vector4 Floor(Vector4 value);
 	inline const float* GetPointer(const Matrix4& mat) { return &(mat[0].x); }
 	inline const float* GetPointer(const Matrix3& mat) { return &(mat[0].x); }
 	Vector4 Row(const Matrix4& mat, int index);
@@ -103,6 +110,11 @@ namespace NSG
 	Vector3 Column(const Matrix3& mat, int index);
 	Vector3 CatmullRom(const Vector3& v1, const Vector3& v2, const Vector3& v3, const Vector3& v4, float s);
 	Vector4 Fract(const Vector4& value);
+	float Roll(const Quaternion& q);
+	float Pitch(const Quaternion& q);
+	float Yaw(const Quaternion& q);
+	float Pow2(float x);
+	float Pow3(float x);
 	Vertex3 EulerAngles(const Quaternion& q);
 	Matrix4 GetSphericalBillboardMatrix(Matrix4 m);
 	Matrix4 GetCylindricalBillboardMatrix(Matrix4 m);

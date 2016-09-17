@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include <functional>
 
 struct ImDrawData;
+struct ImGuiContext;
 namespace NSG
 {
 	class GUI : public Object, public StrongFactory<std::string, GUI>
@@ -63,7 +64,7 @@ namespace NSG
 		PIndexBuffer iBuffer_;
 		PCamera camera_;
 		PWeakWindow window_;
-		char* state_;
+		ImGuiContext* state_;
 		bool configured_;
 		//Area related to the window where the GUI is painted.
 		//Needed to adjust the mouse' coordinates

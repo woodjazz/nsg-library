@@ -39,6 +39,7 @@ misrepresented as being the original software.
 #include "ShowTexture.h"
 #include "SDLWindow.h"
 #include "WinWindow.h"
+#include "ExternalWindow.h"
 #include "Keys.h"
 #include "Texture.h"
 #include "UTF8String.h"
@@ -101,6 +102,13 @@ namespace NSG
         LOGI("Window %s terminated.", name_.c_str());
     }
 
+    PWindow Window::CreateExternal(const std::string& name)
+    {
+        auto window = std::make_shared<ExternalWindow>(name);
+        Window::AddWindow(window);
+        return window;
+    }
+
     PWindow Window::Create(const std::string& name, WindowFlags flags)
     {
         if (Window::AllowWindowCreation())
@@ -110,7 +118,7 @@ namespace NSG
             #elif defined(IS_TARGET_WINDOWS)
             auto window = std::make_shared<WinWindow>(name, flags);
             #else
-#error("Unknown platform!!!")
+            #error("Unknown platform!!!")
             #endif
 			window->OnReady();
             Window::AddWindow(window);
@@ -129,7 +137,7 @@ namespace NSG
             #elif defined(IS_TARGET_WINDOWS)
             auto window = std::make_shared<WinWindow>(name, x, y, width, height, flags);
             #else
-#error("Unknown platform!!!")
+            #error("Unknown platform!!!")
             #endif
 			window->OnReady();
             Window::AddWindow(window);
@@ -247,6 +255,7 @@ namespace NSG
         renderer_ = Renderer::Create();
         graphics_->SetWindow(SharedFromPointer(this));
         CreateFrameBuffer(); // used when filters are enabled
+        gui_ = std::make_shared<GUI>();
     }
 
     void Window::SetSize(int width, int height)
@@ -436,7 +445,6 @@ namespace NSG
     {
         CHECK_ASSERT(AllowWindowCreation());
         windows_.push_back(window);
-        window->gui_ = std::make_shared<GUI>();
     }
 
     void Window::UpdateScenes(float delta)
@@ -540,7 +548,7 @@ namespace NSG
         #endif
     }
 
-    void Window::SetScene(PWeakScene scene)
+    void Window::SetScene(PScene scene)
     {
         scene_ = scene;
     }

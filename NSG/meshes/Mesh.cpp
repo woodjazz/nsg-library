@@ -286,7 +286,7 @@ namespace NSG
 
         for (unsigned int i = 0 ; i < vertexsData_.size() ; i++)
         {
-            Normalize(vertexsData_[i].tangent_);
+            vertexsData_[i].tangent_ = Normalize(vertexsData_[i].tangent_);
         }
     }
 

@@ -81,6 +81,7 @@ set_property(TARGET LZ4 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 ##################################
 # bullet
 ##################################
+#add_definitions(-DBT_USE_DOUBLE_PRECISION)
 include_directories(${EXTERNALS_DIR}/bullet/src)
 add_subdirectory(${EXTERNALS_DIR})
 #mark_as_disable_and_internal(USE_GRAPHICAL_BENCHMARK)
@@ -191,7 +192,7 @@ include_directories(${EXTERNALS_DIR}/stb)
 ###########################
 # glm
 ###########################
-include_directories(${EXTERNALS_DIR}/glm)
+include_directories(${DEPENDENCIES_DIR}/glm)
 
 ###########################
 # tclap
