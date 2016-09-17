@@ -1,33 +1,3 @@
-[submodule "glew"]
-	path = glew
-	url = https://github.com/nigels-com/glew.git
-[submodule "glm"]
-	path = glm
-	url = https://github.com/g-truc/glm
-[submodule "glfw"]
-	path = glfw
-	url = https://github.com/glfw/glfw
-[submodule "freetype2"]
-	path = freetype2
-	url = git://git.sv.nongnu.org/freetype/freetype2.git
-[submodule "codecs/vorbis"]
-	path = codecs/vorbis
-	url = https://git.xiph.org/mirrors/vorbis.git
-[submodule "codecs/ogg"]
-	path = codecs/ogg
-	url = https://git.xiph.org/mirrors/ogg.git
-[submodule "assimp"]
-	path = assimp
-	url = https://github.com/assimp/assimp
-[submodule "externals/freetype2"]
-	path = externals/freetype2
-	url = http://git.savannah.gnu.org/r/freetype/freetype2.git
-[submodule "externals/glfw"]
-	path = externals/glfw
-	url = https://github.com/glfw/glfw
-[submodule "externals/tinyxml2"]
-	path = externals/tinyxml2
-	url = https://github.com/leethomason/tinyxml2
 [submodule "externals/stb"]
 	path = externals/stb
 	url = https://github.com/nothings/stb
