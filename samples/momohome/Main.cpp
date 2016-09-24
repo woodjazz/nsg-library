@@ -29,6 +29,7 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create();
+    window->IsReady();
     PSceneNode player;
     LoaderXML loader("loader");
     auto slotLoaded = loader.Load(Resource::GetOrCreateClass<ResourceFile>("data/scene.xml"))->Connect([&]()

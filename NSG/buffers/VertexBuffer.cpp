@@ -29,69 +29,83 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    static VertexsData emptyVertexes;
     VertexBuffer::VertexBuffer(GLenum usage)
-        : Buffer(GL_ARRAY_BUFFER, usage)
+        : Buffer(0, GL_ARRAY_BUFFER, usage),
+          vertexes_(emptyVertexes),
+          bytesNeeded_(0)
     {
 
     }
 
     VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage)
-        : Buffer(bufferSize, bytesNeeded, GL_ARRAY_BUFFER, usage)
+        : Buffer(bufferSize, GL_ARRAY_BUFFER, usage),
+          vertexes_(vertexes),
+          bytesNeeded_(bytesNeeded)
     {
         CHECK_ASSERT(bufferSize >= bytesNeeded);
-
-        CHECK_GL_STATUS();
-
-        CHECK_CONDITION(graphics_.lock()->SetVertexBuffer(this));
-
-        glBufferData(type_, bufferSize, nullptr, usage_);
-
-        std::vector<GLubyte> emptyData(bufferSize, 0);
-
-        SetBufferSubData(0, bufferSize, &emptyData[0]); //created with initialized data to avoid warnings when profiling
-
-        GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
-        CHECK_ASSERT(bytes2Set <= bytesNeeded);
-
-        SetBufferSubData(0, bytes2Set, &vertexes[0]);
-
-        CHECK_GL_STATUS();
     }
 
     VertexBuffer::~VertexBuffer()
     {
-		auto context = graphics_.lock();
-        if (context && context->GetVertexBuffer() == this)
-			context->SetVertexBuffer(nullptr);
     }
+
+    void VertexBuffer::AllocateResources()
+    {
+        Buffer::AllocateResources();
+
+        context_->SetVertexBuffer(this);
+
+        glBufferData(type_, bufferSize_, nullptr, usage_);
+
+        std::vector<GLubyte> emptyData(bufferSize_, 0);
+
+        SetBufferSubData(0, bufferSize_, &emptyData[0]); //created with initialized data to avoid warnings when profiling
+
+        GLsizeiptr bytes2Set = vertexes_.size() * sizeof(VertexData);
+        CHECK_ASSERT(bytes2Set <= bytesNeeded_);
+
+        SetBufferSubData(0, bytes2Set, &vertexes_[0]);
+    }
+
+    void VertexBuffer::ReleaseResources()
+    {
+        if (context_->GetVertexBuffer() == this)
+            context_->SetVertexBuffer(nullptr);
+
+        Buffer::ReleaseResources();
+    }
+
 
     void VertexBuffer::Unbind()
     {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    void VertexBuffer::UpdateData(const VertexsData& vertexes)
+    void VertexBuffer::UpdateData()
     {
-        CHECK_GL_STATUS();
-        graphics_.lock()->SetVertexBuffer(this, true);
-        GLsizeiptr bytes2Set = vertexes.size() * sizeof(VertexData);
-        if (bytes2Set > bufferSize_)
+        if(IsReady())
         {
-            //rebuild buffer
-            glBufferData(type_, bytes2Set, &vertexes[0], usage_);
-            bufferSize_ = bytes2Set;
+            CHECK_GL_STATUS();
+            context_->SetVertexBuffer(this, true);
+            GLsizeiptr bytes2Set = vertexes_.size() * sizeof(VertexData);
+            if (bytes2Set > bufferSize_)
+            {
+                //rebuild buffer
+                glBufferData(type_, bytes2Set, &vertexes_[0], usage_);
+                bufferSize_ = bytes2Set;
+            }
+            else
+                SetBufferSubData(0, bytes2Set, &vertexes_[0]);
+            CHECK_GL_STATUS();
         }
-        else
-            SetBufferSubData(0, bytes2Set, &vertexes[0]);
-        CHECK_GL_STATUS();
     }
 
-    void VertexBuffer::SetData(GLsizeiptr size, const GLvoid * data)
+    void VertexBuffer::SetData(GLsizeiptr size, const GLvoid* data)
     {
         CHECK_GL_STATUS();
-        graphics_.lock()->SetVertexBuffer(this, true);
+        context_->SetVertexBuffer(this, true);
         glBufferData(type_, size, data, usage_);
-        bufferSize_ = size;
         CHECK_GL_STATUS();
     }
 }

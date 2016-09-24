@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Bone.h"
 #include "Util.h"
 #include "Log.h"
+#include "Maths.h"
 
 namespace NSG
 {
@@ -128,11 +129,11 @@ namespace NSG
         {
             // No interpolation, blend between old transform & animation
             if (track.channelMask_ & (int)AnimationChannel::POSITION)
-                bone->SetPosition(Lerp(bone->GetPosition(), keyFrame->position_, weight));
+                bone->SetPosition(bone->GetPosition().Lerp(keyFrame->position_, weight));
             if (track.channelMask_ & (int)AnimationChannel::ROTATION)
-                bone->SetOrientation(Slerp(bone->GetOrientation(), keyFrame->rotation_, weight));
+                bone->SetOrientation(bone->GetOrientation().Slerp(keyFrame->rotation_, weight));
             if (track.channelMask_ & (int)AnimationChannel::SCALE)
-                bone->SetScale(Lerp(bone->GetScale(), keyFrame->scale_, weight));
+                bone->SetScale(bone->GetScale().Lerp(keyFrame->scale_, weight));
         }
         else
         {
@@ -144,11 +145,11 @@ namespace NSG
            
             // Interpolation, blend between old transform & animation
             if (track.channelMask_ & (int)AnimationChannel::POSITION)
-                bone->SetPosition(Lerp(bone->GetPosition(), Lerp(keyFrame->position_, nextKeyFrame.position_, t), weight));
+                bone->SetPosition(bone->GetPosition().Lerp(keyFrame->position_.Lerp(nextKeyFrame.position_, t), weight));
             if (track.channelMask_ & (int)AnimationChannel::ROTATION)
-                bone->SetOrientation(Slerp(bone->GetOrientation(), Slerp(keyFrame->rotation_, nextKeyFrame.rotation_, t), weight));
+                bone->SetOrientation(bone->GetOrientation().Slerp(keyFrame->rotation_.Slerp(nextKeyFrame.rotation_, t), weight));
             if (track.channelMask_ & (int)AnimationChannel::SCALE)
-                bone->SetScale(Lerp(bone->GetScale(), Lerp(keyFrame->scale_, nextKeyFrame.scale_, t), weight));
+                bone->SetScale(bone->GetScale().Lerp(keyFrame->scale_.Lerp(nextKeyFrame.scale_, t), weight));
         }
     }
 

@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #if defined(IS_TARGET_WINDOWS) && !defined(SDL)
 #include "WinWindow.h"
 #include "Engine.h"
-#include "RenderingContext.h"
 #include "Tick.h"
 #include "Keys.h"
 #include "Log.h"
@@ -34,7 +33,6 @@ misrepresented as being the original software.
 #include "UTF8String.h"
 #include "AppConfiguration.h"
 #include "Object.h"
-#include "RenderingContext.h"
 #include "Scene.h"
 #include "imgui.h"
 #include <memory>

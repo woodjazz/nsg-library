@@ -118,7 +118,7 @@ namespace NSG
         {
             case SH_SPHERE:
                 {
-                    if (!IsScaleUniform(scale_))
+                    if (!scale_.IsUniform())
                     {
                         btVector3 position(0.f, 0.f, 0.f);
                         btScalar radi = std::max(halfSize.x, std::max(halfSize.y, halfSize.z));

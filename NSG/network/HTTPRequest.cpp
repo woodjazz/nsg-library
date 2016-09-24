@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Log.h"
 #include "StringConverter.h"
+
 #if !defined(EMSCRIPTEN)
 #include "civetweb.h"
 #else
@@ -36,7 +37,7 @@ misrepresented as being the original software.
 #if defined(IS_TARGET_WINDOWS)
 #include <winsock.h>
 #endif
-
+#include <cstring>
 
 namespace NSG
 {

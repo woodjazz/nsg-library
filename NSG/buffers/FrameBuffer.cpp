@@ -29,7 +29,9 @@ misrepresented as being the original software.
 #include "Texture2D.h"
 #include "TextureCube.h"
 #include "RenderingContext.h"
+#include "RenderingCapabilities.h"
 #include "Util.h"
+#include "Maths.h"
 #include "Window.h"
 #include <algorithm>
 
@@ -90,7 +92,7 @@ namespace NSG
 
         if (flags_ & Flag::DEPTH_USE_TEXTURE)
         {
-            if (RenderingContext::GetPtr()->HasDepthTexture())
+            if (RenderingCapabilities::GetPtr()->HasDepthTexture())
             {
                 depthTexture_->SetSize(width_, height_);
                 if (flags_ & Flag::STENCIL)
@@ -123,8 +125,18 @@ namespace NSG
 
     void FrameBuffer::AllocateResources()
     {
-        LOGI("Framebuffer width=%d, height=%d", width_, height_);
         CHECK_GL_STATUS();
+
+        context_ = RenderingContext::Create();
+
+        auto maxSize = RenderingCapabilities::GetPtr()->GetMaxTextureSize();
+        width_ = Clamp(width_, 0, maxSize);
+        height_ = Clamp(height_, 0, maxSize);
+
+        if (!context_->IsTextureSizeCorrect(width_, height_))
+            GetPowerOfTwoValues(width_, height_);
+
+        LOGI("Framebuffer width=%d, height=%d", width_, height_);
 
         glGenFramebuffers(1, &framebuffer_);
 
@@ -155,7 +167,7 @@ namespace NSG
             glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRenderBuffer_);
             if (flags_ & Flag::STENCIL)
             {
-				if (graphics->HasPackedDepthStencil())
+                if (RenderingCapabilities::GetPtr()->HasPackedDepthStencil())
                 {
                     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
                     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
@@ -163,7 +175,7 @@ namespace NSG
                 }
                 else
                 {
-					if (graphics->HasDepthComponent24())
+                    if (RenderingCapabilities::GetPtr()->HasDepthComponent24())
                     {
                         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
                         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
@@ -183,7 +195,7 @@ namespace NSG
             }
             else
             {
-				if (graphics->HasDepthComponent24())
+                if (RenderingCapabilities::GetPtr()->HasDepthComponent24())
                 {
                     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width_, height_);
                     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthStencilRenderBuffer_);
@@ -211,7 +223,7 @@ namespace NSG
     {
         CHECK_GL_STATUS();
 
-        RenderingContext::GetPtr()->UnboundTextures();
+        context_->UnboundTextures();
 
         if (stencilRenderBuffer_)
         {
@@ -237,7 +249,9 @@ namespace NSG
 
         framebuffer_ = 0;
 
-        //RenderingContext::GetPtr()->SetFrameBuffer(nullptr);
+        //context_->SetFrameBuffer(nullptr);
+
+        context_ = nullptr;
 
         CHECK_GL_STATUS();
     }
@@ -245,18 +259,11 @@ namespace NSG
     void FrameBuffer::SetSize(int width, int height)
     {
         CHECK_ASSERT(width >= 0 && height >= 0);
-        auto maxSize = RenderingContext::GetPtr()->GetMaxTextureSize();
-        width = Clamp(width, 0, maxSize);
-        height = Clamp(height, 0, maxSize);
 
         if (originalWidth_ != width || originalHeight_ != height)
         {
             originalWidth_ = width;
             originalHeight_ = height;
-
-            if (!RenderingContext::GetPtr()->IsTextureSizeCorrect(width, height))
-                GetPowerOfTwoValues(width, height);
-
             width_ = width;
             height_ = height;
             Invalidate();
@@ -308,7 +315,7 @@ namespace NSG
         if (flags_ & Flag::COLOR_USE_TEXTURE)
         {
             CHECK_ASSERT(colorTexTarget != TextureTarget::UNKNOWN);
-            CHECK_ASSERT(this == RenderingContext::GetPtr()->GetFrameBuffer());
+            CHECK_ASSERT(this == context_->GetFrameBuffer());
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, (GLenum)colorTexTarget, colorTexture_->GetID(), 0);
         }
 

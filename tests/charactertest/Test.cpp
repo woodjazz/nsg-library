@@ -59,7 +59,7 @@ static PCharacter SetupScene(PScene scene)
     std::swap(characterScale.y, characterScale.z);
     auto controllerShape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_BOX, characterScale));
     controllerShape->SetBB(BoundingBox(-1, 1));
-    auto q = AngleAxis(Radians(90.f), Vertex3(1, 0, 0));
+    auto q = Quaternion(Radians(90.f), Vertex3(1, 0, 0));
     controller->AddShape(controllerShape, VECTOR3_ZERO, q);
 
     auto materialObstacle = Material::Create();
@@ -137,6 +137,7 @@ static void Test01()
     static auto scene = std::make_shared<Scene>();
     static auto character = SetupScene(scene);
     static auto window = Window::Create("0", 0, 0, 10, 10, (int)WindowFlag::HIDDEN);
+    CHECK_CONDITION(window->IsReady());
     window->SetScene(scene);
 
     struct GoForward : FSM::State
@@ -191,6 +192,7 @@ static void Test02()
     auto scene = std::make_shared<Scene>();
     auto character = SetupScene(scene);
     auto window = Window::Create();
+    CHECK_CONDITION(window->IsReady());
     window->SetScene(scene);
 
     bool buttonA = false;

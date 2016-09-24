@@ -30,12 +30,12 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	class RenderingCapabilities;
 	// Keeps OpenGL's context
 	class RenderingContext : public Singleton<RenderingContext>
 	{
 	public:
 		~RenderingContext();
-		bool CheckExtension(const std::string& name);
 		void ResetCachedState();
 		void SetClearColor(const Color& color);
 		void SetClearDepth(GLclampf depth);
@@ -75,18 +75,6 @@ namespace NSG
 		void DrawActiveMesh();
 		void DrawInstancedActiveMesh(const Batch& batch, InstanceBuffer* instancesBuffer);
 		void DiscardFramebuffer();
-		bool HasVertexArrayObject() const { return has_vertex_array_object_ext_; }
-		bool HasMapBufferRange() const { return has_map_buffer_range_ext_; }
-		bool HasDepthTexture() const { return has_depth_texture_ext_; }
-		bool HasDepthComponent24() const { return has_depth_component24_ext_; }
-		bool HasNonPowerOfTwo() const { return has_texture_non_power_of_two_ext_; }
-		bool HasInstancedArrays() const { return has_instanced_arrays_ext_; }
-		bool HasPackedDepthStencil() const { return has_packed_depth_stencil_ext_; }
-		bool HasTextureCompressionDXT1() const { return has_texture_compression_dxt1_ext_; }
-		bool HasTextureCompressionDXT3() const { return has_texture_compression_dxt3_ext_; }
-		bool HasTextureCompressionDXT5() const { return has_texture_compression_dxt5_ext_; }
-		bool HasTextureCompressionETC() const { return has_compressed_ETC1_RGB8_texture_ext_; }
-		bool HasTextureCompressionPVRTC() const { return has_texture_compression_pvrtc_ext_; }
 		void SetBuffers(bool solid, InstanceBuffer* instancesBuffer);
 		void SetInstanceAttrPointers(Program* program);
 		void SetVertexAttrPointers();
@@ -95,18 +83,10 @@ namespace NSG
 		void SetMesh(Mesh* mesh) { activeMesh_ = mesh; }
 		const Mesh* GetMesh() const { return activeMesh_; }
 		bool IsTextureSizeCorrect(unsigned width, unsigned height);
-		GLint GetMaxVaryingVectors() const { return maxVaryingVectors_; }
-		GLint GetMaxTexturesCombined() const { return maxTexturesCombined_; }
-		GLint GetMaxVertexUniformVectors() const { return maxVertexUniformVectors_; }
-		GLint GetMaxFragmentUniformVectors() const { return maxFragmentUniformVectors_; }
-		GLint GetMaxVertexAttribs() const { return maxVertexAttribs_; }
 		void UnboundTextures();
-		int GetMaxTextureSize() const { return maxTextureSize_; }
 		bool NeedsDecompress(TextureFormat format) const;
 		bool SetupProgram(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* sceneNode, Material* material, const Light* light);
 		void SetupPass(const Pass* pass);
-		static GLenum GetTexelDataType();
-		static GLenum GetTexelFormatType();
 		void SetSlopeScaledBias(float slopeScaledBias);
 		static SignalWindow::PSignal SigWindow();
 		static std::string GetExtensions();
@@ -128,30 +108,12 @@ namespace NSG
 		Program* lastProgram_; // last used program
 		Mesh* activeMesh_; // mesh that is going to be drawn
 		PWeakWindow activeWindow_;
-		bool has_discard_framebuffer_ext_;
-		bool has_vertex_array_object_ext_;
-		bool has_map_buffer_range_ext_;
-		bool has_depth_texture_ext_;
-		bool has_depth_component24_ext_;
-		bool has_texture_non_power_of_two_ext_;
-		bool has_instanced_arrays_ext_;
-		bool has_packed_depth_stencil_ext_;
-		bool has_texture_compression_dxt1_ext_;
-		bool has_texture_compression_dxt3_ext_;
-		bool has_texture_compression_dxt5_ext_;
-		bool has_compressed_ETC1_RGB8_texture_ext_;
-		bool has_texture_compression_pvrtc_ext_;
 		CullFaceMode cullFaceMode_;
 		FrontFaceMode frontFaceMode_;
-		GLint maxVaryingVectors_;
-		GLint maxTexturesCombined_;
-		GLint maxVertexUniformVectors_;
-		GLint maxFragmentUniformVectors_;
-		GLint maxVertexAttribs_;
 		DepthFunc depthFunc_;
-		int maxTextureSize_;
 		float slopeScaledDepthBias_;
 		std::string extensions_;
+        std::shared_ptr<RenderingCapabilities> capabilities_;
 		friend class Singleton<RenderingContext>;
 	};
 }

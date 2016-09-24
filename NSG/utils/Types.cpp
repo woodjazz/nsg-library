@@ -28,6 +28,27 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    Recti::Recti()
+        :x(0),y(0),z(0),w(0)
+    {
+
+    }
+
+    Recti::Recti(int a, int b, int c, int d)
+        :x(a),y(b),z(c),w(d)
+    {
+
+    }
+
+    bool Recti::operator==(const Recti& obj) const
+    {
+        if(this != &obj)
+        {
+            return x == obj.x && y == obj.y && z == obj.z && w == obj.w;
+        }
+        return true;
+    }
+
     BlurFilter::BlurFilter()
         : blurDir_(1, 1),
           sigma_(3.5f)

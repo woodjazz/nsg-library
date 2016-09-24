@@ -74,7 +74,7 @@ Enemy::Enemy(PScene scene)
     {
         wave0_.x += dt;
         wave0_.y = sin(wave0_.x);
-        child_->SetOrientation(AngleAxis(wave0_.y, VECTOR3_FORWARD));
+        child_->SetOrientation(Quaternion(wave0_.y, VECTOR3_FORWARD));
         auto dir = .5f * dt * (child_->GetOrientation() * VECTOR3_UP);
         node_->Pitch(-dir.y);
         node_->Yaw(dir.x);

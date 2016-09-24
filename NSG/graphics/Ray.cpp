@@ -26,12 +26,13 @@
 #include "Mesh.h"
 #include "SceneNode.h"
 #include "Check.h"
+#include "Maths.h"
 
 namespace NSG
 {
     Ray::Ray(const Vertex3& origin, const Vector3& direction, float maxDistance)
         : origin_(origin),
-          direction_(Normalize(direction)),
+          direction_(direction.Normalize()),
           maxDistance_(maxDistance)
     {
 
@@ -84,24 +85,24 @@ namespace NSG
         Vector3 edge2(v2 - v0);
 
         // Calculate determinant & check backfacing
-        Vector3 p(Cross(direction_, edge2));
-        float det = Dot(edge1, p);
+        Vector3 p(direction_.Cross(edge2));
+        float det = edge1.Dot(p);
         if (det >= std::numeric_limits<float>::epsilon())
         {
             // Calculate u & v parameters and test
             Vector3 t(origin_ - v0);
-            float u = Dot(t, p);
+            float u = t.Dot(p);
             if (u >= 0.0f && u <= det)
             {
-                Vector3 q(Cross(t, edge1));
-                float v = Dot(direction_, q);
+                Vector3 q(t.Cross(edge1));
+                float v = direction_.Dot(q);
                 if (v >= 0.0f && u + v <= det)
                 {
                     // There is an intersection, so calculate distance & optional normal
                     if (outNormal)
-                        *outNormal = Cross(edge1, edge2);
+                        *outNormal = edge1.Cross(edge2);
 
-                    return Dot(edge2, q) / det;
+                    return edge2.Dot(q) / det;
                 }
             }
         }
@@ -123,7 +124,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = Floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = (point * 10000.0f + 0.5f).Floor() / 10000.0f; //round value to 4 decimal points
                 if (point.y >= box.min_.y && point.y <= box.max_.y && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -134,7 +135,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = Floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = (point * 10000.0f + 0.5f).Floor() / 10000.0f; //round value to 4 decimal points
                 if (point.y >= box.min_.y && point.y <= box.max_.y && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -146,7 +147,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = Floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = (point * 10000.0f + 0.5f).Floor() / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -157,7 +158,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = Floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = (point * 10000.0f + 0.5f).Floor() / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.z >= box.min_.z && point.z <= box.max_.z)
                     distance = x;
             }
@@ -169,7 +170,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = Floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = (point * 10000.0f + 0.5f).Floor() / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.y >= box.min_.y && point.y <= box.max_.y)
                     distance = x;
             }
@@ -180,7 +181,7 @@ namespace NSG
             if (x < distance)
             {
                 Vector3 point = origin_ + x * direction_;
-                point = Floor(point * 10000.0f + 0.5f) / 10000.0f; //round value to 4 decimal points
+                point = (point * 10000.0f + 0.5f).Floor() / 10000.0f; //round value to 4 decimal points
                 if (point.x >= box.min_.x && point.x <= box.max_.x && point.y >= box.min_.y && point.y <= box.max_.y)
                     distance = x;
             }

@@ -31,6 +31,8 @@ misrepresented as being the original software.
 #include "Path.h"
 #include "Log.h"
 #include "RenderingContext.h"
+#include "RenderingCapabilities.h"
+#include "Maths.h"
 #include "image_helper.h"
 #include "DDS.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -40,6 +42,7 @@ misrepresented as being the original software.
 #include "stb_image_write.h"
 #include "jpgd.h"
 #include <cerrno>
+#include <cstring>
 
 #ifndef MAKEFOURCC
 #define MAKEFOURCC(ch0, ch1, ch2, ch3) ((unsigned)(ch0) | ((unsigned)(ch1) << 8) | ((unsigned)(ch2) << 16) | ((unsigned)(ch3) << 24))
@@ -149,8 +152,9 @@ namespace NSG
         if (!compressed_ && !RenderingContext::GetPtr()->IsTextureSizeCorrect(width_, height_))
             Resize2PowerOf2();
 
-        if (RenderingContext::GetPtr()->GetMaxTextureSize() < width_ || RenderingContext::GetPtr()->GetMaxTextureSize() < height_)
-            Reduce(RenderingContext::GetPtr()->GetMaxTextureSize());
+        auto maxTextureSize = RenderingCapabilities::GetPtr()->GetMaxTextureSize();
+        if (maxTextureSize < width_ || maxTextureSize < height_)
+            Reduce(maxTextureSize);
     }
 
     void Image::ReleaseResources()

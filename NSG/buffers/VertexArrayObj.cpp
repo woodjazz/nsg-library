@@ -56,8 +56,7 @@ namespace NSG
     VertexArrayObj::VertexArrayObj(const VAOKey& key)
         : Object(key.GetName()),
           vao_(0),
-          key_(key),
-          graphics_(RenderingContext::GetSharedPtr())
+          key_(key)
     {
     }
 
@@ -73,6 +72,8 @@ namespace NSG
     void VertexArrayObj::AllocateResources()
     {
         CHECK_GL_STATUS();
+
+        context_ = RenderingContext::Create();
 	
 		auto vBuffer = key_.mesh->GetVertexBuffer();
 		auto iBuffer = key_.mesh->GetIndexBuffer(key_.solid);
@@ -85,9 +86,8 @@ namespace NSG
 
         CHECK_ASSERT(vao_ != 0);
 
-		auto ctx = graphics_.lock();
-		ctx->SetVertexArrayObj(this);
-		ctx->SetVertexBuffer(vBuffer, true);
+        context_->SetVertexArrayObj(this);
+        context_->SetVertexBuffer(vBuffer, true);
 
         GLuint position_loc = program->GetAttPositionLoc();
         GLuint texcoord_loc0 = program->GetAttTextCoordLoc0();
@@ -122,14 +122,14 @@ namespace NSG
         if (bones_weight != -1)
             glEnableVertexAttribArray((int)AttributesLoc::BONES_WEIGHT);
 
-		ctx->SetVertexAttrPointers();
+        context_->SetVertexAttrPointers();
 
-		ctx->SetIndexBuffer(iBuffer, true);
+        context_->SetIndexBuffer(iBuffer, true);
 
         if (key_.instancesBuffer)
         {
-			ctx->SetVertexBuffer(key_.instancesBuffer);
-			ctx->SetInstanceAttrPointers(program);
+            context_->SetVertexBuffer(key_.instancesBuffer);
+            context_->SetInstanceAttrPointers(program);
         }
 
         CHECK_GL_STATUS();
@@ -147,17 +147,17 @@ namespace NSG
 
     void VertexArrayObj::ReleaseResources()
     {
-		auto ctx = graphics_.lock();
-        if (ctx && ctx->GetVertexArrayObj() == this)
-			ctx->SetVertexArrayObj(nullptr);
+        if (context_->GetVertexArrayObj() == this)
+            context_->SetVertexArrayObj(nullptr);
         glDeleteVertexArrays(1, &vao_);
         vao_ = 0;
+        context_ = nullptr;
     }
 
     void VertexArrayObj::Use()
     {
         if (IsReady())
-            graphics_.lock()->SetVertexArrayObj(this);
+            context_->SetVertexArrayObj(this);
     }
 
     void VertexArrayObj::Bind()

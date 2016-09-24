@@ -34,67 +34,89 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    static Indexes emptyIndexes;
     IndexBuffer::IndexBuffer(GLenum usage)
-        : Buffer(GL_ELEMENT_ARRAY_BUFFER, usage)
+        : Buffer(0, GL_ELEMENT_ARRAY_BUFFER, usage),
+          indexes_(emptyIndexes),
+          bytesNeeded_(0)
     {
 
     }
 
     IndexBuffer::IndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes, GLenum usage)
-        : Buffer(bufferSize, bytesNeeded, GL_ELEMENT_ARRAY_BUFFER, usage)
+        : Buffer(bufferSize, GL_ELEMENT_ARRAY_BUFFER, usage),
+          indexes_(indexes),
+          bytesNeeded_(bytesNeeded)
     {
-        CHECK_GL_STATUS();
-
-        CHECK_CONDITION(graphics_.lock()->SetIndexBuffer(this));
-
-        glBufferData(type_, bufferSize, nullptr, usage_);
-
-        std::vector<GLubyte> emptyData(bufferSize, 0);
-        SetBufferSubData(0, bufferSize, &emptyData[0]); //created with initialized data to avoid warnings when profiling
-
-        GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
-        CHECK_ASSERT(bytes2Set <= bytesNeeded);
-
-        SetBufferSubData(0, bytes2Set, &indexes[0]);
-
-        CHECK_GL_STATUS();
     }
 
     IndexBuffer::~IndexBuffer()
     {
-		auto context = graphics_.lock();
-		if (context && context->GetIndexBuffer() == this)
-			context->SetIndexBuffer(nullptr);
     }
+
+    void IndexBuffer::AllocateResources()
+    {
+        Buffer::AllocateResources();
+
+        CHECK_GL_STATUS();
+
+        context_->SetIndexBuffer(this);
+
+        glBufferData(type_, bufferSize_, nullptr, usage_);
+
+        std::vector<GLubyte> emptyData(bufferSize_, 0);
+        SetBufferSubData(0, bufferSize_, &emptyData[0]); //created with initialized data to avoid warnings when profiling
+
+        GLsizeiptr bytes2Set = indexes_.size() * sizeof(IndexType);
+        CHECK_ASSERT(bytes2Set <= bytesNeeded_);
+
+        SetBufferSubData(0, bytes2Set, &indexes_[0]);
+
+        CHECK_GL_STATUS();
+    }
+
+    void IndexBuffer::ReleaseResources()
+    {
+        if (context_->GetIndexBuffer() == this)
+            context_->SetIndexBuffer(nullptr);
+
+        Buffer::ReleaseResources();
+    }
+
 
     void IndexBuffer::Unbind()
     {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    void IndexBuffer::UpdateData(const Indexes& indexes)
+    void IndexBuffer::UpdateData()
     {
-        CHECK_GL_STATUS();
-        graphics_.lock()->SetIndexBuffer(this, true);
-        GLsizeiptr bytes2Set = indexes.size() * sizeof(IndexType);
-        if (bytes2Set > bufferSize_)
+        if(IsReady())
         {
-            //rebuild buffer
-            glBufferData(type_, bytes2Set, &indexes[0], usage_);
-            bufferSize_ = bytes2Set;
+            CHECK_GL_STATUS();
+            context_->SetIndexBuffer(this, true);
+            GLsizeiptr bytes2Set = indexes_.size() * sizeof(IndexType);
+            if (bytes2Set > bufferSize_)
+            {
+                //rebuild buffer
+                glBufferData(type_, bytes2Set, &indexes_[0], usage_);
+                bufferSize_ = bytes2Set;
+            }
+            else
+                SetBufferSubData(0, bytes2Set, &indexes_[0]);
+            CHECK_GL_STATUS();
         }
-        else
-            SetBufferSubData(0, bytes2Set, &indexes[0]);
-        CHECK_GL_STATUS();
     }
 
     void IndexBuffer::SetData(GLsizeiptr size, const GLvoid * data)
     {
-        CHECK_GL_STATUS();
-        graphics_.lock()->SetIndexBuffer(this, true);
-        glBufferData(type_, size, data, usage_);
-        bufferSize_ = size;
-        CHECK_GL_STATUS();
+        if(IsReady())
+        {
+            CHECK_GL_STATUS();
+            context_->SetIndexBuffer(this, true);
+            glBufferData(type_, size, data, usage_);
+            CHECK_GL_STATUS();
+        }
     }
 
 }

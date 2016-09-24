@@ -96,7 +96,7 @@ float Level::GetFlyDistance()
 {
     auto grid = scene_->GetChild<SceneNode>("Grid", true);
     auto bb = grid->GetWorldBoundingBox();
-    return Length(grid->GetGlobalScale() * 0.6f);
+    return (grid->GetGlobalScale() * 0.6f).Length();
 }
 
 

@@ -50,7 +50,6 @@ namespace NSG
 	    void Merge(const std::vector<Vector3>& points);
 	    void Merge(const BoundingBox& box);
 	    void Transform(const Node& node);
-		void Transform(const Vector3& position, const Quaternion& q);
 		void Transform(const Matrix4& m);
 		Intersection IsInside(const BoundingBox& box) const;
 		bool IsInside(const Vertex3& point) const;
@@ -63,6 +62,6 @@ namespace NSG
 		bool defined_;
 	};
 
-	std::ostream& operator << (std::ostream& s , const BoundingBox& obj);
+	//std::ostream& operator << (std::ostream& s , const BoundingBox& obj);
 
 }

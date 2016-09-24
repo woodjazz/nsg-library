@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Character.h"
 #include "PointOnSphere.h"
 #include "Util.h"
+#include "Maths.h"
 
 namespace NSG
 {
@@ -63,15 +64,15 @@ namespace NSG
     bool FollowCamera::Obstruction(const Vector3& origin, const Vector3& targetPos, float radius) const
     {
         auto direction = targetPos - origin;
-        auto distance = Length(direction);
-        PhysicsRaycastResult result = world_.lock()->SphereCastBut(track_, origin, Normalize(direction), radius, distance);
+        auto distance = direction.Length();
+        PhysicsRaycastResult result = world_.lock()->SphereCastBut(track_, origin, direction.Normalize(), radius, distance);
         return result.collider_ != nullptr;
     }
 
     Vector3 FollowCamera::GetBestTargetPoint(const Vector3& center, float radius) const
     {
         auto camPos = camera_->GetGlobalPosition();
-        auto point = center + Normalize(camPos - center) * distance_;
+        auto point = center + (camPos - center).Normalize() * distance_;
         PointOnSphere sphere(center, point);
         auto theta = sphere.GetTheta();
         for (float incTheta = 0.f; incTheta < TWO_PI; incTheta += PI15)
@@ -110,11 +111,11 @@ namespace NSG
         auto radius = std::min(std::min(size.x, size.y), size.z) * .4f;
         auto target = GetBestTargetPoint(center, radius);
         auto direction = target - pos;
-        auto distance = Length(direction);
-        PhysicsRaycastResult result = world_.lock()->SphereCastBut(track_, pos, Normalize(direction), radius, distance);
+        auto distance = direction.Length();
+        PhysicsRaycastResult result = world_.lock()->SphereCastBut(track_, pos, direction.Normalize(), radius, distance);
         if (result.collider_)
-            target = pos + GetSlidingVector(direction, result.normal_);
-        camera_->SetGlobalPosition(Lerp(pos, target, deltaTime));
+            target = pos + direction.GetSlidingVector(result.normal_);
+        camera_->SetGlobalPosition(pos.Lerp(target, deltaTime));
         camera_->SetGlobalLookAtPosition(center);
     }
 

@@ -190,11 +190,6 @@ endif(USE_SDL)
 include_directories(${EXTERNALS_DIR}/stb)
 
 ###########################
-# glm
-###########################
-include_directories(${DEPENDENCIES_DIR}/glm)
-
-###########################
 # tclap
 ###########################
 include_directories(${DEPENDENCIES_DIR}/tclap/include)

@@ -95,8 +95,8 @@ namespace NSG
 
     void AnimationKeyFrame::SetPose(PBone bone)
     {
-        Matrix4 m = bone->GetPose() * ComposeMatrix(position_, rotation_, scale_);
-        DecomposeMatrix(m, position_, rotation_, scale_);
+        Matrix4 m = bone->GetPose() * Matrix4(position_, rotation_, scale_);
+        m.Decompose(position_, rotation_, scale_);
     }
 
     void AnimationTrack::GetKeyFrameIndex(float time, size_t& index) const

@@ -30,8 +30,8 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create("window", 0, 0, 10, 10);
-	if (!RenderingContext::GetPtr()->HasInstancedArrays())
-		return 0;
+    if (!RenderingCapabilities::Create()->HasInstancedArrays())
+        return 0;
     auto scene = std::make_shared<Scene>();
     window->SetScene(scene);
     auto camera = scene->CreateChild<Camera>();
@@ -55,7 +55,7 @@ int NSG_MAIN(int argc, char* argv[])
     engine->RenderFrame();
 	//CHECK_CONDITION(material->IsBatched());
     const float ANGLE = 10;
-	node1->SetOrientation(AngleAxis(ANGLE, Vertex3(0, 0, 1)));
+	node1->SetOrientation(Quaternion(ANGLE, Vertex3(0, 0, 1)));
 	engine->RenderFrame();
     //CHECK_CONDITION(material->IsBatched());
 	return 0;

@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Window.h"
 #include "Engine.h"
 #include "Log.h"
+#include "Maths.h"
 #include "SharedFromPointer.h"
 
 namespace NSG

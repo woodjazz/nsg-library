@@ -44,7 +44,7 @@ static void Test01()
 	auto Decode = [](Vector3 depth) -> float
 	{
 	    const Vector3 dotValues = Vector3(1.0f, 1.0f / 255.0f, 1.0f / (255.0f * 255.0f));
-	    auto ret = Dot(depth, dotValues);
+	    auto ret = depth.Dot(dotValues);
 		return ret;
 	};
 
@@ -97,7 +97,7 @@ static void Test01()
 	auto Decode2 = [](Vector3 depth) -> float
 	{
 	    const Vector3 dotValues = Vector3(1.0f, 1.0f / 255.0f, 1.0f / (255.0f * 255.0f));
-	    auto ret = Dot(depth, dotValues);
+	    auto ret = depth.Dot(dotValues);
 		return ret;
 	};
 
@@ -111,15 +111,15 @@ static void Test01()
 	{
 		const Vector4 bit_shift = Vector4(256.0*256.0*256.0, 256.0*256.0, 256.0, 1.0);
 		const Vector4 bit_mask = Vector4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
-		Vector4 res = Fract(depth * bit_shift);
-		res -= Vector4(res.x, res.x, res.y, res.z) * bit_mask;
+        Vector4 res = (bit_shift * depth).Fract();
+        res = res - Vector4(res.x, res.x, res.y, res.z) * bit_mask;
 		return res;
 	};
 
 	auto Decode3 = [](Vector4 rgba_depth) -> float
 	{
 		const Vector4 bit_shift = Vector4(1.0 / (256.0*256.0*256.0), 1.0 / (256.0*256.0), 1.0 / 256.0, 1.0);
-		float depth = Dot(rgba_depth, bit_shift);
+		float depth = rgba_depth.Dot(bit_shift);
 		return depth;
 	};
 
@@ -144,15 +144,15 @@ static void Test01()
 	{
 		const Vector4 bit_shift = Vector4(32.0*64.0*32.0, 64.0*32.0, 1.0, 0.0);
 		const Vector4 bit_mask = Vector4(0.0, 1.0 / 64.0, 1.0 / 64.0, 0.0);
-		Vector4 res = Fract(depth * bit_shift);
-		res -= Vector4(res.x, res.x, res.y, res.z) * bit_mask;
+        Vector4 res = (bit_shift * depth).Fract();
+        res = res - Vector4(res.x, res.x, res.y, res.z) * bit_mask;
 		return res;
 	};
 
 	auto Decode4 = [](Vector4 rgba_depth) -> float
 	{
 		const Vector4 bit_shift = Vector4(1.0 / (32.0*64.0*32.0), 1.0 / (64.0*32.0), 1.0, 0.0);
-		float depth = Dot(rgba_depth, bit_shift);
+		float depth = rgba_depth.Dot(bit_shift);
 		return depth;
 	};
 
@@ -166,16 +166,16 @@ static void Test01()
 
 static void Test02()
 {
-	auto value = Dot(Vector3(1, 0, 0), Vector3(0, 1, 0));
+	auto value = Vector3(1, 0, 0).Dot(Vector3(0, 1, 0));
 	CHECK_CONDITION(value <= 0);
 
-	value = Dot(Vector3(1, 0, 0), Vector3(0.001f, 1, 0));
+	value = Vector3(1, 0, 0).Dot(Vector3(0.001f, 1, 0));
 	CHECK_CONDITION(value > 0);
 
-	value = Dot(Vector3(-1, 1, 0), Normalize(Vector3(1, 1000, 0)));
+	value = Vector3(-1, 1, 0).Dot(Vector3(1, 1000, 0).Normalize());
 	CHECK_CONDITION(value < 1);
 
-	value = Dot(Vector3(-1, 1, 0), Normalize(Vector3(-1, 1000, 0)));
+	value = Vector3(-1, 1, 0).Dot(Vector3(-1, 1000, 0).Normalize());
 	CHECK_CONDITION(value > 1);
 }
 
@@ -232,7 +232,7 @@ static void Test05()
 static void Test06()
 {
 	auto q = Rotation(VECTOR3_UP, -VECTOR3_FORWARD);
-	CHECK_CONDITION(Distance(-VECTOR3_FORWARD, q * VECTOR3_UP) < PRECISION);
+	CHECK_CONDITION(-VECTOR3_FORWARD.Distance(q * VECTOR3_UP) < PRECISION);
 }
 
 void Tests()

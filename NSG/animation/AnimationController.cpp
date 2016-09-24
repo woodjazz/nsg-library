@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "SceneNode.h"
 #include "Scene.h"
 #include "Check.h"
+#include "Maths.h"
 
 namespace NSG
 {

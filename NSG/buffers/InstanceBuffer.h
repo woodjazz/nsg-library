@@ -39,9 +39,10 @@ namespace NSG
 		static void Unbind();
 		void UpdateBatchBuffer(const Batch& batch);
 	private:
+        void AllocateResources() override;
+        void ReleaseResources() override;
 		void UpdateData(const std::vector<InstanceData>& data);
 		size_t maxInstances_;
-		PWeakRenderingContext graphics_;
 	};
 }
 

@@ -42,6 +42,7 @@ misrepresented as being the original software.
 #include "DebugRenderer.h"
 #include "imgui.h"
 #include "SharedFromPointer.h"
+#include "Maths.h"
 #include "pugixml.hpp"
 #include <sstream>
 
@@ -286,7 +287,7 @@ namespace NSG
         {
             if (!hasUserOrthoProjection_)
                 orthoProjection_ = CalculateOrthoProjection(zNear_, zFar_);
-            matProjection_ = Ortho(orthoProjection_.left_,
+            matProjection_ = Matrix4(orthoProjection_.left_,
                                    orthoProjection_.right_,
                                    orthoProjection_.bottom_,
                                    orthoProjection_.top_,
@@ -296,7 +297,7 @@ namespace NSG
         else
         {
             CHECK_ASSERT(zNear_ > 0);
-            matProjection_ = Perspective(fovy_, aspectRatio_, zNear_, zFar_);
+            matProjection_ = Matrix4(fovy_, aspectRatio_, zNear_, zFar_);
         }
         SetUniformsNeedUpdate();
     }
@@ -304,9 +305,9 @@ namespace NSG
     void Camera::UpdateViewProjection() const
     {
         matViewInverse_ = GetGlobalModelMatrix();
-        matView_ = Inverse(matViewInverse_);
+        matView_ = matViewInverse_.Inverse();
         matViewProjection_ = matProjection_ * matView_;
-        matViewProjectionInverse_ = Inverse(matViewProjection_);
+        matViewProjectionInverse_ = matViewProjection_.Inverse();
         auto tmp = std::make_shared<Frustum>(matViewProjection_);
         frustum_.swap(tmp);
         SetUniformsNeedUpdate();
@@ -337,7 +338,7 @@ namespace NSG
         if (isOrtho_)
         {
             OrthoProjection orthoProjection = CalculateOrthoProjection(nearSplit, farSplit);
-            matProjection = Ortho(orthoProjection.left_,
+            matProjection = Matrix4(orthoProjection.left_,
                                   orthoProjection.right_,
                                   orthoProjection.bottom_,
                                   orthoProjection.top_,
@@ -347,7 +348,7 @@ namespace NSG
         else
         {
             CHECK_ASSERT(nearSplit > 0);
-            matProjection = Perspective(fovy_, aspectRatio_, nearSplit, farSplit);
+            matProjection = Matrix4(fovy_, aspectRatio_, nearSplit, farSplit);
         }
 
         return std::make_shared<Frustum>(matProjection * matView_);

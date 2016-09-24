@@ -153,11 +153,11 @@ namespace NSG
                 auto v3 = data[i3].position_;
 				//make 1 vertice at the center of each edge and project it onto the sphere
 				VertexData vertexData;
-				vertexData.normal_ = vertexData.position_ = Normalize(v1 + v2);
+				vertexData.normal_ = vertexData.position_ = (v1 + v2).Normalize();
 				data.push_back(vertexData);
-				vertexData.normal_ = vertexData.position_ = Normalize(v2 + v3);
+				vertexData.normal_ = vertexData.position_ = (v2 + v3).Normalize();
 				data.push_back(vertexData);
-				vertexData.normal_ = vertexData.position_ = Normalize(v1 + v3);
+				vertexData.normal_ = vertexData.position_ = (v1 + v3).Normalize();
 				data.push_back(vertexData);
                 //now recreate indices
                 newFaces.push_back(i1);
@@ -250,7 +250,7 @@ namespace NSG
             std::swap(faces[i + 1], faces[i + 2]);
 
         for (auto i = 0; i < data.size(); i++ )
-            data[i].position_ *= radius_;
+            data[i].position_ = data[i].position_ * radius_;
 
         CHECK_ASSERT(std::numeric_limits<IndexType>::max() > data.size());
 

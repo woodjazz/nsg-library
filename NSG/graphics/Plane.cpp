@@ -53,23 +53,23 @@ namespace NSG
 
     void Plane::Define(const Vector3& v0, const Vector3& v1, const Vector3& v2)
     {
-		CHECK_ASSERT(NSG::Distance(v0, v1) > 0.0001f);
-		CHECK_ASSERT(NSG::Distance(v0, v2) > 0.0001f);
+		CHECK_ASSERT(v0.Distance(v1) > 0.0001f);
+		CHECK_ASSERT(v0.Distance(v2) > 0.0001f);
 
         Vector3 dist1 = v1 - v0;
         Vector3 dist2 = v2 - v0;
-        Define(Normalize(Cross(dist1, dist2)), v1);
+        Define(dist1.Cross(dist2).Normalize(), v1);
     }
 
     void Plane::Define(const Vector3& normal, const Vector3& point)
     {
-        normald_ = Vector4(normal, -Dot(normal, point));
+        normald_ = Vector4(normal, -normal.Dot(point));
     }
 
 
     float Plane::Distance(const Vector3& point) const
     {
-        return Dot(Vector3(normald_), point) + normald_.w;
+        return Vector3(normald_).Dot(point) + normald_.w;
     }
 
     Plane::Side Plane::SideOfPlane(const Vector3& point) const

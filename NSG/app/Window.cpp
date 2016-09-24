@@ -63,7 +63,7 @@ namespace NSG
     int Window::nWindows2Remove_ = 0;
 
     Window::Window(const std::string& name)
-        : name_(name),
+        : Object(name),
           isClosed_(false),
           minimized_(false),
           isMainWindow_(true),
@@ -118,9 +118,12 @@ namespace NSG
             #elif defined(IS_TARGET_WINDOWS)
             auto window = std::make_shared<WinWindow>(name, flags);
             #else
-            #error("Unknown platform!!!")
+#error("Unknown platform!!!")
             #endif
-			window->OnReady();
+        //window->graphics_ = RenderingContext::Create();
+        //window->graphics_->SetWindow(window);
+        //window->renderer_ = Renderer::Create();
+
             Window::AddWindow(window);
             return window;
 
@@ -137,32 +140,14 @@ namespace NSG
             #elif defined(IS_TARGET_WINDOWS)
             auto window = std::make_shared<WinWindow>(name, x, y, width, height, flags);
             #else
-            #error("Unknown platform!!!")
+#error("Unknown platform!!!")
             #endif
-			window->OnReady();
             Window::AddWindow(window);
             return window;
         }
         return nullptr;
     }
 
-    void Window::CreateFrameBuffer()
-    {
-        CHECK_ASSERT(!frameBuffer_);
-        FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH | FrameBuffer::Flag::DEPTH_USE_TEXTURE));
-        //frameBufferFlags |= FrameBuffer::STENCIL;
-        frameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("WindowFrameBuffer"), frameBufferFlags));
-        frameBuffer_->SetWindow(SharedFromPointer(this));
-
-        CHECK_ASSERT(!filterFrameBuffer_);
-        filterFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("WindowFilterFrameBuffer"), frameBufferFlags));
-        filterFrameBuffer_->SetDepthTexture(frameBuffer_->GetDepthTexture());
-        filterFrameBuffer_->SetWindow(SharedFromPointer(this));
-
-        CHECK_ASSERT(!showMap_);
-        showMap_ = std::make_shared<ShowTexture>();
-        showMap_->SetColortexture(frameBuffer_->GetColorTexture());
-    }
 
     void Window::ShowMap(PTexture texture)
     {
@@ -249,14 +234,42 @@ namespace NSG
         Destroy();
     }
 
-    void Window::OnReady()
+    void Window::AllocateResources()
     {
         graphics_ = RenderingContext::Create();
-        renderer_ = Renderer::Create();
         graphics_->SetWindow(SharedFromPointer(this));
-        CreateFrameBuffer(); // used when filters are enabled
+        renderer_ = Renderer::Create();
+
+        // used when filters are enabled
+        CHECK_ASSERT(!frameBuffer_);
+        FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH | FrameBuffer::Flag::DEPTH_USE_TEXTURE));
+        //frameBufferFlags |= FrameBuffer::STENCIL;
+        frameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("WindowFrameBuffer"), frameBufferFlags));
+        frameBuffer_->SetWindow(SharedFromPointer(this));
+
+        CHECK_ASSERT(!filterFrameBuffer_);
+        filterFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("WindowFilterFrameBuffer"), frameBufferFlags));
+        filterFrameBuffer_->SetDepthTexture(frameBuffer_->GetDepthTexture());
+        filterFrameBuffer_->SetWindow(SharedFromPointer(this));
+
+        CHECK_ASSERT(!showMap_);
+        showMap_ = std::make_shared<ShowTexture>();
+        showMap_->SetColortexture(frameBuffer_->GetColorTexture());
+
         gui_ = std::make_shared<GUI>();
+
     }
+
+    void Window::ReleaseResources()
+    {
+        gui_ = nullptr;
+        showMap_ = nullptr;
+        filterFrameBuffer_ = nullptr;
+        frameBuffer_ = nullptr;
+        renderer_ = nullptr;
+        graphics_ = nullptr;
+    }
+
 
     void Window::SetSize(int width, int height)
     {
@@ -473,9 +486,22 @@ namespace NSG
         render_ = nullptr;
     }
 
+    bool Window::AreAllWindowsMinimized()
+    {
+        for (auto& obj : windows_)
+        {
+            auto window(obj.lock());
+            if (!window || window->IsClosed())
+                continue;
+            if (!window->IsMinimized())
+                return false;
+        }
+        return true;
+    }
+
     void Window::RenderFrame()
     {
-        if (BeginFrameRender())
+        if (IsReady() && BeginFrameRender())
         {
             if (render_)
                 render_->Render();
@@ -488,19 +514,6 @@ namespace NSG
             }
             SwapWindowBuffers();
         }
-    }
-
-    bool Window::AreAllWindowsMinimized()
-    {
-        for (auto& obj : windows_)
-        {
-            auto window(obj.lock());
-            if (!window || window->IsClosed())
-                continue;
-            if (!window->IsMinimized())
-                return false;
-        }
-        return true;
     }
 
     bool Window::RenderWindows()

@@ -39,9 +39,9 @@ misrepresented as being the original software.
 #include "UTF8String.h"
 #include "AppConfiguration.h"
 #include "Object.h"
-#include "RenderingContext.h"
 #include "Scene.h"
 #include "imgui.h"
+#include "Maths.h"
 #include <memory>
 #include <string>
 #include <locale>
@@ -136,8 +136,6 @@ namespace NSG
 
     SDLWindow::~SDLWindow()
     {
-        if (this == graphics_->GetWindow().lock().get())
-            graphics_->SetWindow(nullptr);
         Close();
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }

@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "InstanceBuffer.h"
 #include "RenderingContext.h"
+#include "RenderingCapabilities.h"
 #include "Batch.h"
 #include "SceneNode.h"
 #include "Util.h"
@@ -33,17 +34,25 @@ misrepresented as being the original software.
 namespace NSG
 {
     InstanceBuffer::InstanceBuffer()
-        : Buffer(0, 0, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
-		maxInstances_(0),
-		graphics_(RenderingContext::GetSharedPtr())
+        : Buffer(0, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
+        maxInstances_(0)
     {
     }
 
     InstanceBuffer::~InstanceBuffer()
     {
-		auto ctx = RenderingContext::GetSharedPtr();
-		if (ctx && ctx->GetVertexBuffer() == this)
-			ctx->SetVertexBuffer(nullptr);
+    }
+
+    void InstanceBuffer::AllocateResources()
+    {
+        Buffer::AllocateResources();
+    }
+
+    void InstanceBuffer::ReleaseResources()
+    {
+        if (context_->GetVertexBuffer() == this)
+            context_->SetVertexBuffer(nullptr);
+        Buffer::ReleaseResources();
     }
 
     void InstanceBuffer::Unbind()
@@ -53,50 +62,51 @@ namespace NSG
 
 	void InstanceBuffer::UpdateData(const std::vector<InstanceData>& data)
 	{
-		graphics_.lock()->SetVertexBuffer(this);
-
-		if (maxInstances_ >= data.size())
-		{
-			SetBufferSubData(0, data.size() * sizeof(InstanceData), &(data[0]));
-		}
-		else
-		{
-			maxInstances_ = data.size();
-			bufferSize_ = maxInstances_ * sizeof(InstanceData);
-			glBufferData(type_, bufferSize_, &(data[0]), usage_);
-		}
+        context_->SetVertexBuffer(this);
+        if (maxInstances_ >= data.size())
+        {
+            SetBufferSubData(0, data.size() * sizeof(InstanceData), &(data[0]));
+        }
+        else
+        {
+            maxInstances_ = data.size();
+            bufferSize_ = maxInstances_ * sizeof(InstanceData);
+            glBufferData(type_, bufferSize_, &(data[0]), usage_);
+        }
 	}
 
 	void InstanceBuffer::UpdateBatchBuffer(const Batch& batch)
 	{
-		CHECK_GL_STATUS();
+        if(IsReady())
+        {
+            CHECK_GL_STATUS();
+            CHECK_ASSERT(RenderingCapabilities::GetPtr()->HasInstancedArrays());
 
-		CHECK_ASSERT(graphics_.lock()->HasInstancedArrays());
+            std::vector<InstanceData> instancesData;
+            auto& nodes = batch.GetNodes();
+            instancesData.reserve(nodes.size());
+            for (auto& node : nodes)
+            {
+                InstanceData data;
+                const Matrix4& m = node->GetGlobalModelMatrix();
+                // for the model matrix be careful in the shader as we are using rows instead of columns
+                // in order to save space (for the attributes) we just pass the first 3 rows of the matrix as the fourth row is always (0,0,0,1) and can be set in the shader
+                data.modelMatrixRow0_ = m.Row(0);
+                data.modelMatrixRow1_ = m.Row(1);
+                data.modelMatrixRow2_ = m.Row(2);
 
-		std::vector<InstanceData> instancesData;
-		auto& nodes = batch.GetNodes();
-		instancesData.reserve(nodes.size());
-		for (auto& node : nodes)
-		{
-			InstanceData data;
-			const Matrix4& m = node->GetGlobalModelMatrix();
-			// for the model matrix be careful in the shader as we are using rows instead of columns
-			// in order to save space (for the attributes) we just pass the first 3 rows of the matrix as the fourth row is always (0,0,0,1) and can be set in the shader
-			data.modelMatrixRow0_ = Row(m, 0);
-			data.modelMatrixRow1_ = Row(m, 1);
-			data.modelMatrixRow2_ = Row(m, 2);
+                const Matrix3& normal = node->GetGlobalModelInvTranspMatrix();
+                // for the normal matrix we are OK since we pass columns (we do not need to save space as the matrix is 3x3)
+                data.normalMatrixCol0_ = normal.Column(0);
+                data.normalMatrixCol1_ = normal.Column(1);
+                data.normalMatrixCol2_ = normal.Column(2);
+                instancesData.push_back(data);
+            }
 
-			const Matrix3& normal = node->GetGlobalModelInvTranspMatrix();
-			// for the normal matrix we are OK since we pass columns (we do not need to save space as the matrix is 3x3)
-			data.normalMatrixCol0_ = Column(normal, 0);
-			data.normalMatrixCol1_ = Column(normal, 1);
-			data.normalMatrixCol2_ = Column(normal, 2);
-			instancesData.push_back(data);
-		}
+            UpdateData(instancesData);
 
-		UpdateData(instancesData);
-
-		CHECK_GL_STATUS();
+            CHECK_GL_STATUS();
+        }
 	}
 
 }

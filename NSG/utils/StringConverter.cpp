@@ -144,7 +144,7 @@ namespace NSG
         using namespace std;
         const int MaxBuffer = 400;
         char buffer[MaxBuffer];
-        snprintf(buffer, MaxBuffer, "[ %s %s %s %s ]", ToString(Column(m, 0)).c_str(), ToString(Column(m, 1)).c_str(), ToString(Column(m, 2)).c_str(), ToString(Column(m, 3)).c_str());
+        snprintf(buffer, MaxBuffer, "[ %s %s %s %s ]", ToString(m.Column(0)).c_str(), ToString(m.Column(1)).c_str(), ToString(m.Column(2)).c_str(), ToString(m.Column(3)).c_str());
         return buffer;
     }
 

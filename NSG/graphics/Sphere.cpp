@@ -49,7 +49,7 @@ namespace NSG
 
     Intersection Sphere::IsInside(const Sphere& sphere) const
     {
-        float dist = Length(sphere.center_ - center_);
+        float dist = (sphere.center_ - center_).Length();
         if (dist >= sphere.radius_ + radius_)
             return Intersection::OUTSIDE;
         else if (dist + sphere.radius_ < radius_)
@@ -100,32 +100,33 @@ namespace NSG
         if (distSquared >= radiusSquared)
             return Intersection::OUTSIDE;
 
-        min -= center_;
-        max -= center_;
+        min = min - center_;
+        max = max - center_;
 
         Vector3 tempVec = min; // - - -
-        if (Length2(tempVec) >= radiusSquared)
+		auto length2 = tempVec.Length2();
+        if (length2 >= radiusSquared)
             return Intersection::INTERSECTS;
         tempVec.x = max.x; // + - -
-        if (Length2(tempVec) >= radiusSquared)
+        if (length2 >= radiusSquared)
             return Intersection::INTERSECTS;
         tempVec.y = max.y; // + + -
-        if (Length2(tempVec) >= radiusSquared)
+        if (length2 >= radiusSquared)
             return Intersection::INTERSECTS;
         tempVec.x = min.x; // - + -
-        if (Length2(tempVec) >= radiusSquared)
+        if (length2 >= radiusSquared)
             return Intersection::INTERSECTS;
         tempVec.z = max.z; // - + +
-        if (Length2(tempVec) >= radiusSquared)
+        if (length2 >= radiusSquared)
             return Intersection::INTERSECTS;
         tempVec.y = min.y; // - - +
-        if (Length2(tempVec) >= radiusSquared)
+        if (length2 >= radiusSquared)
             return Intersection::INTERSECTS;
         tempVec.x = max.x; // + - +
-        if (Length2(tempVec) >= radiusSquared)
+        if (length2 >= radiusSquared)
             return Intersection::INTERSECTS;
         tempVec.y = max.y; // + + +
-        if (Length2(tempVec) >= radiusSquared)
+        if (length2 >= radiusSquared)
             return Intersection::INTERSECTS;
 
         return Intersection::INSIDE;

@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "DebugRenderer.h"
 #include "Util.h"
+#include "Maths.h"
 namespace NSG
 {
     BoundingBox::BoundingBox() :
@@ -121,11 +122,6 @@ namespace NSG
     {
         const Matrix4& transform = node.GetGlobalModelMatrix();
         Transform(transform);
-    }
-
-    void BoundingBox::Transform(const Vector3& position, const Quaternion& q)
-    {
-        ComposeMatrix(position, q);
     }
 
     void BoundingBox::Transform(const Matrix4& m)
@@ -276,10 +272,12 @@ namespace NSG
         debugRenderer->AddLine(vertices[4], vertices[7], color);
     }
 
+#if 0
     std::ostream& operator << (std::ostream& s , const BoundingBox& obj)
     {
         s << obj.min_ << " - " << obj.max_;
 
         return s;
     }
+#endif
 }

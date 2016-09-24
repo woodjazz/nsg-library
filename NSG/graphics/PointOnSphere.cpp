@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Constants.h"
 #include "Check.h"
 #include "Util.h"
+#include "Maths.h"
 
 namespace NSG
 {
@@ -52,7 +53,7 @@ namespace NSG
 
     PointOnSphere::PointOnSphere(const Vertex3& center, const Vertex3& pointInSphere)
         : center_(center),
-          radius_(Distance(center, pointInSphere)),
+          radius_(center.Distance(pointInSphere)),
           theta_(0),
           phi_(0)
     {
@@ -81,9 +82,9 @@ namespace NSG
 
     bool PointOnSphere::SetCenterAndPoint(const Vertex3& center, const Vertex3& pointInSphere)
     {
-        if (Distance(pointInSphere, center) > PRECISION)
+        if (pointInSphere.Distance(center) > PRECISION)
         {
-            if (Distance(center, center_) > PRECISION || Distance(pointInSphere, point_) > PRECISION)
+            if (center.Distance(center_) > PRECISION || pointInSphere.Distance(point_) > PRECISION)
             {
                 center_ = center;
                 point_ = pointInSphere;
@@ -98,9 +99,9 @@ namespace NSG
 
     bool PointOnSphere::SetCenter(const Vertex3& center)
     {
-        if (Distance(center, point_) > PRECISION)
+        if (center.Distance(point_) > PRECISION)
         {
-            if (Distance(center, center_) > PRECISION)
+            if (center.Distance(center_) > PRECISION)
             {
                 center_ = center;
                 CalculateAnglesAndRadius();
@@ -114,9 +115,9 @@ namespace NSG
 
     bool PointOnSphere::SetPoint(const Vertex3& pointInSphere)
     {
-        if (Distance(pointInSphere, center_) > PRECISION)
+        if (pointInSphere.Distance(center_) > PRECISION)
         {
-            if (Distance(pointInSphere, point_) > PRECISION)
+            if (pointInSphere.Distance(point_) > PRECISION)
             {
                 point_ = pointInSphere;
                 CalculateAnglesAndRadius();
@@ -130,8 +131,8 @@ namespace NSG
     void PointOnSphere::CalculateAnglesAndRadius()
     {
         Vector3 rn = point_ - center_;
-        radius_ = Length(rn);
-        rn = Normalize(rn);
+        radius_ = rn.Length();
+        rn = rn.Normalize();
 
         //calculate phi in order to be in the given point
         float dy = rn.y;
@@ -171,17 +172,17 @@ namespace NSG
         // Apply spherical coordinates
         Vertex3 currentPoint(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_));
 
-        CHECK_ASSERT(Distance(center_ + radius_ * currentPoint, point_) < 9 * PRECISION);
+        CHECK_ASSERT((center_ + radius_ * currentPoint).Distance(point_) < 9 * PRECISION);
 
         // Reduce phi slightly to obtain another point on the same longitude line on the sphere.
         auto newPhi = phi_ - 1;
         Vertex3 newUpPoint(cos(theta_) * sin(newPhi), cos(newPhi), sin(theta_) * sin(newPhi));
 
-        up_ = Normalize(newUpPoint - currentPoint);
+        up_ = (newUpPoint - currentPoint).Normalize();
     }
 
     Quaternion PointOnSphere::GetOrientation() const
     {
-		return Rotation(Normalize(initialPoint_ - center_), Normalize(point_ - center_));
+		return Rotation((initialPoint_ - center_).Normalize(), (point_ - center_).Normalize());
     }
 }

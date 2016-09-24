@@ -26,26 +26,28 @@ misrepresented as being the original software.
 #pragma once
 
 #include "Types.h"
+#include "Object.h"
 #include <vector>
 
 namespace NSG 
 {
-	class Buffer
+    class Buffer : public Object
 	{
 	public:
 		~Buffer();
 		void Bind();
 		bool IsDynamic() const { return dynamic_; }
 	protected:
-		Buffer(GLenum type, GLenum usage);
-		Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage = GL_STATIC_DRAW);
+        void AllocateResources() override;
+        void ReleaseResources() override;
+        Buffer(GLsizeiptr bufferSize, GLenum type, GLenum usage = GL_STATIC_DRAW);
 		void SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data);
 		GLenum type_;
 		GLuint id_;
 		GLenum usage_;
 		GLsizeiptr bufferSize_;
 		bool dynamic_;
-		PWeakRenderingContext graphics_;
+        PRenderingContext context_;
 	};
 }
 

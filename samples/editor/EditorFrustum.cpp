@@ -47,7 +47,7 @@ EditorFrustum::~EditorFrustum()
 void EditorFrustum::SetCamera(PCamera camera)
 {
     camera_ = camera;
-    SetTransform(Inverse(camera->GetTransform()));
+    SetTransform(camera->GetTransform().Inverse());
     std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
     slotUpdated_ = camera->SigUpdated()->Connect([this]()
     {
@@ -56,7 +56,7 @@ void EditorFrustum::SetCamera(PCamera camera)
             auto camera = camera_.lock();
             if (camera)
             {
-                SetTransform(Inverse(camera->GetTransform()));
+                SetTransform(camera->GetTransform().Inverse());
                 std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
             }
         }

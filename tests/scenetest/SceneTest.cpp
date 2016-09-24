@@ -193,7 +193,7 @@ static void Test04()
         ray = Ray(origin, direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
         CHECK_CONDITION(closest.node_->GetName() == "50");
-        float d = Length(direction1s) - RADIUS;
+        float d = direction1s.Length() - RADIUS;
         CHECK_CONDITION(Abs(closest.distance_ - d) < 0.01f);
 
         origin = Vertex3(5000, 0, -50);
@@ -201,7 +201,7 @@ static void Test04()
         ray = Ray(origin, direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
         CHECK_CONDITION(closest.node_->GetName() == "50");
-        d = Length(direction1s) - RADIUS;
+        d = direction1s.Length() - RADIUS;
         CHECK_CONDITION(Abs(closest.distance_ - d) < 0.01f);
 
         origin = Vertex3(5000, 0, -50);
@@ -209,7 +209,7 @@ static void Test04()
         ray = Ray(origin, direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
         CHECK_CONDITION(closest.node_->GetName() == "50");
-        d = Length(direction1s) - 0.01f;
+        d = direction1s.Length() - 0.01f;
         CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f);
 
         origin = Vertex3(5000, 0, -50);
@@ -217,7 +217,7 @@ static void Test04()
         ray = Ray(origin, direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
         CHECK_CONDITION(closest.node_->GetName() == "51");
-        d = Length(direction1s) - 0.01f;
+        d = direction1s.Length() - 0.01f;
         CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f);
 
         origin = Vertex3(5000, 0, -50);
@@ -225,7 +225,7 @@ static void Test04()
         ray = Ray(origin, direction1s);
 		CHECK_CONDITION(scene->GetClosestRayNodeIntersection(ray, closest));
         CHECK_CONDITION(closest.node_->GetName() == "50");
-        d = Length(direction1s) - 0.01f;
+        d = direction1s.Length() - 0.01f;
         CHECK_CONDITION(Abs(closest.distance_ - d) < 0.1f);
     }
 }
@@ -588,6 +588,7 @@ static void Test0A()
 void Tests()
 {
 	auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
+    CHECK_CONDITION(window->IsReady());
     Test01();
     Test02();
     Test03();

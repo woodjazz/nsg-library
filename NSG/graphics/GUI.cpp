@@ -37,6 +37,7 @@ misrepresented as being the original software.
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "StringConverter.h"
+#include "Maths.h"
 #include <map>
 
 namespace NSG
@@ -45,7 +46,6 @@ namespace NSG
 
     GUI::GUI(const std::string& name)
         : Object(name),
-          graphics_(RenderingContext::GetSharedPtr()),
           fontTexture_(std::make_shared<Texture2D>(name + "GUIFontTexture")),
           program_(Program::GetOrCreate("IMGUI\n")),
           vBuffer_(new VertexBuffer(GL_STREAM_DRAW)),
@@ -110,14 +110,24 @@ namespace NSG
 
 	bool GUI::IsValid()
 	{
-		return fontTexture_->IsReady();
+        return vBuffer_->IsReady() && iBuffer_->IsReady() && fontTexture_->IsReady();
 	}
+
+    void GUI::AllocateResources()
+    {
+        context_ = RenderingContext::Create();
+    }
+
+    void GUI::ReleaseResources()
+    {
+        context_ = nullptr;
+    }
 
     void GUI::InternalDraw(ImDrawData* draw_data)
     {
         CHECK_GL_STATUS();
 
-        if (!fontTexture_->IsReady())
+        if (!IsReady())
             return;
 
         program_->Set(camera_.get());
@@ -126,15 +136,14 @@ namespace NSG
         const float height = io.DisplaySize.y;
         camera_->SetWindow(window_.lock());
         camera_->SetOrthoProjection({ 0, width, height, 0, -1, 1 });
-		auto ctx = graphics_.lock();
-		ctx->SetupPass(&pass_);
-        CHECK_CONDITION(ctx->SetProgram(program_.get()));
-		ctx->SetVertexBuffer(vBuffer_.get());
-		ctx->SetIndexBuffer(iBuffer_.get());
+        context_->SetupPass(&pass_);
+        CHECK_CONDITION(context_->SetProgram(program_.get()));
+        context_->SetVertexBuffer(vBuffer_.get());
+        context_->SetIndexBuffer(iBuffer_.get());
         program_->SetVariables(false);
 
-		ctx->SetVertexBuffer(vBuffer_.get());
-		ctx->SetAttributes([&]()
+        context_->SetVertexBuffer(vBuffer_.get());
+        context_->SetAttributes([&]()
         {
             auto attribLocationPosition = program_->GetAttPositionLoc();
             auto attribLocationUV = program_->GetAttTextCoordLoc0();
@@ -161,9 +170,9 @@ namespace NSG
                 }
                 else
                 {
-					ctx->SetTexture(0, (GLuint)(intptr_t)pcmd->TextureId);
-					ctx->SetScissorTest(true, (int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-					ctx->DrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, GL_UNSIGNED_SHORT, idx_buffer_offset);
+                    context_->SetTexture(0, (GLuint)(intptr_t)pcmd->TextureId);
+                    context_->SetScissorTest(true, (int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+                    context_->DrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, GL_UNSIGNED_SHORT, idx_buffer_offset);
                 }
                 idx_buffer_offset += pcmd->ElemCount;
             }

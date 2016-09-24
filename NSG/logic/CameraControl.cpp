@@ -35,6 +35,7 @@ misrepresented as being the original software.
 #include "Engine.h"
 #include "Renderer.h"
 #include "Check.h"
+#include "Maths.h"
 #include "SharedFromPointer.h"
 
 namespace NSG
@@ -216,12 +217,12 @@ namespace NSG
         Vertex3 lookAtPoint = pointOnSphere_->GetCenter();
         Vertex3 position = camera_->GetGlobalPosition();
         Vector3 looAtDir = camera_->GetLookAtDirection();
-        float distance = Distance(lookAtPoint, position);
+        float distance = lookAtPoint.Distance(position);
         if (distance < 1)
             distance = 1;
         float factor = y > 0 ? 2.0f : -2.0f;
         distance /= factor;
-        position += looAtDir * distance;
+        position = position + looAtDir * distance;
         SetPosition(position);
     }
 
@@ -237,13 +238,13 @@ namespace NSG
         {
             Quaternion targetOrientation = camera_->GetLookAtOrientation(pointOnSphere_->GetCenter(), pointOnSphere_->GetUp());
             Quaternion currentOrientation = camera_->GetOrientation();
-            float dot = Dot(currentOrientation, targetOrientation);
+            float dot = currentOrientation.Dot(targetOrientation);
             bool close = 1 - dot * dot < PRECISION;
             if (!close)
             {
                 //animate
                 float factor = 3 * deltaTime;
-                camera_->SetOrientation(Slerp(currentOrientation, targetOrientation, factor));
+                camera_->SetOrientation(currentOrientation.Slerp(targetOrientation, factor));
             }
             else
             {
@@ -263,7 +264,7 @@ namespace NSG
             float factor = dDist * timestamp / 10.0f;
             Vertex3 position = camera_->GetGlobalPosition();
             Vector3 looAtDir = camera_->GetLookAtDirection();
-            position += looAtDir * factor;
+            position = position + looAtDir * factor;
             SetPosition(position);
         }
         #if 0
@@ -386,7 +387,7 @@ namespace NSG
             auto rot = camera_->GetGlobalOrientation();
             auto radius = pointOnSphere_->GetRadius();
             auto offset = rot * (radius * Vector3(relX, relY, 0));
-            pos += offset;
+            pos = pos + offset;
             SetPosition(pos);
             pointOnSphere_->SetCenter(pointOnSphere_->GetCenter() + offset);
         }
@@ -466,7 +467,7 @@ namespace NSG
             position = center + VECTOR3_FORWARD * distance;
         else
         {
-            auto lookAtDir = Normalize(position - center);
+            auto lookAtDir = (position - center).Normalize();
             position = center + lookAtDir * distance;
         }
 

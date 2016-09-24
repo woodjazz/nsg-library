@@ -21,6 +21,7 @@
 //
 
 #include "Decompress.h"
+#include <cstring>
 
 // DXT decompression based on the Squish library, modified for Urho3D
 

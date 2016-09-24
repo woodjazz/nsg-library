@@ -45,9 +45,11 @@ namespace NSG
 		void SetArea(const Rect& area);
 	private:
 		bool IsValid() override;
+        void AllocateResources() override;
+        void ReleaseResources() override;
 		void Setup();
 		void InternalDraw(ImDrawData* draw_data);
-		PWeakRenderingContext graphics_;
+        PRenderingContext context_;
 		PTexture2D fontTexture_;
 		SignalKey::PSlot slotKey_;
 		SignalText::PSlot slotText_;

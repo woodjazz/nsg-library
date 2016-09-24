@@ -38,7 +38,7 @@ namespace NSG
 
     void Frustum::Define()
     {
-        const float* m = GetPointer(m_);
+        auto m = m_.GetPointer();
         float t;
 
 		Vector4& left = planes_[PLANE_LEFT].GetNormalDRef();
@@ -46,7 +46,7 @@ namespace NSG
         left[1] = m[7] + m[4];
         left[2] = m[11] + m[8];
         left[3] = m[15] + m[12];
-        t = Length(Vector3(left));
+        t = Vector3(left).Length();
         left /= t;
 
 
@@ -55,7 +55,7 @@ namespace NSG
         right[1] = m[7] - m[4];
         right[2] = m[11] - m[8];
         right[3] = m[15] - m[12];
-        t = Length(Vector3(right));
+        t = Vector3(right).Length();
         right /= t;
 
 
@@ -64,7 +64,7 @@ namespace NSG
         down[1] = m[7] + m[5];
         down[2] = m[11] + m[9];
         down[3] = m[15] + m[13];
-        t = Length(Vector3(down));
+        t = Vector3(down).Length();
         down /= t;
 
 
@@ -73,7 +73,7 @@ namespace NSG
         up[1] = m[7] - m[5];
         up[2] = m[11] - m[9];
         up[3] = m[15] - m[13];
-        t = Length(Vector3(up));
+        t = Vector3(up).Length();
         up /= t;
 
 
@@ -82,7 +82,7 @@ namespace NSG
         nearP[1] = m[7] + m[6];
         nearP[2] = m[11] + m[10];
         nearP[3] = m[15] + m[14];
-        t = Length(Vector3(nearP));
+        t = Vector3(nearP).Length();
         nearP /= t;
 
 
@@ -91,7 +91,7 @@ namespace NSG
         farP[1] = m[7] - m[6];
         farP[2] = m[11] - m[10];
         farP[3] = m[15] - m[14];
-        t = Length(Vector3(farP));
+        t = Vector3(farP).Length();
         farP /= t;
 
         const Plane& Near = planes_[PLANE_NEAR];
@@ -275,11 +275,11 @@ namespace NSG
         float d2(b.GetNormalD().w);
         float d3(c.GetNormalD().w);
 
-        float f = -Dot(n1, Cross(n2, n3));
+        float f = -n1.Dot(n2.Cross(n3));
 
-        Vector3 v1 = d1 * Cross(n2, n3);
-        Vector3 v2 = d2 * Cross(n3, n1);
-        Vector3 v3 = d3 * Cross(n1, n2);
+        Vector3 v1 = d1 * n2.Cross(n3);
+        Vector3 v2 = d2 * n3.Cross(n1);
+        Vector3 v3 = d3 * n1.Cross(n2);
 
         return (v1 + v2 + v3) / f;
     }

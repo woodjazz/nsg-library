@@ -156,17 +156,17 @@ namespace NSG
         {
             case TS_LOCAL:
                 // Note: local space translation disregards local scale for scale-independent movement speed
-                position_ += GetOrientation() * delta;
+                position_ = position_ + GetOrientation() * delta;
                 break;
 
             case TS_PARENT:
-                position_ += delta;
+                position_ = position_ + delta;
                 break;
 
             case TS_WORLD:
                 {
                     PNode parent = parent_.lock();
-                    position_ += (parent == scene_.lock() || !parent) ? delta : Vector3(parent->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f));
+                    position_ = position_ + ((parent == scene_.lock() || !parent) ? delta : Vector3(parent->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f)));
                     break;
                 }
         }
@@ -179,22 +179,22 @@ namespace NSG
         switch (space)
         {
             case TS_LOCAL:
-                q_ = Normalize(q_ * delta);
+                q_ = (q_ * delta).Normalize();
                 break;
 
             case TS_PARENT:
-                q_ = Normalize(delta * q_);
+                q_ = (delta * q_).Normalize();
                 break;
 
             case TS_WORLD:
                 {
                     PNode parent = parent_.lock();
                     if (parent == scene_.lock() || !parent)
-                        q_ = Normalize(delta * q_);
+                        q_ = (delta * q_).Normalize();
                     else
                     {
                         Quaternion worldRotation = GetGlobalOrientation();
-                        q_ = q_ * Inverse(worldRotation) * delta * worldRotation;
+                        q_ = q_ * worldRotation.Inverse() * delta * worldRotation;
                     }
                     break;
                 }
@@ -205,17 +205,17 @@ namespace NSG
 
     void Node::Yaw(float angle, TransformSpace space)
     {
-        Rotate(AngleAxis(angle, VECTOR3_UP), space);
+        Rotate(Quaternion(angle, VECTOR3_UP), space);
     }
 
     void Node::Pitch(float angle, TransformSpace space)
     {
-        Rotate(AngleAxis(angle, VECTOR3_RIGHT), space);
+        Rotate(Quaternion(angle, VECTOR3_RIGHT), space);
     }
 
     void Node::Roll(float angle, TransformSpace space)
     {
-        Rotate(AngleAxis(angle, VECTOR3_FORWARD), space);
+        Rotate(Quaternion(angle, VECTOR3_FORWARD), space);
     }
 
 
@@ -295,7 +295,7 @@ namespace NSG
         }
         else
         {
-            SetOrientation(Normalize(Quaternion(parent->GetGlobalModelInvMatrix()) * q));
+            SetOrientation((Quaternion(parent->GetGlobalModelInvMatrix()) * q).Normalize());
         }
     }
 
@@ -329,14 +329,14 @@ namespace NSG
 
     void Node::SetGlobalLookAtDirection(const Vertex3& direction)
     {
-        float length = Length(direction);
+        float length = direction.Length();
         if (length > 0)
         {
-            auto rot = QuaternionFromLookRotation(-direction, GetUpDirection());
+            auto rot = Quaternion(-direction, GetUpDirection());
             PNode parent = parent_.lock();
             if (parent)
             {
-                Quaternion q = Inverse(parent->GetGlobalOrientation());
+                Quaternion q = parent->GetGlobalOrientation().Inverse();
                 SetOrientation(q * rot);
             }
             else
@@ -350,14 +350,14 @@ namespace NSG
     {
         const Vertex3& position = GetGlobalPosition();
         auto direction = lookAtPosition - position;
-        float length = Length(direction);
+        float length = direction.Length();
         if (length > 0)
         {
-            auto rot = QuaternionFromLookRotation(-direction, up);
+			Quaternion rot(-direction, up);
             PNode parent = parent_.lock();
             if (parent)
             {
-                Quaternion q = Inverse(parent->GetGlobalOrientation());
+                Quaternion q = parent->GetGlobalOrientation().Inverse();
                 SetOrientation(q * rot);
             }
             else
@@ -370,10 +370,10 @@ namespace NSG
     void Node::SetLocalLookAtPosition(const Vertex3& lookAtPosition, const Vertex3& up)
     {
         auto direction = lookAtPosition - position_;
-        float length = Length(direction);
+        float length = direction.Length();
         if (length > 0)
         {
-            auto rot = QuaternionFromLookRotation(-direction, up);
+            Quaternion rot(-direction, up);
             SetOrientation(rot);
         }
     }
@@ -382,13 +382,13 @@ namespace NSG
     {
         const Vertex3& position = GetGlobalPosition();
         auto direction = lookAtPosition - position;
-        float length = Length(direction);
+        float length = direction.Length();
         if (length > 0)
         {
-            auto rot = QuaternionFromLookRotation(-direction, up);
+            Quaternion rot(-direction, up);
             PNode parent(parent_.lock());
             if (parent)
-                return Inverse(parent->GetGlobalOrientation()) * rot;
+                return parent->GetGlobalOrientation().Inverse() * rot;
             else
                 return rot;
         }
@@ -414,9 +414,9 @@ namespace NSG
         if (parent)
         {
             globalModel_ = parent->GetGlobalModelMatrix() * GetTransform();
-            globalPosition_ = Translation(globalModel_);
+            globalPosition_ = globalModel_.Translation();
             globalOrientation_ = parent->GetGlobalOrientation() * q_;
-            globalScale_ = Scale(globalModel_);
+            globalScale_ = globalModel_.Scale();
         }
         else
         {
@@ -426,9 +426,9 @@ namespace NSG
             globalScale_ = scale_;
         }
 
-        isScaleUniform_ = NSG::IsScaleUniform(globalScale_);
-        globalModelInv_ = Inverse(globalModel_);
-        globalModelInvTransp_ = Transpose(Inverse(Matrix3(globalModel_)));
+        isScaleUniform_ = globalScale_.IsUniform();
+        globalModelInv_ = globalModel_.Inverse();
+        globalModelInvTransp_ = Matrix3(globalModel_).Inverse().Transpose();
         lookAtDirection_ = globalOrientation_ * VECTOR3_LOOKAT_DIRECTION;
         upDirection_ = globalOrientation_ * VECTOR3_UP;
 		rightDirection_ = globalOrientation_ * VECTOR3_RIGHT;
@@ -438,12 +438,12 @@ namespace NSG
     Matrix4 Node::GetTransform() const
     {
         Update();
-        return ComposeMatrix(position_, q_, scale_);
+        return Matrix4(position_, q_, scale_);
     }
 
     void Node::SetTransform(const Matrix4& transform)
     {
-        DecomposeMatrix(transform, position_, q_, scale_);
+		transform.Decompose(position_, q_, scale_);
         MarkAsDirty(true, true);
     }
 

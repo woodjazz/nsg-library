@@ -42,7 +42,7 @@ namespace NSG
         bool operator == (const VertexData& obj) const;
     };
 
-	std::ostream& operator << (std::ostream& s , const VertexData& obj);
+    //std::ostream& operator << (std::ostream& s , const VertexData& obj);
     typedef std::vector<VertexData> VertexsData;
 
 }

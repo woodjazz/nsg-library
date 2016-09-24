@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Util.h"
+#include "Object.h"
 #include <string>
 #include <vector>
 namespace NSG
@@ -34,7 +35,7 @@ namespace NSG
         virtual void Render() = 0;
     };
 
-    class Window : public std::enable_shared_from_this<Window>
+    class Window : public std::enable_shared_from_this<Window>, public Object
     {
     public:
         static PWindow CreateExternal(const std::string& name = GetUniqueName("ExternalWindow"));
@@ -117,11 +118,9 @@ namespace NSG
         void RemoveFilter(PMaterial filter);
         bool UseFrameRender();
         void ShowMap();
-        void OnReady();
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);
-        std::string name_;
         bool isClosed_;
         bool minimized_;
         bool isMainWindow_;
@@ -134,7 +133,8 @@ namespace NSG
         PRenderingContext graphics_;
         PRenderer renderer_;
     private:
-        void CreateFrameBuffer();
+        void AllocateResources() override;
+        void ReleaseResources() override;
 		void OnMouseMove(float x, float y);
 		void OnMouseDown(int button, float x, float y);
 		void OnMouseUp(int button, float x, float y);

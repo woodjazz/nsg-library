@@ -36,8 +36,13 @@ namespace NSG
 		VertexBuffer(GLenum usage);
 		VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage);
 		~VertexBuffer();
-		void UpdateData(const VertexsData& vertexes);
-		void SetData(GLsizeiptr size, const GLvoid* data);
+        void UpdateData();
 		static void Unbind();
+        void SetData(GLsizeiptr size, const GLvoid* data);
+    private:
+        void AllocateResources() override;
+        void ReleaseResources() override;
+        const VertexsData& vertexes_;
+        GLsizeiptr bytesNeeded_;
 	};
 }

@@ -40,7 +40,7 @@ namespace NSG
     void Bone::Load(const pugi::xml_node& node)
     {
         Node::Load(node);
-        SetPose(ComposeMatrix(GetPosition(), GetOrientation(), GetScale()));
+        SetPose(Matrix4(GetPosition(), GetOrientation(), GetScale()));
         pugi::xml_node child = node.child("Bone");
         while (child)
         {

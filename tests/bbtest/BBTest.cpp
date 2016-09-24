@@ -82,7 +82,7 @@ static void Test01()
 		CHECK_CONDITION(bb.Size() == Vertex3(2, 1, 0));
 
 		Node node;
-		node.SetOrientation(AngleAxis(PI/2, Vertex3(0, 1, 0)));
+		node.SetOrientation(Quaternion(PI/2, Vertex3(0, 1, 0)));
 		bb.Transform(node);
 		CHECK_CONDITION(Distance(bb.Size(), Vertex3(0, 1, 2)) < 0.1f);
 		bb.Transform(node);
@@ -101,7 +101,7 @@ static void Test01()
 		CHECK_CONDITION(Distance(bb.Size(), Vertex3(4, 2, 0)) <0.1f);
 		bb.Transform(node);
 		CHECK_CONDITION(Distance(bb.Size(), Vertex3(8, 4, 0)) < 0.1f);
-		node.SetOrientation(AngleAxis(PI / 2, Vertex3(0, 1, 0)));
+		node.SetOrientation(Quaternion(PI / 2, Vertex3(0, 1, 0)));
 		bb.Transform(node);
 		CHECK_CONDITION(Distance(bb.Size(), Vertex3(0, 8, 16)) < 0.1f);
 		CHECK_CONDITION(bb.Center() == Vertex3(0));

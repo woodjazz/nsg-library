@@ -89,7 +89,9 @@ namespace NSG
 		else if (!pVBuffer_)
 			pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_DYNAMIC_DRAW));
 		else
-			pVBuffer_->UpdateData(vertexsData_);
+            pVBuffer_->UpdateData();
+
+        CHECK_CONDITION(pVBuffer_->IsReady());
 
         if (!indexes_.empty())
         {
@@ -99,7 +101,9 @@ namespace NSG
 			else if (!pIBuffer_)
 				pIBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW));
 			else
-				pIBuffer_->UpdateData(indexes_);
+                pIBuffer_->UpdateData();
+
+            CHECK_CONDITION(pIBuffer_->IsReady());
         }
 
         if (!indexesWireframe_.empty())
@@ -110,14 +114,16 @@ namespace NSG
 			else if (!pIWireBuffer_)
 				pIWireBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexesWireframe_, GL_DYNAMIC_DRAW));
 			else
-				pIWireBuffer_->UpdateData(indexesWireframe_);
+                pIWireBuffer_->UpdateData();
+
+            CHECK_CONDITION(pIWireBuffer_->IsReady());
 		}
 
         CHECK_GL_STATUS();
         for (auto& vertex : vertexsData_)
         {
             bb_.Merge(vertex.position_);
-            boundingSphereRadius_ = std::max(boundingSphereRadius_, Length(vertex.position_));
+            boundingSphereRadius_ = std::max(boundingSphereRadius_, vertex.position_.Length());
         }
     }
 
@@ -279,14 +285,14 @@ namespace NSG
             bitangent.y = f * (-deltaU2 * edge1.y - deltaU1 * edge2.y);
             bitangent.z = f * (-deltaU2 * edge1.z - deltaU1 * edge2.z);
 
-            v0.tangent_ += tangent;
-            v1.tangent_ += tangent;
-            v2.tangent_ += tangent;
+            v0.tangent_ = v0.tangent_ + tangent;
+            v1.tangent_ = v1.tangent_ + tangent;
+            v2.tangent_ = v2.tangent_ + tangent;
         }
 
         for (unsigned int i = 0 ; i < vertexsData_.size() ; i++)
         {
-            vertexsData_[i].tangent_ = Normalize(vertexsData_[i].tangent_);
+            vertexsData_[i].tangent_ = vertexsData_[i].tangent_.Normalize();
         }
     }
 
@@ -383,7 +389,7 @@ namespace NSG
         Vector3 normal(0);
 
         for (size_t i = 0; i < n; i++)
-            normal += vertexsData_[vIndexBase + i].normal_;
+            normal = normal + vertexsData_[vIndexBase + i].normal_;
         normal /= n;
 
         for (size_t i = 0; i < n; i++)

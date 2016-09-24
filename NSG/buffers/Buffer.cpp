@@ -24,37 +24,40 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Buffer.h"
+#include "Util.h"
 #include "Check.h"
 #include "RenderingContext.h"
+#include "RenderingCapabilities.h"
 #include <assert.h>
 
 namespace NSG
 {
-    Buffer::Buffer(GLenum type, GLenum usage)
-        : type_(type),
-          usage_(usage),
-          bufferSize_(0),
-          dynamic_(usage != GL_STATIC_DRAW),
-          graphics_(RenderingContext::GetSharedPtr())
-    {
-		glGenBuffers(1, &id_);
-    }
-
-    Buffer::Buffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, GLenum type, GLenum usage)
-        : type_(type),
+    Buffer::Buffer(GLsizeiptr bufferSize, GLenum type, GLenum usage)
+        : Object(GetUniqueName("Buffer")),
+          type_(type),
           usage_(usage),
           bufferSize_(bufferSize),
-          dynamic_(usage != GL_STATIC_DRAW),
-		  graphics_(RenderingContext::GetSharedPtr())
+          dynamic_(usage != GL_STATIC_DRAW)
     {
-        CHECK_GL_STATUS();
-
-        glGenBuffers(1, &id_);
     }
 
     Buffer::~Buffer()
     {
+    }
+
+    void Buffer::AllocateResources()
+    {
+        context_ = RenderingContext::Create();
+        CHECK_GL_STATUS();
+        glGenBuffers(1, &id_);
+
+    }
+
+    void Buffer::ReleaseResources()
+    {
+        CHECK_GL_STATUS();
         glDeleteBuffers(1, &id_);
+        context_ = nullptr;
     }
 
     void Buffer::Bind()
@@ -64,26 +67,29 @@ namespace NSG
 
     void Buffer::SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data)
     {
-        CHECK_ASSERT(offset + size <= bufferSize_);
-
-        #if !defined(ANDROID) && !defined(EMSCRIPTEN)
-        if (RenderingContext::GetPtr()->HasMapBufferRange())
+        if(IsReady())
         {
-            void* old_data = glMapBufferRange(type_, offset, size,
-                                              GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+            CHECK_ASSERT(offset + size <= bufferSize_);
 
-            CHECK_ASSERT(old_data);
+            #if !defined(ANDROID) && !defined(EMSCRIPTEN)
+            if (RenderingCapabilities::GetPtr()->HasMapBufferRange())
+            {
+                void* old_data = glMapBufferRange(type_, offset, size,
+                                                  GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 
-            memcpy(old_data, data, size);
+                CHECK_ASSERT(old_data);
 
-            glFlushMappedBufferRange(type_, offset, size);
+                memcpy(old_data, data, size);
 
-            CHECK_CONDITION(glUnmapBuffer(type_));
-        }
-        else
-        #endif
-        {
-            glBufferSubData(type_, offset, size, data);
+                glFlushMappedBufferRange(type_, offset, size);
+
+                CHECK_CONDITION(glUnmapBuffer(type_));
+            }
+            else
+            #endif
+            {
+                glBufferSubData(type_, offset, size, data);
+            }
         }
     }
 

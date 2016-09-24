@@ -362,7 +362,7 @@ PTexture Editor::GetMaterialPreview(PMaterial material)
     {
         auto graphics = RenderingContext::GetPtr();
         auto angle = 0.2f * Engine::GetPtr()->GetDeltaTime();
-        auto q = AngleAxis(angle, Vertex3(0, 1, 0));
+        auto q = Quaternion(angle, Vertex3(0, 1, 0));
         auto rot = previewNode_->GetOrientation();
         previewNode_->SetOrientation(q * rot);
         previewNode_->SetMaterial(material);
@@ -476,11 +476,11 @@ void Editor::ShowGUIProperties(Node* node)
 		node->SetPosition(position);
 
 		auto guiRotation = node->GetGUIRotation();
-		auto oldRotation = Radians(guiRotation);
+		auto oldRotation = guiRotation.Radians();
 		ImGui::DragFloat3("Rotation", &guiRotation[0], 1, 0, 360);
-		auto rad = Radians(guiRotation);
+		auto rad = guiRotation.Radians();
 		auto q = node->GetOrientation();
-		q *= Inverse(Quaternion(oldRotation)) * Quaternion(rad);
+		q *= Quaternion(oldRotation).Inverse() * Quaternion(rad);
 		node->SetOrientation(q);
 		node->SetGUIRotation(guiRotation);
 

@@ -186,7 +186,7 @@ namespace NSG
         {
             if (obj->IsBillboard())
             {
-                auto distance = Distance(obj->GetGlobalPosition(), ray.GetOrigin());
+                auto distance = obj->GetGlobalPosition().Distance(ray.GetOrigin());
                 RayNodeResult r {distance, obj};
                 result.push_back(r);
             }

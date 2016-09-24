@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "Ray.h"
 #include "Log.h"
+#include "Maths.h"
 #include "DebugRenderer.h"
 #include "btBulletDynamicsCommon.h"
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
@@ -181,7 +182,7 @@ namespace NSG
             result.collider_ = static_cast<ICollision*>(convexCallback.m_hitCollisionObject->getUserPointer());
             result.position_ = ToVector3(convexCallback.m_hitPointWorld);
             result.normal_ = ToVector3(convexCallback.m_hitNormalWorld);
-            result.distance_ = Length(result.position_ - origin);
+            result.distance_ = (result.position_ - origin).Length();
         }
         return result;
     }
@@ -221,7 +222,7 @@ namespace NSG
             result.collider_ = static_cast<ICollision*>(convexCallback.m_hitCollisionObject->getUserPointer());
             result.position_ = ToVector3(convexCallback.m_hitPointWorld);
             result.normal_ = ToVector3(convexCallback.m_hitNormalWorld);
-            result.distance_ = Length(result.position_ - origin);
+            result.distance_ = (result.position_ - origin).Length();
         }
         return result;
     }
@@ -238,7 +239,7 @@ namespace NSG
         {
             result.position_ = ToVector3(rayCallback.m_hitPointWorld);
             result.normal_ = ToVector3(rayCallback.m_hitNormalWorld);
-            result.distance_ = Length(result.position_ - origin);
+            result.distance_ = (result.position_ - origin).Length();
             result.collider_ = static_cast<ICollision*>(rayCallback.m_collisionObject->getUserPointer());
         }
         return result;

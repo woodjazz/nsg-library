@@ -46,9 +46,11 @@ namespace NSG
                bonesWeight_ == obj.bonesWeight_;
     }
 
+#if 0
     std::ostream& operator << (std::ostream& s , const VertexData& obj)
     {
         s << obj.position_ << obj.normal_ << obj.uv_[0] << obj.uv_[1] << obj.color_ << obj.tangent_ << obj.bonesID_ << obj.bonesWeight_;
         return s;
     }
+#endif
 }

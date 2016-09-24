@@ -102,7 +102,7 @@ namespace NSG
             vertexData.position_.z = 0;
 			vertexData.uv_[0] = Vertex2(vertexData.position_.x, vertexData.position_.y);
 
-            vertexData.position_ *= radius1;
+            vertexData.position_ = vertexData.position_ * radius1;
 
             if (angle < PI / 2 || angle > 3 * PI / 2)
             {

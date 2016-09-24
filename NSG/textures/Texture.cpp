@@ -28,11 +28,13 @@ misrepresented as being the original software.
 #include "Image.h"
 #include "Check.h"
 #include "RenderingContext.h"
+#include "RenderingCapabilities.h"
 #include "ResourceFile.h"
 #include "Texture.h"
 #include "Path.h"
 #include "Util.h"
 #include "StringConverter.h"
+#include "Maths.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <cerrno>
@@ -45,8 +47,8 @@ namespace NSG
           texture_(0),
           width_(0),
           height_(0),
-          format_(RenderingContext::GetTexelFormatType()),
-          type_(RenderingContext::GetTexelDataType()),
+          format_(RenderingCapabilities::GetTexelFormatType()),
+          type_(RenderingCapabilities::GetTexelDataType()),
           channels_(0),
           serializable_(false),
           wrapMode_(TextureWrapMode::CLAMP_TO_EDGE),
@@ -67,8 +69,8 @@ namespace NSG
           pResource_(resource),
           width_(0),
           height_(0),
-          format_(RenderingContext::GetTexelFormatType()),
-          type_(RenderingContext::GetTexelDataType()),
+          format_(RenderingCapabilities::GetTexelFormatType()),
+          type_(RenderingCapabilities::GetTexelDataType()),
           channels_(0),
           serializable_(true),
           wrapMode_(TextureWrapMode::CLAMP_TO_EDGE),
@@ -131,13 +133,14 @@ namespace NSG
     void Texture::AllocateResources()
     {
         CHECK_GL_STATUS();
+        context_ = RenderingContext::Create();
         glGenTextures(1, &texture_);
-        RenderingContext::GetPtr()->SetTexture(0, this);
+        context_->SetTexture(0, this);
 
-		auto maxSize = RenderingContext::GetPtr()->GetMaxTextureSize();
+        auto maxSize = RenderingCapabilities::GetPtr()->GetMaxTextureSize();
 		width_ = Clamp(width_, 0, maxSize);
 		height_ = Clamp(height_, 0, maxSize);
-		if (!RenderingContext::GetPtr()->IsTextureSizeCorrect(width_, height_))
+        if (!context_->IsTextureSizeCorrect(width_, height_))
 			GetPowerOfTwoValues(width_, height_);
 
         if (image_)
@@ -181,8 +184,8 @@ namespace NSG
             width_ = height_ = value;
         }
 
-        CHECK_ASSERT(RenderingContext::GetPtr()->IsTextureSizeCorrect(width_, height_));
-        CHECK_ASSERT(RenderingContext::GetPtr()->GetMaxTextureSize() >= width_ && RenderingContext::GetPtr()->GetMaxTextureSize() >= height_);
+        CHECK_ASSERT(context_->IsTextureSizeCorrect(width_, height_));
+        CHECK_ASSERT(RenderingCapabilities::GetPtr()->GetMaxTextureSize() >= width_ && RenderingCapabilities::GetPtr()->GetMaxTextureSize() >= height_);
 
         switch (wrapMode_)
         {
@@ -262,6 +265,7 @@ namespace NSG
     {
         glDeleteTextures(1, &texture_);
         texture_ = 0;
+        context_ = nullptr;
     }
 
     std::string Texture::TranslateFlags() const

@@ -89,7 +89,7 @@ namespace NSG
             vertexData.uv_[0].x = (vertexData.uv_[0].x + 1) / 2.0f;
             vertexData.uv_[0].y = 1 - (vertexData.uv_[0].y + 1) / 2.0f;
 
-            vertexData.position_ *= radius_;
+            vertexData.position_ = vertexData.position_ * radius_;
 
             data.push_back(vertexData);
 

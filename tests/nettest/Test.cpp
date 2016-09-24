@@ -29,6 +29,7 @@ using namespace NSG;
 static int Test01()
 {
     auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
+    CHECK_CONDITION(window->IsReady());
 
     HTTPRequest::Form form;
     form["user"] = "user2";

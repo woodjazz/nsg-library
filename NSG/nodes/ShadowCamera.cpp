@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include "Ray.h"
 #include "StringConverter.h"
 #include "Check.h"
+#include "Maths.h"
 
 namespace NSG
 {

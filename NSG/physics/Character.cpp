@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Engine.h"
 #include "Renderer.h"
+#include "Maths.h"
 #include "DebugRenderer.h"
 #include "StringConverter.h"
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
@@ -82,8 +83,8 @@ namespace NSG
     {
         auto targetPos = pos - VECTOR3_UP * MAX_WORLD_SIZE;
         auto direction = targetPos - pos;
-        auto distance = Length(direction);
-        PhysicsRaycastResult result = world_.lock()->SphereCastBut(this, pos, Normalize(direction), shapeHalfWidth_, distance);
+        auto distance = direction.Length();
+        PhysicsRaycastResult result = world_.lock()->SphereCastBut(this, pos, direction.Normalize(), shapeHalfWidth_, distance);
         if (result.HasCollided())
             return result.position_.y;
         return -MAX_WORLD_SIZE;
@@ -153,7 +154,7 @@ namespace NSG
 		auto groundHeight = GetGroundHeightFrom(bodyCenter_);
 		stepForwardSourcePos_ = bodyCenter_ + verticalStep;
 		stepForwardFinalPos_ = stepForwardSourcePos_ + stepForward_;
-		if (Length(minStepForward_) < Length(stepForward_))
+		if (minStepForward_.Length() < stepForward_.Length())
 			stepForwardTargetPos_ = stepForwardFinalPos_;
 		else
 			stepForwardTargetPos_ = stepForwardSourcePos_ + minStepForward_;
@@ -162,9 +163,9 @@ namespace NSG
         {
             // collided forward ( cannot step up)
 			auto dir2Target = stepForwardFinalPos_ - stepForwardSourcePos_;
-            slidingDirection_ = GetSlidingVector(dir2Target, result.normal_);
+            slidingDirection_ = dir2Target.GetSlidingVector(result.normal_);
             slidingDirection_.y = 0;
-			if (Length(slidingDirection_) > EPSILON)
+			if (slidingDirection_.Length() > EPSILON)
 			{
 				auto result = Obstruction(stepForwardSourcePos_, stepForwardSourcePos_ + slidingDirection_, 0.25f * shapeSphereRadius_);
 				if (!result.HasCollided())
@@ -192,7 +193,7 @@ namespace NSG
         }
 		worldTrans.setOrigin(ToBtVector3(stepForwardFinalPos_));
         auto orn = worldTrans.getBasis();
-        auto incRot = AngleAxis(Radians(angularSpeed_ * deltaTime), upAxis_);
+        Quaternion incRot(Radians(angularSpeed_ * deltaTime), upAxis_);
         orn *= btMatrix3x3(ToBtQuaternion(incRot));
         worldTrans.setBasis(orn);
         ghost_->setWorldTransform(worldTrans);
@@ -210,14 +211,14 @@ namespace NSG
 		debugRenderer->AddLine(stepForwardSourcePos_, stepForwardTargetPos_, Color(COLOR_RED, 1));
         auto worldTrans =  ghost_->getWorldTransform();
         auto position = ToVector3(worldTrans.getOrigin());
-        debugRenderer->AddLine(position, position + 10.f * Normalize(slidingDirection_), Color(COLOR_BLUE, 1));
+        debugRenderer->AddLine(position, position + 10.f * slidingDirection_.Normalize(), Color(COLOR_BLUE, 1));
     }
 
     PhysicsRaycastResult Character::Obstruction(const Vector3& origin, const Vector3& targetPos, float radius) const
     {
         auto direction = targetPos - origin;
-        auto distance = Length(direction);
-        PhysicsRaycastResult result = world_.lock()->SphereCastBut(this, origin, Normalize(direction), radius, distance);
+        auto distance = direction.Length();
+        PhysicsRaycastResult result = world_.lock()->SphereCastBut(this, origin, direction.Normalize(), radius, distance);
         return result;
     }
 
@@ -299,7 +300,7 @@ namespace NSG
 	{
 		auto worldTrans = ghost_->getWorldTransform();
 		auto orn = worldTrans.getBasis();
-		auto incRot = AngleAxis(Radians(angle), upAxis_);
+		Quaternion incRot(Radians(angle), upAxis_);
 		orn *= btMatrix3x3(ToBtQuaternion(incRot));
 		worldTrans.setBasis(orn);
 		ghost_->setWorldTransform(worldTrans);

@@ -25,12 +25,6 @@ namespace NSG
           viewHeight_(0),
           height_(0)
     {
-        auto graphics = RenderingContext::GetPtr();
-        if(graphics)
-        {
-            auto window = graphics->GetWindow();
-			SetWindow(window.lock());
-        }
     }
 
     FontAtlas::~FontAtlas()
@@ -83,6 +77,13 @@ namespace NSG
 
     bool FontAtlas::IsValid()
     {
+        auto context = RenderingContext::GetPtr();
+        if(context)
+        {
+            auto window = context->GetWindow();
+            SetWindow(window.lock());
+        }
+
         return viewWidth_ > 0 && viewHeight_ > 0 && xmlResource_ && xmlResource_->IsReady() &&
                texture_ && texture_->IsReady();
     }

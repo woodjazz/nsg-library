@@ -35,8 +35,13 @@ namespace NSG
 		IndexBuffer(GLenum usage);
 		IndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes, GLenum usage);
 		~IndexBuffer();
-		void UpdateData(const Indexes& indexes);
+        void UpdateData();
 		void SetData(GLsizeiptr size, const GLvoid* data);
 		static void Unbind();
+    private:
+        void AllocateResources() override;
+        void ReleaseResources() override;
+        const Indexes& indexes_;
+        GLsizeiptr bytesNeeded_;
 	};
 }

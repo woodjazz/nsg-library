@@ -36,13 +36,13 @@ static void FrustumTest()
         Vertex3 p2(1, 0, -1);
         Vector3 v1 = p1 - p0;
         Vector3 v2 = p2 - p0;
-        Vector3 normal = Normalize(Cross(v1, v2));
-        float d = -Dot(normal, p0);
+        Vector3 normal = v1.Cross(v2).Normalize();
+        float d = -normal.Dot(p0);
         CHECK_CONDITION(normal == Vector3(0, 0, -1));
         CHECK_CONDITION(d == -1);
-        CHECK_CONDITION(Dot(normal, p0) + d == 0);
-        CHECK_CONDITION(Dot(normal, p1) + d == 0);
-        CHECK_CONDITION(Dot(normal, p2) + d == 0);
+        CHECK_CONDITION(normal.Dot(p0) + d == 0);
+        CHECK_CONDITION(normal.Dot(p1) + d == 0);
+        CHECK_CONDITION(normal.Dot(p2) + d == 0);
     }
 
     PCamera camera = scene->GetOrCreateChild<Camera>("camera");
@@ -57,22 +57,22 @@ static void FrustumTest()
         const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
         const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-		CHECK_CONDITION(Dot(Vector3(nearPlane.GetNormalD()), -WORLD_Z_COORD) == 1);
-		CHECK_CONDITION(Dot(Vector3(leftPlane.GetNormalD()), WORLD_X_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(rightPlane.GetNormalD()), -WORLD_X_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(upPlane.GetNormalD()), -WORLD_Y_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(downPlane.GetNormalD()), WORLD_Y_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(farPlane.GetNormalD()), WORLD_Z_COORD) == 1);
+		CHECK_CONDITION(Vector3(nearPlane.GetNormalD()).Dot(-WORLD_Z_COORD) == 1);
+		CHECK_CONDITION(Vector3(leftPlane.GetNormalD()).Dot(WORLD_X_COORD) > 0);
+		CHECK_CONDITION(Vector3(rightPlane.GetNormalD()).Dot(-WORLD_X_COORD) > 0);
+		CHECK_CONDITION(Vector3(upPlane.GetNormalD()).Dot(-WORLD_Y_COORD) > 0);
+		CHECK_CONDITION(Vector3(downPlane.GetNormalD()).Dot(WORLD_Y_COORD) > 0);
+		CHECK_CONDITION(Vector3(farPlane.GetNormalD()).Dot(WORLD_Z_COORD) == 1);
 
         {
             Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
-			float dot = Dot(nearPlane.GetNormalD(), nearPlanePoint);
+			float dot = nearPlane.GetNormalD().Dot(nearPlanePoint);
             CHECK_CONDITION(Distance(dot, 0.0f) < 0.02f);
         }
 
         {
             Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
-			float dot = Dot(farPlane.GetNormalD(), farPlanePoint);
+			float dot = farPlane.GetNormalD().Dot(farPlanePoint);
             CHECK_CONDITION(Distance(dot, 0.0f) < 0.02f);
         }
 
@@ -90,22 +90,22 @@ static void FrustumTest()
         const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
         const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-		CHECK_CONDITION(Dot(Vector3(nearPlane.GetNormalD()), -WORLD_Z_COORD) == 1);
-		CHECK_CONDITION(Dot(Vector3(leftPlane.GetNormalD()), WORLD_X_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(rightPlane.GetNormalD()), -WORLD_X_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(upPlane.GetNormalD()), -WORLD_Y_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(downPlane.GetNormalD()), WORLD_Y_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(farPlane.GetNormalD()), WORLD_Z_COORD) == 1);
+		CHECK_CONDITION(Vector3(nearPlane.GetNormalD()).Dot(-WORLD_Z_COORD) == 1);
+		CHECK_CONDITION(Vector3(leftPlane.GetNormalD()).Dot(WORLD_X_COORD) > 0);
+		CHECK_CONDITION(Vector3(rightPlane.GetNormalD()).Dot(-WORLD_X_COORD) > 0);
+		CHECK_CONDITION(Vector3(upPlane.GetNormalD()).Dot(-WORLD_Y_COORD) > 0);
+		CHECK_CONDITION(Vector3(downPlane.GetNormalD()).Dot(WORLD_Y_COORD) > 0);
+		CHECK_CONDITION(Vector3(farPlane.GetNormalD()).Dot(WORLD_Z_COORD) == 1);
 
         {
             Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
-			float dot = Dot(nearPlane.GetNormalD(), nearPlanePoint);
+			float dot = nearPlane.GetNormalD().Dot(nearPlanePoint);
             CHECK_CONDITION(Distance(dot, 0.0f) < 0.02f);
         }
 
         {
             Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
-			float dot = Dot(farPlane.GetNormalD(), farPlanePoint);
+			float dot = farPlane.GetNormalD().Dot(farPlanePoint);
             CHECK_CONDITION(Distance(dot, 0.0f) < 0.02f);
         }
 
@@ -127,22 +127,22 @@ static void FrustumTest()
         const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
         const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-		CHECK_CONDITION(Dot(Vector3(nearPlane.GetNormalD()), -WORLD_Z_COORD) == 1);
-		CHECK_CONDITION(Dot(Vector3(leftPlane.GetNormalD()), WORLD_X_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(rightPlane.GetNormalD()), -WORLD_X_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(upPlane.GetNormalD()), -WORLD_Y_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(downPlane.GetNormalD()), WORLD_Y_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(farPlane.GetNormalD()), WORLD_Z_COORD) == 1);
+		CHECK_CONDITION(Vector3(nearPlane.GetNormalD()).Dot(-WORLD_Z_COORD) == 1);
+		CHECK_CONDITION(Vector3(leftPlane.GetNormalD()).Dot(WORLD_X_COORD) > 0);
+		CHECK_CONDITION(Vector3(rightPlane.GetNormalD()).Dot(-WORLD_X_COORD) > 0);
+		CHECK_CONDITION(Vector3(upPlane.GetNormalD()).Dot(-WORLD_Y_COORD) > 0);
+		CHECK_CONDITION(Vector3(downPlane.GetNormalD()).Dot(WORLD_Y_COORD) > 0);
+		CHECK_CONDITION(Vector3(farPlane.GetNormalD()).Dot(WORLD_Z_COORD) == 1);
 
         {
             Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZNear()), 1);
-			float dot = Dot(nearPlane.GetNormalD(), nearPlanePoint);
+			float dot = nearPlane.GetNormalD().Dot(nearPlanePoint);
             CHECK_CONDITION(Distance(dot, 0.0f) < 0.02f);
         }
 
         {
             Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, -camera->GetZFar()), 1);
-			float dot = Dot(farPlane.GetNormalD(), farPlanePoint);
+			float dot = farPlane.GetNormalD().Dot(farPlanePoint);
             CHECK_CONDITION(Distance(dot, 0.0f) < 0.02f);
         }
 
@@ -161,22 +161,22 @@ static void FrustumTest()
         const Plane& downPlane = frustum->GetPlane(FrustumPlane::PLANE_DOWN);
         const Plane& farPlane = frustum->GetPlane(FrustumPlane::PLANE_FAR);
 
-		CHECK_CONDITION(Dot(Vector3(nearPlane.GetNormalD()), WORLD_Z_COORD) == 1);
-		CHECK_CONDITION(Dot(Vector3(leftPlane.GetNormalD()), -WORLD_X_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(rightPlane.GetNormalD()), WORLD_X_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(upPlane.GetNormalD()), -WORLD_Y_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(downPlane.GetNormalD()), WORLD_Y_COORD) > 0);
-		CHECK_CONDITION(Dot(Vector3(farPlane.GetNormalD()), -WORLD_Z_COORD) == 1);
+		CHECK_CONDITION(Vector3(nearPlane.GetNormalD()).Dot(WORLD_Z_COORD) == 1);
+		CHECK_CONDITION(Vector3(leftPlane.GetNormalD()).Dot(-WORLD_X_COORD) > 0);
+		CHECK_CONDITION(Vector3(rightPlane.GetNormalD()).Dot(WORLD_X_COORD) > 0);
+		CHECK_CONDITION(Vector3(upPlane.GetNormalD()).Dot(-WORLD_Y_COORD) > 0);
+		CHECK_CONDITION(Vector3(downPlane.GetNormalD()).Dot(WORLD_Y_COORD) > 0);
+		CHECK_CONDITION(Vector3(farPlane.GetNormalD()).Dot(-WORLD_Z_COORD) == 1);
 
         {
             Vector4 nearPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, +camera->GetZNear()), 1);
-			float dot = Dot(nearPlane.GetNormalD(), nearPlanePoint);
+			float dot = nearPlane.GetNormalD().Dot(nearPlanePoint);
             CHECK_CONDITION(Distance(dot, 0.0f) < 0.02f);
         }
 
         {
             Vector4 farPlanePoint(camera->GetGlobalPosition() + Vector3(0, 0, +camera->GetZFar()), 1);
-			float dot = Dot(farPlane.GetNormalD(), farPlanePoint);
+			float dot = farPlane.GetNormalD().Dot(farPlanePoint);
             CHECK_CONDITION(Distance(dot, 0.0f) < 0.02f);
         }
 
@@ -293,7 +293,7 @@ static void Test02()
         CHECK_CONDITION(camera->IsVisible(node, *box));
         camera->SetPosition(Vertex3(0, 0, -1.1f));
         CHECK_CONDITION(!camera->IsVisible(node, *box));
-        node.SetOrientation(AngleAxis(PI / 2, Vertex3(1, 0, 0)));
+        node.SetOrientation(Quaternion(PI / 2, Vertex3(1, 0, 0)));
         CHECK_CONDITION(camera->IsVisible(node, *box));
         node.SetPosition(Vertex3(1, 0, 2));
         CHECK_CONDITION(!camera->IsVisible(node, *box));
@@ -573,6 +573,7 @@ static void Test07()
 void CameraTest()
 {
     auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
+    CHECK_CONDITION(window->IsReady());
     FrustumTest();
     Test01();
     Test02();

@@ -60,6 +60,7 @@ namespace NSG
           overlaysCamera_(std::make_shared<Camera>("NSGOverlays")),
           instanceBuffer_(new InstanceBuffer())
     {
+        CHECK_CONDITION(instanceBuffer_->IsReady());
         debugMaterial_->SetSerializable(false);
 
         shadowPass_.SetType(PassType::SHADOW);
@@ -154,8 +155,8 @@ namespace NSG
             cameraPos = camera_->GetGlobalPosition();
         std::sort(objs.begin(), objs.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
-            auto da = Distance2(a->GetGlobalPosition(), cameraPos);
-            auto db = Distance2(b->GetGlobalPosition(), cameraPos);
+            auto da = a->GetGlobalPosition().Distance2(cameraPos);
+            auto db = b->GetGlobalPosition().Distance2(cameraPos);
             return db < da;
         });
     }
@@ -165,8 +166,8 @@ namespace NSG
         Vector3 cameraPos(overlaysCamera_->GetGlobalPosition());
         std::sort(objs.begin(), objs.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
-            auto da = Distance2(a->GetGlobalPosition(), cameraPos);
-            auto db = Distance2(b->GetGlobalPosition(), cameraPos);
+            auto da = a->GetGlobalPosition().Distance2(cameraPos);
+            auto db = b->GetGlobalPosition().Distance2(cameraPos);
             return db < da;
         });
     }
@@ -179,8 +180,8 @@ namespace NSG
             cameraPos = camera_->GetGlobalPosition();
         std::sort(objs.begin(), objs.end(), [&](const SceneNode * a, const SceneNode * b) -> bool
         {
-            auto da = Distance2(a->GetGlobalPosition(), cameraPos);
-            auto db = Distance2(b->GetGlobalPosition(), cameraPos);
+            auto da = a->GetGlobalPosition().Distance2(cameraPos);
+            auto db = b->GetGlobalPosition().Distance2(cameraPos);
             return da < db;
         });
     }

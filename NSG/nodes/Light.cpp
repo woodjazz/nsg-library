@@ -17,6 +17,7 @@
 #include "FrameBuffer.h"
 #include "StringConverter.h"
 #include "imgui.h"
+#include "Maths.h"
 #include "pugixml.hpp"
 #include <assert.h>
 #include <algorithm>

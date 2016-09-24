@@ -82,10 +82,10 @@ Player::Player(PScene scene)
     {
         if (!child_->IsHidden() && (x || y))
         {
-            auto angle = Angle(VECTOR3_UP, Normalize(Vector3(x, y, 0)));
+            auto angle = VECTOR3_UP.Angle(Vector3(x, y, 0).Normalize());
             if (x > 0)
                 angle *= -1;
-            child_->SetOrientation(AngleAxis(angle, VECTOR3_FORWARD));
+            child_->SetOrientation(Quaternion(angle, VECTOR3_FORWARD));
             auto dt = Engine::GetPtr()->GetDeltaTime();
             auto dir = dt * (child_->GetOrientation() * VECTOR3_UP);
             node_->Pitch(-dir.y);
@@ -97,10 +97,10 @@ Player::Player(PScene scene)
     {
         if (!child_->IsHidden() && (x || y))
         {
-            auto angle = Angle(VECTOR3_UP, Normalize(Vector3(x, y, 0)));
+            auto angle = VECTOR3_UP.Angle(Vector3(x, y, 0).Normalize());
             if (x > 0)
                 angle *= -1;
-            lastShotOrientation_ = AngleAxis(angle, VECTOR3_FORWARD);
+            lastShotOrientation_ = Quaternion(angle, VECTOR3_FORWARD);
             shot_ = true;
         }
         else

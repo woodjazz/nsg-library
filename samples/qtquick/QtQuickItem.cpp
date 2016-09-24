@@ -53,7 +53,6 @@ void QtQuickItemRenderer::Paint()
         {
             initialized_ = true;
             initializeOpenGLFunctions();
-            window->OnReady();
         }
         window->ViewChanged(qtWindow_->size().width(), qtWindow_->size().height());
         RenderingContext::GetPtr()->ResetCachedState();

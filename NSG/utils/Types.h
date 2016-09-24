@@ -24,20 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#define GLM_FORCE_RADIANS
-#include "glm/glm.hpp"
-#include "glm/gtc/quaternion.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
-#include "glm/gtc/constants.hpp"
-#include "glm/gtc/epsilon.hpp"
-#include "glm/gtc/matrix_access.hpp"
-#include "glm/gtx/spline.hpp"
-#include "glm/gtx/io.hpp"
-#include "glm/gtx/norm.hpp"
-#include "glm/gtx/orthonormalize.hpp"
-#include "glm/gtx/matrix_decompose.hpp"
-#include "glm/gtx/vector_angle.hpp"
+#include "Vector3.h"
+#include "Vector4.h"
+#include "Vector2.h"
+#include "Quaternion.h"
+#include "Matrix4.h"
+#include "Matrix3.h"
 #include "SharedPointers.h"
 #include "GLIncludes.h"
 #include "FlagSet.h"
@@ -59,20 +51,13 @@ namespace NSG
 {
     class Path;
 
-    typedef glm::highp_ivec4 Recti;
-    typedef glm::highp_ivec4 Vector4i;
-    typedef glm::vec4 Rect;
-    typedef glm::vec4 Vertex4;
-    typedef glm::vec4 Vector4;
-    typedef glm::vec3 Vertex3;
-    typedef glm::vec3 Vector3;
-    typedef glm::vec2 Vertex2;
-    typedef glm::vec2 Vector2;
-    typedef glm::quat Quaternion;
-    typedef glm::mat4 Matrix4;
-    typedef glm::mat3 Matrix3;
-    typedef glm::vec4 Color;
-    typedef glm::vec3 ColorRGB;
+    struct Recti
+    {
+        int x, y, z, w;
+        Recti();
+        Recti(int a, int b, int c, int d);
+        bool operator==(const Recti& obj) const;
+    };
 
     enum class LightType
     {

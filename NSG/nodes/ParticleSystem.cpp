@@ -244,14 +244,14 @@ namespace NSG
         {
             auto rb = GetRigidBody();
             if (rb)
-                velocity += velocityParams_.objectSpeed_ * rb->GetLinearVelocity();
+                velocity = velocity + velocityParams_.objectSpeed_ * rb->GetLinearVelocity();
         }
 
         if (velocityParams_.randomSpeed_)
         {
             std::uniform_real_distribution<float> dis(0.0f, velocityParams_.randomSpeed_);
             auto random = dis(randGenerator_);
-            velocity *= random;
+            velocity = velocity * random;
         }
 
         if (emitFrom_ == PS_EF_VERTS)
@@ -263,13 +263,13 @@ namespace NSG
             if (velocityParams_.normalSpeed_)
             {
                 auto& normal = vertex.normal_;
-                velocity += normal * velocityParams_.normalSpeed_;
+                velocity = velocity + normal * velocityParams_.normalSpeed_;
             }
 
             if (velocityParams_.tangetSpeed_)
             {
                 auto& tangent = vertex.tangent_;
-                velocity += tangent * velocityParams_.tangetSpeed_;
+                velocity = velocity + tangent * velocityParams_.tangetSpeed_;
             }
         }
 

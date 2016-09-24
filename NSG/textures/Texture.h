@@ -89,5 +89,6 @@ namespace NSG
         TextureType mapType_;
         bool useAlpha_;
         Vector4 uvTransform_;
+        PRenderingContext context_;
     };
 }
