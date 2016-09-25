@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "ProceduralMesh.h"
 #include "RenderingContext.h"
+#include "Window.h"
 
 namespace NSG
 {
@@ -35,6 +36,6 @@ namespace NSG
 
 	bool ProceduralMesh::IsValid() 
 	{ 
-		return true;
+		return Window::GetMainWindow() != nullptr;
 	}
 }

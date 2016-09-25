@@ -136,7 +136,7 @@ static void Test01()
 {
     static auto scene = std::make_shared<Scene>();
     static auto character = SetupScene(scene);
-    static auto window = Window::Create("0", 0, 0, 10, 10, (int)WindowFlag::HIDDEN);
+    static auto window = Window::Create("0", 0, 0, 320, 200, (int)WindowFlag::HIDDEN);
     CHECK_CONDITION(window->IsReady());
     window->SetScene(scene);
 

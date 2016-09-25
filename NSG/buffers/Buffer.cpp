@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "RenderingContext.h"
 #include "RenderingCapabilities.h"
+#include "Window.h"
 #include <assert.h>
 
 namespace NSG
@@ -44,6 +45,12 @@ namespace NSG
     Buffer::~Buffer()
     {
     }
+
+    bool Buffer::IsValid()
+    {
+        return Window::GetMainWindow() != nullptr;
+    }
+
 
     void Buffer::AllocateResources()
     {
@@ -67,7 +74,7 @@ namespace NSG
 
     void Buffer::SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data)
     {
-        if(IsReady())
+        if (IsReady())
         {
             CHECK_ASSERT(offset + size <= bufferSize_);
 

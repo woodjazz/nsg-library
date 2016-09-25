@@ -38,6 +38,7 @@ namespace NSG
 		void Bind();
 		bool IsDynamic() const { return dynamic_; }
 	protected:
+		bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
         Buffer(GLsizeiptr bufferSize, GLenum type, GLenum usage = GL_STATIC_DRAW);

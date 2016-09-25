@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "Camera.h"
 #include "InstanceData.h"
 #include "ModelMesh.h"
+#include "Window.h"
 #include "StringConverter.h"
 #include "pugixml.hpp"
 #include <sstream>
@@ -65,15 +66,13 @@ namespace NSG
 
     bool Mesh::IsValid()
     {
-		return !vertexsData_.empty();
+        return Window::GetMainWindow() != nullptr && !vertexsData_.empty();
     }
 
     void Mesh::AllocateResources()
     {
         if (!areTangentsCalculated_)
             CalculateTangents();
-
-        CHECK_GL_STATUS();
 
 		CHECK_ASSERT(!isStatic_ || pVBuffer_ == nullptr);
 		CHECK_ASSERT(!isStatic_ || pIBuffer_ == nullptr);
