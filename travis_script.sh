@@ -2,7 +2,7 @@
 set -e
 case "${TRAVIS_OS_NAME}" in
   linux)
-	pwd && ls -l && mkdir debug && cd debug && cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" && make && make test
+	pwd && ls -l && rm -r debug && ls -l && mkdir debug && cd debug && cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" && make && make test
 	cd ..
 	pwd && mkdir release && cd release && cmake .. -G "Unix Makefiles" && make && make test
     ;;
