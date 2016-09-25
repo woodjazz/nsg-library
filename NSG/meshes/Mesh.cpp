@@ -65,7 +65,7 @@ namespace NSG
 
     bool Mesh::IsValid()
     {
-		return RenderingContext::GetPtr() && RenderingContext::GetPtr()->GetWindow().lock() && !vertexsData_.empty();
+		return !vertexsData_.empty();
     }
 
     void Mesh::AllocateResources()

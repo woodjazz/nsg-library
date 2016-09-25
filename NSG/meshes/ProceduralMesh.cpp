@@ -35,6 +35,6 @@ namespace NSG
 
 	bool ProceduralMesh::IsValid() 
 	{ 
-		return RenderingContext::GetPtr() != nullptr;// && RenderingContext::GetPtr()->GetWindow();
+		return true;
 	}
 }

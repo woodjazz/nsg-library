@@ -120,13 +120,8 @@ namespace NSG
             #else
 #error("Unknown platform!!!")
             #endif
-        //window->graphics_ = RenderingContext::Create();
-        //window->graphics_->SetWindow(window);
-        //window->renderer_ = Renderer::Create();
-
             Window::AddWindow(window);
             return window;
-
         }
         return nullptr;
     }

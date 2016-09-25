@@ -140,8 +140,7 @@ namespace NSG
 
         glGenFramebuffers(1, &framebuffer_);
 
-		auto graphics = RenderingContext::GetPtr();
-        auto oldFrameBuffer = graphics->SetFrameBuffer(this, GetDefaultTextureTarget());
+        auto oldFrameBuffer = context_->SetFrameBuffer(this, GetDefaultTextureTarget());
 
         CHECK_GL_STATUS();
 
@@ -214,7 +213,7 @@ namespace NSG
             LOGE("Frame buffer failed with error = 0x%x", status);
         }
 
-        graphics->SetFrameBuffer(oldFrameBuffer);
+        context_->SetFrameBuffer(oldFrameBuffer);
 
         CHECK_GL_STATUS();
     }
