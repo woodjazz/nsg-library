@@ -36,6 +36,7 @@ namespace NSG
 
 	bool ProceduralMesh::IsValid() 
 	{ 
-		return Window::GetMainWindow() != nullptr;
+		auto mainWindow = Window::GetMainWindow();
+		return mainWindow && mainWindow->IsReady();
 	}
 }

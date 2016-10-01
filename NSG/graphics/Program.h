@@ -66,6 +66,7 @@ namespace NSG
         void SetNodeVariables();
 		static std::string GetShaderVariation(const Pass* pass, const Scene* scene, const Camera* camera, const Mesh* mesh, const Material* material, const Light* light, const SceneNode* sceneNode);
     private:
+        void ReduceShaderComplexity();
         Matrix4 AdjustProjection(const Matrix4& m) const;
         bool IsValid() override;
         void AllocateResources() override;

@@ -45,6 +45,7 @@ namespace NSG
       #endif
       static const int WindowWidth = 1024;
       static const int WindowHeight = 768;
+    
     #endif
 
     AppConfiguration::AppConfiguration()

@@ -61,9 +61,8 @@ static const char* COMMON_GLSL = \
 "	uniform mat3 u_normalMatrix;\n"\
 "	uniform mat4 u_viewProjection; // could be main camera or shadowCamera\n"\
 "	uniform mat4 u_projection; // could be main camera or shadowCamera\n"\
-"	uniform vec4 u_uvTransform0; /* DIFFUSEMAP */\n"\
-"	uniform vec4 u_uvTransform1; /* NORMALMAP, AOMAP */	\n"\
-"	uniform vec4 u_uvTransform2; /* LIGHTMAP, SPECULARMAP */\n"\
+"	uniform vec4 u_uvTransform0; \n"\
+"	uniform vec4 u_uvTransform1; \n"\
 "	#if defined(SKINNED)\n"\
 "		uniform mat4 u_bones[MAX_BONES];\n"\
 "	#endif\n"\

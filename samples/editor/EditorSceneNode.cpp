@@ -40,7 +40,7 @@ EditorSceneNode::~EditorSceneNode()
 
 bool EditorSceneNode::CanBeVisible() const
 {
-	return Renderer::GetPtr() && RendererContext::EDITOR == Renderer::GetPtr()->GetContext() && SceneNode::CanBeVisible();
+    return Renderer::GetPtr() && RendererContext::EDITOR == Renderer::GetPtr()->GetContextType() && SceneNode::CanBeVisible();
 }
 
 void EditorSceneNode::ShowGUIProperties(Editor* editor)

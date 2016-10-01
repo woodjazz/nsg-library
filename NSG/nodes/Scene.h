@@ -38,7 +38,7 @@ namespace NSG
     class Scene : public SceneNode
     {
     public:
-		Scene(const std::string& name = GetUniqueName("scene"));
+        Scene(const std::string& name = GetUniqueName("scene"));
         ~Scene();
         void SetWindow(PWindow window);
         void SetAmbientColor(ColorRGB ambient);
@@ -113,7 +113,6 @@ namespace NSG
 		SignalMouseButton::PSlot slotMouseDown_;
 		SignalMouseButton::PSlot slotMouseUp_;
 		SignalFloatFloat::PSlot slotMouseWheel_;
-		SignalWindow::PSlot slotWindow_;
         SignalLight::PSlot slotLightBeingDestroy_;
 		SignalCamera::PSlot slotCameraBeingDestroy_;
 		SignalParticleSystem::PSlot slotPSBeingDestroy_;

@@ -42,12 +42,6 @@ namespace NSG
           fogDepth_(25),
           fogHeight_(0)
     {
-        slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
-        {
-            if (!window_.lock())
-                SetWindow(SharedFromPointer(window));
-        });
-
         slotLightBeingDestroy_ = Light::SignalBeingDestroy()->Connect([this](Light * light)
         {
             auto it = std::find(lights_.begin(), lights_.end(), light);
@@ -131,8 +125,6 @@ namespace NSG
             }
             else
             {
-                //if (window_->GetScene() == this)
-                //    window_->SetScene(nullptr);
                 slotMouseMoved_ = nullptr;
                 slotMouseDown_ = nullptr;
                 slotMouseUp_ = nullptr;

@@ -60,7 +60,6 @@ misrepresented as being the original software.
 #include "RenderingCapabilities.h"
 #include "Material.h"
 #include "RectangleMesh.h"
-#include "ShowTexture.h"
 #include "ResourceFile.h"
 #include "Pass.h"
 #include "AppConfiguration.h"

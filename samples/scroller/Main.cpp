@@ -46,7 +46,7 @@ int NSG_MAIN(int argc, char* argv[])
 		auto player = camera->GetChild<SceneNode>("Player", false);
 		player->GetMaterial()->SetAmbientIntensity(1);
 		float deltaTime = 0;
-		auto controller = std::make_shared<PlayerControl>();
+        auto controller = std::make_shared<PlayerControl>(window);
 		auto& orthoProjection = camera->GetOrthoProjection();
 		auto cameraHalfWidth = (orthoProjection.right_ - orthoProjection.left_) / 2;
 		auto cameraHalfHeight = (orthoProjection.top_ - orthoProjection.bottom_) / 2;

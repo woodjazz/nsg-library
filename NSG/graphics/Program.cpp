@@ -138,6 +138,24 @@ namespace NSG
         Invalidate();
     }
 
+    void Program::ReduceShaderComplexity()
+    {
+        std::string::size_type pos0 = 0;
+        std::string::size_type pos1 = defines_.find('\n', 0);
+        while (pos1 != std::string::npos)
+        {
+            auto def = defines_.substr(pos0, pos1 - pos0 + 1);
+            if(def.find("NORMALMAP") != std::string::npos )
+            {
+                defines_.replace(pos0, pos1 - pos0 + 1, "");
+                break;
+            }
+            pos0 = pos1 + 1;
+            pos1 = defines_.find('\n', pos0);
+        } ;
+
+    }
+
     void Program::ConfigureShaders(std::string& vertexShader, std::string& fragmentShader)
     {
         std::string preDefines;
@@ -190,11 +208,24 @@ namespace NSG
     void Program::AllocateResources()
     {
         graphics_ = RenderingContext::GetSharedPtr();
-        std::string vShader;
-        std::string fShader;
-        ConfigureShaders(vShader, fShader);
-        pVShader_ = PVertexShader(new VertexShader(vShader.c_str()));
-        pFShader_ = PFragmentShader(new FragmentShader(fShader.c_str()));
+        for(;;)
+        {
+            std::string vShader;
+            std::string fShader;
+            ConfigureShaders(vShader, fShader);
+            try
+            {
+                pVShader_ = PVertexShader(new VertexShader(vShader.c_str()));
+                pFShader_ = PFragmentShader(new FragmentShader(fShader.c_str()));
+                break;
+            }
+            catch(GLException&)
+            {
+                LOGW("Reduncing shader complexity!!!");
+                ReduceShaderComplexity();
+            }
+        }
+
         if (Initialize())
         {
             graphics_.lock()->SetProgram(this);
@@ -571,6 +602,8 @@ namespace NSG
                 const Matrix4& offsetMatrix = skeleton_->GetBoneOffsetMatrix(boneName);
                 Matrix4 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
                 glUniformMatrix4fv(boneLoc, 1, GL_FALSE, boneMatrix.GetPointer());
+                //Matrix3 boneMatrix(globalInverseModelMatrix * m * offsetMatrix);
+                //glUniformMatrix3fv(boneLoc, 1, GL_FALSE, boneMatrix.GetPointer());
             }
             CHECK_GL_STATUS();
         }

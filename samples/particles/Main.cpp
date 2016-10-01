@@ -32,6 +32,7 @@ int NSG_MAIN(int argc, char* argv[])
 	auto window = Window::Create();
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
+    camera->SetWindow(window);
 	camera->SetPosition(Vertex3(0, 8, 15));
     auto control = std::make_shared<CameraControl>(camera);
     

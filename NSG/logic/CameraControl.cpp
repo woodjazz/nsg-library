@@ -60,14 +60,11 @@ namespace NSG
         altKeyDown_ = false;
         shiftKeyDown_ = false;
 
-        auto graphics = RenderingContext::GetPtr();
-        if (graphics)
-            SetWindow(graphics->GetWindow().lock());
+        SetWindow(camera->GetWindow());
 
-        slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
+        slotWindow_ = camera->SigWindow()->Connect([this](PWindow window)
         {
-            if (!window_.lock())
-                SetWindow(SharedFromPointer(window));
+            SetWindow(window);
         });
 
         slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
@@ -415,12 +412,12 @@ namespace NSG
 
     PSceneNode CameraControl::SelectObject(float x, float y)
     {
-		auto oldContext = Renderer::GetPtr()->SetContext(selectionContext_);
+        auto oldContext = Renderer::GetPtr()->SetContextType(selectionContext_);
 		TransformCoords(x, y);
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
 		auto selection = scene_->GetClosestRayNodeIntersection(ray, closest);
-		Renderer::GetPtr()->SetContext(oldContext);
+        Renderer::GetPtr()->SetContextType(oldContext);
 		if (selection)
 		{
 			selection_ = selection;
@@ -431,12 +428,12 @@ namespace NSG
 
     void CameraControl::RayCastNewCenter(bool centerObj)
     {
-		auto oldContext = Renderer::GetPtr()->SetContext(selectionContext_);
+        auto oldContext = Renderer::GetPtr()->SetContextType(selectionContext_);
         Vertex3 newCenter;
         Ray ray = camera_->GetScreenRay(lastX_, lastY_);
         RayNodeResult closest;
 		auto selection = scene_->GetClosestRayNodeIntersection(ray, closest);
-		Renderer::GetPtr()->SetContext(oldContext);
+        Renderer::GetPtr()->SetContextType(oldContext);
 		if (selection)
         {
 			selection_ = selection;

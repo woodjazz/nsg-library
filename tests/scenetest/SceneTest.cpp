@@ -28,7 +28,7 @@ using namespace NSG;
 
 static void Test01()
 {
-	auto scene = std::make_shared<Scene>();
+    auto scene = std::make_shared<Scene>();
 
 	auto sphereMesh(Mesh::Create<SphereMesh>());
 	auto boxMesh(Mesh::Create<BoxMesh>());
@@ -414,7 +414,6 @@ static void Test08()
 	auto camera = scene->CreateChild<Camera>();
 	camera->EnableOrtho();
 	camera->SetNearClip(-0.1f);
-    camera->SetWindow(nullptr);
 
 	auto nodeCenter = scene->GetOrCreateChild<SceneNode>("nodeCenter");
 	auto nodeLeftTop = scene->GetOrCreateChild<SceneNode>("nodeLeftTop");
@@ -588,7 +587,7 @@ static void Test0A()
 void Tests()
 {
 	auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
-    CHECK_CONDITION(window->IsReady());
+//    CHECK_CONDITION(window->IsReady());
     Test01();
     Test02();
     Test03();

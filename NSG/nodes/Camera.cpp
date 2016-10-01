@@ -2,18 +2,14 @@
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
-
 Copyright (c) 2014-2016 Néstor Silveira Gorski
-
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
-
 Permission is granted to anyone to use this software for any purpose,
 including commercial applications, and to alter it and redistribute it
 freely, subject to the following restrictions:
-
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software. If you use this software
 in a product, an acknowledgment in the product documentation would be
@@ -45,6 +41,7 @@ misrepresented as being the original software.
 #include "Maths.h"
 #include "pugixml.hpp"
 #include <sstream>
+#include <algorithm>
 
 namespace NSG
 {
@@ -65,14 +62,10 @@ namespace NSG
           colorSplits_(false),
           shadowSplitLogFactor_(0.5f),
           automaticSplits_(true),
-          hasUserOrthoProjection_(false)
+          hasUserOrthoProjection_(false),
+          signalWindow_(new SignalWindow)
     {
         SetInheritScale(false);
-        slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
-        {
-            if (!window_.lock())
-                SetWindow(SharedFromPointer(window));
-        });
     }
 
     Camera::~Camera()
@@ -83,7 +76,6 @@ namespace NSG
 
     void Camera::UnRegisterWindow()
     {
-        slotWindow_ = nullptr;
         SetWindow(nullptr);
     }
 
@@ -106,7 +98,13 @@ namespace NSG
                 slotViewChanged_ = nullptr;
                 SetAspectRatio(1);
             }
+            signalWindow_->Run(window);
         }
+    }
+
+    PWindow Camera::GetWindow() const
+    {
+        return window_.lock();
     }
 
     float Camera::CalculateAspectRatio() const
@@ -566,5 +564,43 @@ namespace NSG
     void Camera::Debug(DebugRenderer* debugRenderer, const Color& color)
     {
         GetFrustum()->Debug(VECTOR3_ZERO, debugRenderer, color);
+    }
+
+    void Camera::AddFilter(PMaterial filter)
+    {
+        filters_.push_back(filter);
+    }
+
+    void Camera::RemoveFilter(PMaterial filter)
+    {
+        filters_.erase(std::remove_if(filters_.begin(), filters_.end(), [&](PWeakMaterial material)
+        {
+            return material.lock() == filter;
+        }), filters_.end());
+    }
+
+    std::vector<Material*> Camera::GetFilters()
+    {
+        std::vector<Material*> result;
+        auto it = filters_.begin();
+        while (it != filters_.end())
+        {
+            auto filter = (*it).lock();
+            if (filter)
+            {
+                result.push_back(filter.get());
+                ++it;
+            }
+            else
+            {
+                it = filters_.erase(it);
+            }
+        }
+        return result;
+    }
+
+    bool Camera::HasPostProcessing() const
+    {
+        return !filters_.empty();
     }
 }

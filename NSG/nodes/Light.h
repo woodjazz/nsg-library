@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "SceneNode.h"
+#include "Constants.h"
 
 namespace NSG
 {
@@ -68,21 +69,16 @@ namespace NSG
         void SetSlopeScaledBias(float slopeScaledBias) { slopeScaledBias_ = slopeScaledBias; }
         float GetSlopeScaledBias() const { return slopeScaledBias_; }
         ShadowCamera* GetShadowCamera(int idx) const;
-        void GenerateShadowMaps(const Camera* camera);
         bool HasSpecularColor() const;
+        void SetShadowSplits(int splits) const { shadowSplits_ = splits; }
         int GetShadowSplits() const {return shadowSplits_; }
         float GetInvRange() const { return invRange_; }
 		bool IsDiffuseEnabled() const { return diffuse_; }
-		bool IsSpecularEnabled() const { return specular_; }
-    private:
-        int CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
+        bool IsSpecularEnabled() const { return specular_; }
         FrameBuffer* GetShadowFrameBuffer(int idx) const;
+    private:
         void CalculateColor();
         void CalculateRange();
-        void Generate2DShadowMap(int split);
-        void GenerateShadowMapCubeFace();
-        int GetShadowFrameBufferSize(int split) const;
-        void GenerateCubeShadowMap(const Camera* camera);
     private:
         LightType type_;
         float energy_;
@@ -103,7 +99,7 @@ namespace NSG
         float shadowBias_; // final bias is multiplied by material bias (See Material::shadowBias_)
         float slopeScaledBias_;
         PShadowCamera shadowCamera_[MAX_SPLITS];
-        int shadowSplits_; //Calculated in the shadow pass
+        mutable int shadowSplits_; //Calculated in the shadow pass
         float invRange_;
         SignalLight::PSignal signalSetType_;
     };

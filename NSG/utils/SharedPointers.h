@@ -126,9 +126,6 @@ namespace NSG
     typedef std::shared_ptr<Resource> PResource;
     typedef std::weak_ptr<Resource> PWeakResource;
 
-    class ShowTexture;
-    typedef std::shared_ptr<ShowTexture> PShowTexture;
-
     class Mesh;
     typedef std::shared_ptr<Mesh> PMesh;
     typedef std::weak_ptr<Mesh> PWeakMesh;

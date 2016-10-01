@@ -2,18 +2,14 @@
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
-
 Copyright (c) 2014-2016 Néstor Silveira Gorski
-
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
-
 Permission is granted to anyone to use this software for any purpose,
 including commercial applications, and to alter it and redistribute it
 freely, subject to the following restrictions:
-
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software. If you use this software
 in a product, an acknowledgment in the product documentation would be
@@ -42,7 +38,7 @@ namespace NSG
         : Camera(light->GetName() + "ShadowCamera"),
           light_(light),
           farSplit_(MAX_WORLD_SIZE),
-		  disabled_(false)
+          disabled_(false)
     {
         dirPositiveX_.SetLocalLookAtPosition(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
         dirNegativeX_.SetLocalLookAtPosition(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
@@ -77,7 +73,7 @@ namespace NSG
         SetNearClip(light_->GetShadowClipStart());
         auto farZ = Clamp(light_->GetShadowClipEnd(), light_->GetShadowClipStart(), light_->GetDistance());
         SetFarClip(farZ);
-		SetFOVDegrees(light_->GetSpotCutOff());
+        SetFOVDegrees(light_->GetSpotCutOff());
         SetAspectRatio(1.0);
         DisableOrtho();
     }
@@ -91,81 +87,80 @@ namespace NSG
         auto scene = light_->GetScene().get();
         CHECK_ASSERT(light_->GetType() == LightType::DIRECTIONAL);
 
-		EnableOrtho();
-		SetAspectRatio(1);
-		DisableUserOrthoProjection();
+        EnableOrtho();
+        SetAspectRatio(1);
+        DisableUserOrthoProjection();
 
         // Calculate initial position & rotation
         auto pos = camera->GetGlobalPosition() - MAX_WORLD_SIZE * light_->GetLookAtDirection();
         SetPosition(pos);
         SetOrientation(light_->GetGlobalOrientation());
         {
-			// setup camera to split frustum
+            // setup camera to split frustum
             auto camSplitFrustum = camera->GetFrustumSplit(nearSplit, farSplit);
             BoundingBox shadowBox(*camSplitFrustum);
             shadowBox.Transform(GetView()); // Transform shadowBox to light space
             SetNearClip(0);//-shadowBox.max_.z);
             SetFarClip(-shadowBox.min_.z);
             auto viewSize = shadowBox.Size();
-			SetAspectRatio(viewSize.x / viewSize.y);
-			SetOrthoScale(viewSize.x);
+            SetAspectRatio(viewSize.x / viewSize.y);
+            SetOrthoScale(viewSize.x);
             auto viewCenter = shadowBox.Center();
             viewCenter.z = 0;
             Translate(viewCenter);
         }
         {
-			// Calculate receivers for current split
+            // Calculate receivers for current split
             auto camSplitFrustum = GetFrustum();
             auto receiversBox = Camera::GetViewBox(camSplitFrustum.get(), scene, true, false);
-			if (!receiversBox.IsDefined())
-			{
-				disabled_ = true;
-				return; // no receivers for this split => nothing to do
-			}
-			// Calculate casters for current split
+            if (!receiversBox.IsDefined())
+            {
+                disabled_ = true;
+                return; // no receivers for this split => nothing to do
+            }
+            // Calculate casters for current split
             auto castersBox = Camera::GetViewBox(camSplitFrustum.get(), scene, false, true);
-			if (!castersBox.IsDefined())
-			{
-				disabled_ = true;
-				return; // no casters for this split => nothing to do
-			}
-			disabled_ = false;
-			receiversBox.Transform(GetView()); // transform receivers view box to shadowCam's space
+            if (!castersBox.IsDefined())
+            {
+                disabled_ = true;
+                return; // no casters for this split => nothing to do
+            }
+            disabled_ = false;
+            receiversBox.Transform(GetView()); // transform receivers view box to shadowCam's space
             castersBox.Transform(GetView()); // transform casters view box to shadowCam's space
-			auto zFar = -receiversBox.min_.z; // from cam point of view: set zFar to more distance z receiver
-			auto zNear = -castersBox.max_.z; // from cam point of view: set zNear to closest z caster
+            auto zFar = -receiversBox.min_.z; // from cam point of view: set zFar to more distance z receiver
+            auto zNear = -castersBox.max_.z; // from cam point of view: set zNear to closest z caster
             CHECK_ASSERT(zNear < zFar);
             SetNearClip(zNear);
             SetFarClip(zFar);
-			auto viewSize = castersBox.Size();
-			SetAspectRatio(viewSize.x / viewSize.y);
-			SetOrthoScale(viewSize.x);
-			auto viewCenter = castersBox.Center();
+            auto viewSize = castersBox.Size();
+            SetAspectRatio(viewSize.x / viewSize.y);
+            SetOrthoScale(viewSize.x);
+            auto viewCenter = castersBox.Center();
             // center camera
             viewCenter.z = 0;
-			Translate(viewCenter);
+            Translate(viewCenter);
         }
         {
 #if 0
-			//The bigger issue is a shadow frustum that continuously changes
-			//size and position as the camera moves around. This leads to shadows "swimming",
-			//which is a very distracting artifact.
-			{
-				auto camSplitFrustum = GetFrustum();
-				BoundingBox shadowBox(*camSplitFrustum);
-				shadowBox.Transform(GetView()); // Transform shadowBox to shadowCamera space
-				auto shadowBoxSize = shadowBox.Size();
-
-				//Quantize size to reduce swimming
-				const float QUANTIZE = 0.5f;
-				const float MIN_VIEW_SIZE = 3.f;
-				shadowBoxSize.x = ceilf(sqrtf(shadowBoxSize.x / QUANTIZE));
-				shadowBoxSize.y = ceilf(sqrtf(shadowBoxSize.y / QUANTIZE));
-				shadowBoxSize.x = std::max(shadowBoxSize.x * shadowBoxSize.x * QUANTIZE, MIN_VIEW_SIZE);
-				shadowBoxSize.y = std::max(shadowBoxSize.y * shadowBoxSize.y * QUANTIZE, MIN_VIEW_SIZE);
-				SetAspectRatio(shadowBoxSize.x / shadowBoxSize.y);
-				SetOrthoScale(shadowBoxSize.x);
-			}
+            //The bigger issue is a shadow frustum that continuously changes
+            //size and position as the camera moves around. This leads to shadows "swimming",
+            //which is a very distracting artifact.
+            {
+                auto camSplitFrustum = GetFrustum();
+                BoundingBox shadowBox(*camSplitFrustum);
+                shadowBox.Transform(GetView()); // Transform shadowBox to shadowCamera space
+                auto shadowBoxSize = shadowBox.Size();
+                //Quantize size to reduce swimming
+                const float QUANTIZE = 0.5f;
+                const float MIN_VIEW_SIZE = 3.f;
+                shadowBoxSize.x = ceilf(sqrtf(shadowBoxSize.x / QUANTIZE));
+                shadowBoxSize.y = ceilf(sqrtf(shadowBoxSize.y / QUANTIZE));
+                shadowBoxSize.x = std::max(shadowBoxSize.x * shadowBoxSize.x * QUANTIZE, MIN_VIEW_SIZE);
+                shadowBoxSize.y = std::max(shadowBoxSize.y * shadowBoxSize.y * QUANTIZE, MIN_VIEW_SIZE);
+                SetAspectRatio(shadowBoxSize.x / shadowBoxSize.y);
+                SetOrthoScale(shadowBoxSize.x);
+            }
 #endif
 
         }

@@ -381,8 +381,9 @@ namespace NSG
     size_t SceneNode::GetMaxPlatformBones(size_t nBones) const
     {
         // set a maximum value per platform to avoid shader variations
+        //LOGI("Number of bones=%d", nBones);
         if (nBones <= MAX_BONES2)
-            return MAX_BONES2;
+            return MAX_BONES1;
         else if (nBones <= MAX_BONES1)
             return MAX_BONES1;
         else if (nBones <= MAX_BONES0)

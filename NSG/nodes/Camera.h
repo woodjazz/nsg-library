@@ -2,18 +2,14 @@
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
-
 Copyright (c) 2014-2016 Néstor Silveira Gorski
-
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
-
 Permission is granted to anyone to use this software for any purpose,
 including commercial applications, and to alter it and redistribute it
 freely, subject to the following restrictions:
-
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software. If you use this software
 in a product, an acknowledgment in the product documentation would be
@@ -27,6 +23,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Util.h"
 #include "SceneNode.h"
+#include <vector>
 
 namespace NSG
 {
@@ -36,6 +33,7 @@ namespace NSG
         Camera(const std::string& name = GetUniqueName("Camera"));
         ~Camera();
         void SetWindow(PWindow window);
+        PWindow GetWindow() const;
         void EnableOrtho();
         void DisableOrtho();
         void SetFOVDegrees(float fovy);
@@ -61,7 +59,7 @@ namespace NSG
         //XY are in normalized device coordinates (-1, 1)
         Ray GetScreenRay(float screenX, float screenY) const;
         static Ray GetRay(const Camera* camera, float screenX, float screenY);
-		static Ray GetRay(float screenX, float screenY);
+        static Ray GetRay(float screenX, float screenY);
         const Matrix4& GetView() const;
         const Matrix4& GetViewProjection() const;
         const Matrix4& GetProjection() const;
@@ -94,11 +92,16 @@ namespace NSG
         float GetShadowSplitLogFactor() const;
         static BoundingBox GetViewBox(const Frustum* frustum, const Scene* scene, bool receivers, bool casters);
         static SignalCamera::PSignal SignalBeingDestroy();
-		void SetOrthoProjection(OrthoProjection projection);
-		void DisableUserOrthoProjection() { hasUserOrthoProjection_ = false; }
+        void SetOrthoProjection(OrthoProjection projection);
+        void DisableUserOrthoProjection() { hasUserOrthoProjection_ = false; }
         void Debug(DebugRenderer* debugRenderer, const Color& color);
+        SignalWindow::PSignal SigWindow() { return signalWindow_; }
+        void AddFilter(PMaterial filter);
+        void RemoveFilter(PMaterial filter);
+        std::vector<Material*> GetFilters();
+        bool HasPostProcessing() const;
     private:
-    	const Matrix4& GetViewProjectionInverse() const;
+        const Matrix4& GetViewProjectionInverse() const;
         OrthoProjection CalculateOrthoProjection(float zNear, float zFar) const;
         float CalculateAspectRatio() const;
         void UpdateProjection() const;
@@ -120,7 +123,6 @@ namespace NSG
         mutable PFrustum frustum_;
         SignalSizeChanged::PSlot slotViewChanged_;
         PWeakWindow window_;
-        SignalWindow::PSlot slotWindow_;
         float orthoScale_;
         CameraSensorFit sensorFit_;
         mutable OrthoProjection orthoProjection_;
@@ -130,6 +132,8 @@ namespace NSG
         bool colorSplits_; // used to debug splits in shader (each split in one color)
         float shadowSplitLogFactor_;
         bool automaticSplits_;
-		bool hasUserOrthoProjection_;
+        bool hasUserOrthoProjection_;
+        SignalWindow::PSignal signalWindow_;
+        std::vector<PWeakMaterial> filters_;
     };
 }

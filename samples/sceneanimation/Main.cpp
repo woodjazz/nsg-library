@@ -30,6 +30,7 @@ int NSG_MAIN(int argc, char* argv[])
     using namespace NSG;
     auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
+    PCameraControl control;
     LoaderXML loader("loader");
     auto slotLoaded = loader.Load(resource)->Connect([&]()
     {
@@ -43,8 +44,9 @@ int NSG_MAIN(int argc, char* argv[])
         plane->GetMaterial()->CastShadow(true);
 
         auto camera = scene->GetChild<Camera>("Camera", false);
+        camera->SetWindow(window);
         //camera->SetNearClip(0.1f);
-        auto control = std::make_shared<CameraControl>(camera);
+        control = std::make_shared<CameraControl>(camera);
         auto sun = scene->GetChild<Light>("Sun", false);
         sun->EnableShadows(true);
         auto ball = scene->GetChild<SceneNode>("Earth", false);

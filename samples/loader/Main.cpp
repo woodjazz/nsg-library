@@ -51,10 +51,13 @@ int NSG_MAIN(int argc, char* argv[])
                 window->SetScene(scene);
                 auto camera = scene->GetMainCamera();
                 if (camera)
+                {
+                    camera->SetWindow(window);
                     control = std::make_shared<CameraControl>(camera);
+                }
                 auto light = scene->GetChild<Light>("Sun", true);
                 if (light)
-                    shadowDebug = std::make_shared<ShadowMapDebug>(light);
+                    shadowDebug = std::make_shared<ShadowMapDebug>(window, light);
             }
             status = "";
         });

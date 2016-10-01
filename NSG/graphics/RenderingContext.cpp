@@ -2,18 +2,14 @@
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
-
 Copyright (c) 2014-2016 Néstor Silveira Gorski
-
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
-
 Permission is granted to anyone to use this software for any purpose,
 including commercial applications, and to alter it and redistribute it
 freely, subject to the following restrictions:
-
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software. If you use this software
 in a product, an acknowledgment in the product documentation would be
@@ -73,7 +69,7 @@ namespace NSG
     static const bool DEFAULT_CULL_FACE_ENABLE = false;
 
     RenderingContext::RenderingContext()
-        : currentFbo_(0),  //the default framebuffer (except for IOS)
+        : currentFbo_(0),
           currentColorTarget_(TextureTarget::UNKNOWN),
           vertexArrayObj_(nullptr),
           vertexBuffer_(nullptr),
@@ -121,7 +117,7 @@ namespace NSG
         depthFunc_ = DepthFunc::LESS;
         slopeScaledDepthBias_ = 0;
 
-        viewport_ = Recti();
+        windowViewport_ = viewport_ = Recti();
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
 
@@ -176,14 +172,15 @@ namespace NSG
             {
                 currentColorTarget_ = TextureTarget::UNKNOWN;
                 glBindFramebuffer(GL_FRAMEBUFFER, systemFbo_);
+                SetViewport(windowViewport_, false);
             }
             else
             {
                 currentColorTarget_ = buffer->GetDefaultTextureTarget();
                 glBindFramebuffer(GL_FRAMEBUFFER, buffer->GetId());
                 buffer->AttachTarget(currentColorTarget_);
+                SetViewport(Recti(0, 0, buffer->GetWidth(), buffer->GetHeight()), false);
             }
-            SetUpViewport();
         }
         return old;
     }
@@ -202,8 +199,8 @@ namespace NSG
             {
                 glBindFramebuffer(GL_FRAMEBUFFER, buffer->GetId());
                 buffer->AttachTarget(colorTarget);
+                SetViewport(Recti(0, 0, buffer->GetWidth(), buffer->GetHeight()), false);
             }
-            SetUpViewport();
         }
         return old;
     }
@@ -600,15 +597,15 @@ namespace NSG
         }
         else
         {
-			if (textures_[index])
-			{
-				if (activeTexture_ != index)
-					glActiveTexture(GL_TEXTURE0 + index);
-				glBindTexture(textures_[index]->GetTarget(), 0);
-				glActiveTexture(GL_TEXTURE0); //default
-				activeTexture_ = 0;
-				textures_[index] = nullptr;
-			}
+            if (textures_[index])
+            {
+                if (activeTexture_ != index)
+                    glActiveTexture(GL_TEXTURE0 + index);
+                glBindTexture(textures_[index]->GetTarget(), 0);
+                glActiveTexture(GL_TEXTURE0); //default
+                activeTexture_ = 0;
+                textures_[index] = nullptr;
+            }
         }
     }
 
@@ -618,6 +615,17 @@ namespace NSG
         {
             glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
             viewport_ = viewport;
+        }
+    }
+
+    void RenderingContext::SetViewport(const Window& window)
+    {
+        auto viewport = Recti(0, 0, window.GetWidth(), window.GetHeight());
+        if (!(viewport_ == viewport))
+        {
+            glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+            viewport_ = viewport;
+            windowViewport_ = viewport;
         }
     }
 
@@ -696,39 +704,6 @@ namespace NSG
             activeProgram_ = program;
         }
         return true;
-    }
-
-    void RenderingContext::SetWindow(PWindow window)
-    {
-        if (activeWindow_.lock() != window)
-        {
-            activeWindow_ = window;
-            if (window)
-            {
-                window->SetContext();
-                SetUpViewport();
-                RenderingContext::SigWindow()->Run(window.get());
-            }
-        }
-    }
-
-    void RenderingContext::SetUpViewport()
-    {
-        if (currentFbo_)
-        {
-            auto width = currentFbo_->GetWidth();
-            auto height = currentFbo_->GetHeight();
-            SetViewport(Recti(0, 0, width, height), false);
-        }
-        else if (activeWindow_.lock())
-        {
-			auto window = activeWindow_.lock().get();
-            auto width = window->GetWidth();
-            auto height = window->GetHeight();
-            SetViewport(Recti(0, 0, width, height), false);
-        }
-        else
-            SetViewport(Recti(0, 0, 0, 0), false);
     }
 
     void RenderingContext::DiscardFramebuffer()
@@ -1198,9 +1173,4 @@ namespace NSG
         }
     }
 
-    SignalWindow::PSignal RenderingContext::SigWindow()
-    {
-        static SignalWindow::PSignal signalWindow(new SignalWindow);
-        return signalWindow;
-    }
 }

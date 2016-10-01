@@ -18,6 +18,7 @@ int main(int argc, char **argv)
         objBB.max_ *= 1.75f;
         objBB.min_ *= 1.75f;
         auto camera = scene->GetOrCreateChild<Camera>("camera1");
+        camera->SetWindow(window);
         auto control = std::make_shared<CameraControl>(camera);
 
         auto animation = Animation::Create("anim0");

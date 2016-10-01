@@ -36,7 +36,6 @@ misrepresented as being the original software.
 #include "FrameBuffer.h"
 #include "Program.h"
 #include "Material.h"
-#include "ShowTexture.h"
 #include "SDLWindow.h"
 #include "WinWindow.h"
 #include "ExternalWindow.h"
@@ -69,9 +68,6 @@ namespace NSG
           isMainWindow_(true),
           width_(0),
           height_(0),
-          filtersEnabled_(true),
-          graphics_(nullptr),
-          renderer_(nullptr),
           signalViewChanged_(new Signal<int, int>()),
           signalFloatFloat_(new Signal<float, float>()),
           signalMouseMoved_(new Signal<int, int>()),
@@ -143,80 +139,13 @@ namespace NSG
         return nullptr;
     }
 
-
-    void Window::ShowMap(PTexture texture)
-    {
-        showTexture_ = texture;
-        if (texture)
-            showMap_->SetColortexture(texture);
-        else
-            showMap_->SetColortexture(frameBuffer_->GetColorTexture());
-    }
-
-    bool Window::UseFrameRender()
-    {
-        if (!frameBuffer_->IsReady() || !filterFrameBuffer_->IsReady())
-            return false;
-        graphics_->SetFrameBuffer(frameBuffer_.get());
-        return true;
-    }
-
-
-    bool Window::BeginFrameRender()
-    {
-        if (HasFilters())
-            return UseFrameRender();
-        else
-            graphics_->SetFrameBuffer(nullptr);
-        return true;
-    }
-
-    void Window::RenderFilters()
-    {
-        if (!showTexture_ && HasFilters())
-        {
-            auto it = filters_.begin();
-            while (it != filters_.end())
-            {
-                auto filter = (*it).lock();
-                if (filter)
-                {
-                    graphics_->SetFrameBuffer(filterFrameBuffer_.get());
-                    filter->SetTexture(MaterialTexture::DIFFUSE_MAP, frameBuffer_->GetColorTexture());
-                    filter->FlipYTextureCoords(true);
-                    Renderer::GetPtr()->Render(&showMap_->GetPass(), QuadMesh::GetNDC().get(), filter.get());
-                    graphics_->SetFrameBuffer(frameBuffer_.get());
-                    showMap_->SetColortexture(filterFrameBuffer_->GetColorTexture());
-                    showMap_->Show();
-                    ++it;
-                }
-                else
-                {
-                    it = filters_.erase(it);
-                }
-            }
-        }
-    }
-
-    void Window::ShowMap()
-    {
-        auto current = graphics_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
-        if (showTexture_)
-            showMap_->Show();
-        else if (current == frameBuffer_.get())
-        {
-            showMap_->SetColortexture(frameBuffer_->GetColorTexture());
-            showMap_->Show();
-        }
-    }
-
     void Window::Close()
     {
         LOGI("Closing %s window.", name_.c_str());
 
         if (Window::mainWindow_ == this)
         {
-            //graphics_->ResetCachedState();
+            //context_->ResetCachedState();
             // destroy other windows
             auto windows = Window::GetWindows();
             for (auto& obj : windows)
@@ -231,38 +160,16 @@ namespace NSG
 
     void Window::AllocateResources()
     {
-        graphics_ = RenderingContext::Create();
-        graphics_->SetWindow(SharedFromPointer(this));
         renderer_ = Renderer::Create();
-
-        // used when filters are enabled
-        CHECK_ASSERT(!frameBuffer_);
-        FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH | FrameBuffer::Flag::DEPTH_USE_TEXTURE));
-        //frameBufferFlags |= FrameBuffer::STENCIL;
-        frameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("WindowFrameBuffer"), frameBufferFlags));
-        frameBuffer_->SetWindow(SharedFromPointer(this));
-
-        CHECK_ASSERT(!filterFrameBuffer_);
-        filterFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("WindowFilterFrameBuffer"), frameBufferFlags));
-        filterFrameBuffer_->SetDepthTexture(frameBuffer_->GetDepthTexture());
-        filterFrameBuffer_->SetWindow(SharedFromPointer(this));
-
-        CHECK_ASSERT(!showMap_);
-        showMap_ = std::make_shared<ShowTexture>();
-        showMap_->SetColortexture(frameBuffer_->GetColorTexture());
-
+        context_ = RenderingContext::GetSharedPtr();
         gui_ = std::make_shared<GUI>();
-
     }
 
     void Window::ReleaseResources()
     {
         gui_ = nullptr;
-        showMap_ = nullptr;
-        filterFrameBuffer_ = nullptr;
-        frameBuffer_ = nullptr;
         renderer_ = nullptr;
-        graphics_ = nullptr;
+        context_ = nullptr;
     }
 
 
@@ -273,10 +180,6 @@ namespace NSG
             LOGI("WindowChanged: %d,%d", width, height);
             width_ = width;
             height_ = height;
-
-            if (graphics_ && graphics_->GetWindow().lock().get() == this)
-                graphics_->SetViewport(GetViewport(), true);
-
             signalViewChanged_->Run(width, height);
         }
     }
@@ -402,33 +305,6 @@ namespace NSG
         return Recti(0, 0, width_, height_);
     }
 
-    void Window::AddFilter(PMaterial filter)
-    {
-        filters_.push_back(filter);
-    }
-
-    void Window::RemoveFilter(PMaterial filter)
-    {
-        filters_.erase(std::remove_if(filters_.begin(), filters_.end(), [&](PWeakMaterial material)
-        {
-            return material.lock() == filter;
-        }), filters_.end());
-
-    }
-
-    void Window::EnableFilters(bool enable)
-    {
-        if (filtersEnabled_ != enable)
-        {
-            filtersEnabled_ = enable;
-            if (!enable)
-            {
-                frameBuffer_->Invalidate();
-                filterFrameBuffer_->Invalidate();
-            }
-        }
-    }
-
     bool Window::AllowWindowCreation()
     {
         #if defined(IS_TARGET_MOBILE) || defined(IS_TARGET_WEB)
@@ -496,14 +372,14 @@ namespace NSG
 
     void Window::RenderFrame()
     {
-        if (IsReady() && BeginFrameRender())
+        if (IsReady())
         {
             if (render_)
                 render_->Render();
             else
             {
                 auto scene = scene_.lock();
-                Renderer::GetPtr()->Render(this, scene.get());
+                renderer_->Render(this, scene.get());
                 if (SigDrawIMGUI()->HasSlots())
                     gui_->Render(SharedFromPointer(this), [this]() { SigDrawIMGUI()->Run(); });
             }

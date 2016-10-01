@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #include "ShadowMapDebug.h"
 #include "Light.h"
 #include "ShadowCamera.h"
-#include "RenderingContext.h"
 #include "Keys.h"
 #include "Window.h"
 #include "Renderer.h"
@@ -36,21 +35,13 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    ShadowMapDebug::ShadowMapDebug(PLight light)
+    ShadowMapDebug::ShadowMapDebug(PWindow window, PLight light)
         : light_(light),
           debugRendererEnabled_(false)
     {
         CHECK_ASSERT(light_);
 
-        auto graphics = RenderingContext::GetPtr();
-        if (graphics)
-            SetWindow(graphics->GetWindow().lock());
-
-        slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
-        {
-            if (!window_.lock())
-                SetWindow(SharedFromPointer(window));
-        });
+        SetWindow(window);
 
         slotDebugRenderer_ = Renderer::GetPtr()->SigDebugRenderer()->Connect([&](DebugRenderer * renderer)
         {
@@ -101,6 +92,7 @@ namespace NSG
 
     void ShadowMapDebug::OnKey(int key, int action, int modifier)
     {
+#if 0
         if(modifier)
             return;
 
@@ -132,5 +124,6 @@ namespace NSG
         }
 		else if (NSG_KEY_M == key && action)
 			debugRendererEnabled_ = !debugRendererEnabled_;
+#endif
     }
 }

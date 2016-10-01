@@ -38,10 +38,12 @@ public:
 	void RemoveObject(GameObject* object);
 	void AddObject(PGameObject object);
     static float GetFlyDistance();
+    PCamera GetCamera() const { return camera_; }
 protected:
     Level(PWindow window);
     virtual ~Level();
 	PWindow window_;
+    PCamera camera_;
     static PScene scene_;
 private:
 	void SetIndex(int idx) { levelIndex_ = idx; }

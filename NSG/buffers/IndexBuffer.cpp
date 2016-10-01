@@ -36,17 +36,14 @@ namespace NSG
 {
     static Indexes emptyIndexes;
     IndexBuffer::IndexBuffer(GLenum usage)
-        : Buffer(0, GL_ELEMENT_ARRAY_BUFFER, usage),
-          indexes_(emptyIndexes),
-          bytesNeeded_(0)
+        : Buffer(GL_ELEMENT_ARRAY_BUFFER, usage),
+          indexes_(emptyIndexes)
     {
-
     }
 
-    IndexBuffer::IndexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const Indexes& indexes, GLenum usage)
-        : Buffer(bufferSize, GL_ELEMENT_ARRAY_BUFFER, usage),
-          indexes_(indexes),
-          bytesNeeded_(bytesNeeded)
+    IndexBuffer::IndexBuffer(const Indexes& indexes, GLenum usage)
+        : Buffer(GL_ELEMENT_ARRAY_BUFFER, usage),
+          indexes_(indexes)
     {
     }
 
@@ -59,19 +56,10 @@ namespace NSG
         Buffer::AllocateResources();
 
         CHECK_GL_STATUS();
-
         context_->SetIndexBuffer(this);
-
-        glBufferData(type_, bufferSize_, nullptr, usage_);
-
-        std::vector<GLubyte> emptyData(bufferSize_, 0);
-        SetBufferSubData(0, bufferSize_, &emptyData[0]); //created with initialized data to avoid warnings when profiling
-
-        GLsizeiptr bytes2Set = indexes_.size() * sizeof(IndexType);
-        CHECK_ASSERT(bytes2Set <= bytesNeeded_);
-
-        SetBufferSubData(0, bytes2Set, &indexes_[0]);
-
+        auto bytesNeeded = sizeof(IndexType) * indexes_.size();
+        glBufferData(type_, bytesNeeded, &indexes_[0], usage_);
+        //SetBufferSubData(0, bytesNeeded, &indexes_[0]);
         CHECK_GL_STATUS();
     }
 
@@ -83,7 +71,6 @@ namespace NSG
         Buffer::ReleaseResources();
     }
 
-
     void IndexBuffer::Unbind()
     {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -94,16 +81,8 @@ namespace NSG
         if(IsReady())
         {
             CHECK_GL_STATUS();
-            context_->SetIndexBuffer(this, true);
-            GLsizeiptr bytes2Set = indexes_.size() * sizeof(IndexType);
-            if (bytes2Set > bufferSize_)
-            {
-                //rebuild buffer
-                glBufferData(type_, bytes2Set, &indexes_[0], usage_);
-                bufferSize_ = bytes2Set;
-            }
-            else
-                SetBufferSubData(0, bytes2Set, &indexes_[0]);
+            auto bytesNeeded = sizeof(IndexType) * indexes_.size();
+            glBufferData(type_, bytesNeeded, &indexes_[0], usage_);
             CHECK_GL_STATUS();
         }
     }

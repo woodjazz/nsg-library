@@ -77,15 +77,14 @@ namespace NSG
 
     bool FontAtlas::IsValid()
     {
-        auto context = RenderingContext::GetPtr();
-        if(context)
+        auto mainWindow = Window::GetMainWindow();
+        if(mainWindow && mainWindow->IsReady())
         {
-            auto window = context->GetWindow();
-            SetWindow(window.lock());
+            SetWindow(SharedFromPointer(mainWindow));
+            return viewWidth_ > 0 && viewHeight_ > 0 && xmlResource_ && xmlResource_->IsReady() &&
+                   texture_ && texture_->IsReady();
         }
-
-        return viewWidth_ > 0 && viewHeight_ > 0 && xmlResource_ && xmlResource_->IsReady() &&
-               texture_ && texture_->IsReady();
+        return false;
     }
 
     void FontAtlas::AllocateResources()

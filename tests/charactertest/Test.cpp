@@ -137,7 +137,6 @@ static void Test01()
     static auto scene = std::make_shared<Scene>();
     static auto character = SetupScene(scene);
     static auto window = Window::Create("0", 0, 0, 320, 200, (int)WindowFlag::HIDDEN);
-    CHECK_CONDITION(window->IsReady());
     window->SetScene(scene);
 
     struct GoForward : FSM::State
@@ -192,14 +191,13 @@ static void Test02()
     auto scene = std::make_shared<Scene>();
     auto character = SetupScene(scene);
     auto window = Window::Create();
-    CHECK_CONDITION(window->IsReady());
     window->SetScene(scene);
 
     bool buttonA = false;
     float speed = 0;
     float turn = 0;
 
-    auto playerControl = std::make_shared<PlayerControl>();
+    auto playerControl = std::make_shared<PlayerControl>(window);
 
     auto slotMoved = playerControl->SigMoved()->Connect([&](float x, float y)
     {

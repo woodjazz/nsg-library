@@ -27,7 +27,6 @@ misrepresented as being the original software.
 
 #include "Types.h"
 #include "Object.h"
-#include <vector>
 
 namespace NSG 
 {
@@ -41,12 +40,11 @@ namespace NSG
 		bool IsValid() override;
         void AllocateResources() override;
         void ReleaseResources() override;
-        Buffer(GLsizeiptr bufferSize, GLenum type, GLenum usage = GL_STATIC_DRAW);
+        Buffer(GLenum type, GLenum usage = GL_STATIC_DRAW);
 		void SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data);
 		GLenum type_;
 		GLuint id_;
 		GLenum usage_;
-		GLsizeiptr bufferSize_;
 		bool dynamic_;
         PRenderingContext context_;
 	};

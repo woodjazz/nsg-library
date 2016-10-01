@@ -32,7 +32,7 @@ namespace NSG
     class PlayerControl
     {
     public:
-        PlayerControl();
+        PlayerControl(PWindow window);
         ~PlayerControl();
         void SetWindow(PWindow window);
 		SignalFloatFloat::PSignal SigMoved() { return signalMoved_; }
@@ -64,7 +64,6 @@ namespace NSG
         SignalJoystickAxisMotion::PSlot slotJoystickAxisMotion_;
         SignalTouchFinger::PSlot slotTouchFinger_;
         PWeakWindow window_;
-        SignalWindow::PSlot slotWindow_;
         float leftHorizontalAxis_;
         float leftVerticalAxis_;
         float rightHorizontalAxis_;

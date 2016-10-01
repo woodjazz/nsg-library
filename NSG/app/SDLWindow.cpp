@@ -419,7 +419,7 @@ namespace NSG
             auto win = SDL_GetWindowFromID(windowID_);
             auto context = SDL_GL_CreateContext(win);
             SDL_GL_MakeCurrent(win, context);
-            graphics_->ResetCachedState();
+            context_->ResetCachedState();
         }
         #endif
     }

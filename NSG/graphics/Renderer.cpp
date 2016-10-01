@@ -2,18 +2,14 @@
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
-
 Copyright (c) 2014-2016 Néstor Silveira Gorski
-
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
-
 Permission is granted to anyone to use this software for any purpose,
 including commercial applications, and to alter it and redistribute it
 freely, subject to the following restrictions:
-
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software. If you use this software
 in a product, an acknowledgment in the product documentation would be
@@ -45,18 +41,19 @@ misrepresented as being the original software.
 #include "Texture.h"
 #include "QuadMesh.h"
 #include "SharedFromPointer.h"
+#include "Maths.h"
 
 namespace NSG
 {
     Renderer::Renderer()
-        : graphics_(RenderingContext::GetSharedPtr()),
-          window_(nullptr),
+        : context_(RenderingContext::Create()),
           scene_(nullptr),
           camera_(nullptr),
           debugPhysics_(false),
+          showMapMaterial_(Material::Create("NSGShowMapMaterial")),
           debugMaterial_(Material::Create("NSGDebugMaterial")),
           debugRenderer_(std::make_shared<DebugRenderer>()),
-          context_(RendererContext::DEFAULT),
+          contextType_(RendererContext::DEFAULT),
           overlaysCamera_(std::make_shared<Camera>("NSGOverlays")),
           instanceBuffer_(new InstanceBuffer())
     {
@@ -93,13 +90,20 @@ namespace NSG
         addPass_.EnableDepthTest(false);
         addPass_.SetBlendMode(BLEND_MODE::ADDITIVE);
 
+        showMapPass_.EnableDepthTest(false);
+        showMapMaterial_->SetRenderPass(RenderPass::SHOW_TEXTURE0);
+        showMapMaterial_->FlipYTextureCoords(true);
+
         debugMaterial_->SetRenderPass(RenderPass::VERTEXCOLOR);
         debugMaterial_->SetFillMode(FillMode::WIREFRAME);
 
         overlaysCamera_->EnableOrtho();
         overlaysCamera_->SetNearClip(-1000);
         overlaysCamera_->SetFarClip(1000);
-        overlaysCamera_->UnRegisterWindow();
+
+        FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH | FrameBuffer::Flag::DEPTH_USE_TEXTURE));
+        filterFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("RendererFilterFrameBuffer"), frameBufferFlags));
+        frameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("RendererFrameBuffer"), frameBufferFlags));
     }
 
     Renderer::~Renderer()
@@ -268,21 +272,187 @@ namespace NSG
 
     void Renderer::Draw(const Batch* batch, const Pass* pass, const Light* light, const Camera* camera)
     {
-		auto ctx = graphics_.lock();
-		ctx->SetMesh(batch->GetMesh());
+        context_->SetMesh(batch->GetMesh());
         if (batch->AllowInstancing())
         {
-            if (ctx->SetupProgram(pass, scene_, camera, nullptr, batch->GetMaterial(), light))
-				ctx->DrawInstancedActiveMesh(*batch, instanceBuffer_.get());
+            if (context_->SetupProgram(pass, scene_, camera, nullptr, batch->GetMaterial(), light))
+                context_->DrawInstancedActiveMesh(*batch, instanceBuffer_.get());
         }
         else
         {
             auto& nodes = batch->GetNodes();
             for (auto& node : nodes)
             {
-                if (ctx->SetupProgram(pass, scene_, camera, node, batch->GetMaterial(), light))
-					ctx->DrawActiveMesh();
+                if (context_->SetupProgram(pass, scene_, camera, node, batch->GetMaterial(), light))
+                    context_->DrawActiveMesh();
             }
+        }
+    }
+
+    int Renderer::GetShadowFrameBufferSize(int split) const
+    {
+        CHECK_ASSERT(split < MAX_SPLITS);
+        static const int SplitMapSize[MAX_SPLITS] = { 1024, 512, 256, 128 };
+        return SplitMapSize[split];
+    }
+
+    int Renderer::CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const
+    {
+        auto camNear = camera->GetZNear();
+        auto camFar  = camera->GetZFar();
+        auto frustumDepth = camFar - camNear;
+        #if 0
+        splits[0] = camNear + frustumDepth * 0.25f;
+        splits[1] = camNear + frustumDepth * 0.5f;
+        splits[2] = camNear + frustumDepth * 0.75f;
+        splits[3] = camFar;
+        return 4;
+        #else
+        float shadowSplitLogFactor = camera->GetShadowSplitLogFactor();
+        int nSplits = camera->GetMaxShadowSplits();
+
+        if (camera->AutomaticSplits())
+        {
+            auto viewBox(receiversViewBox);
+            viewBox.Transform(camera->GetView());
+            viewBox.Clip(camFrustumViewBox);
+            auto receiversDepth = viewBox.Size().z;
+            auto frustumVisibilityFactor = receiversDepth / frustumDepth;
+            frustumVisibilityFactor = Clamp(frustumVisibilityFactor, 0.f, 1.f);
+            nSplits = (int)round(frustumVisibilityFactor * nSplits);
+        }
+
+        nSplits = Clamp(nSplits, 1, MAX_SPLITS);
+        float zDistance = camFar - camNear;
+        for (int i = 0; i < nSplits - 1; i++)
+        {
+            float factor = (i + 1.f) / (float)nSplits;
+            splits[i] = Lerp(camNear + factor * zDistance,
+                             camNear * powf(camFar / camNear, factor),
+                             shadowSplitLogFactor);
+        }
+        splits[nSplits - 1] = camFar;
+        return nSplits;
+        #endif
+    }
+
+    void Renderer::GenerateShadowMapCubeFace(const Light* light)
+    {
+        auto shadowCamera = light->GetShadowCamera(0);
+        std::vector<SceneNode*> shadowCasters;
+        shadowCamera->GetVisiblesShadowCasters(shadowCasters);
+        std::vector<Batch> batches;
+        GenerateBatches(shadowCasters, batches);
+        context_->ClearBuffers(true, true, false);
+        for (auto& batch : batches)
+            if (batch.GetMaterial()->CastShadow())
+                DrawShadowPass(&batch, light, shadowCamera);
+    }
+
+    void Renderer::GenerateCubeShadowMap(const Camera* camera, const Light* light)
+    {
+        auto shadowFrameBuffer = light->GetShadowFrameBuffer(0);
+        auto splitMapsize = GetShadowFrameBufferSize(0);
+        shadowFrameBuffer->SetSize(splitMapsize, splitMapsize);
+        if (shadowFrameBuffer->IsReady())
+        {
+            auto shadowCamera = light->GetShadowCamera(0);
+            for (unsigned i = 0; i < (unsigned)CubeMapFace::MAX_CUBEMAP_FACES; i++)
+            {
+                TextureTarget face = (TextureTarget)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+                shadowCamera->SetCurrentCubeShadowMapFace(face);
+                auto camFrustum = camera->GetFrustum();
+                auto intersection = camFrustum->IsPointInside(light->GetGlobalPosition());
+                bool genShadowMap = Intersection::OUTSIDE != intersection ||
+                                    Intersection::OUTSIDE != camFrustum->IsInside(BoundingBox(*shadowCamera->GetFrustum()));
+                if (genShadowMap)
+                {
+                    auto oldFrameBuffer = context_->SetFrameBuffer(shadowFrameBuffer, face);
+                    GenerateShadowMapCubeFace(light);
+                    context_->SetFrameBuffer(oldFrameBuffer);
+                }
+            }
+        }
+    }
+
+    void Renderer::Generate2DShadowMap(int split, const Light* light)
+    {
+        auto shadowFrameBuffer = light->GetShadowFrameBuffer(split);
+        auto splitMapsize = GetShadowFrameBufferSize(split);
+        shadowFrameBuffer->SetSize(splitMapsize, splitMapsize);
+        if (shadowFrameBuffer->IsReady())
+        {
+            auto shadowCamera = light->GetShadowCamera(split);
+            std::vector<SceneNode*> shadowCasters;
+            shadowCamera->GetVisiblesShadowCasters(shadowCasters);
+            auto oldFrameBuffer = context_->SetFrameBuffer(shadowFrameBuffer);
+            context_->ClearBuffers(true, true, false);
+            if (!shadowCamera->IsDisabled())
+            {
+                std::vector<Batch> batches;
+                GenerateBatches(shadowCasters, batches);
+                for (auto& batch : batches)
+                    if (batch.GetMaterial()->CastShadow())
+                        DrawShadowPass(&batch, light, shadowCamera);
+            }
+            context_->SetFrameBuffer(oldFrameBuffer);
+        }
+    }
+
+    void Renderer::GenerateShadowMaps(const Camera* camera, const Light* light)
+    {
+        switch (light->GetType())
+        {
+            case LightType::POINT:
+                {
+                    std::vector<SceneNode*> shadowCasters;
+                    auto shadowCamera = light->GetShadowCamera(0);
+                    shadowCamera->SetupPoint(camera);
+                    GenerateCubeShadowMap(camera, light);
+                    light->SetShadowSplits(1);
+                }
+                break;
+
+            case LightType::SPOT:
+                {
+                    auto shadowCamera = light->GetShadowCamera(0);
+                    shadowCamera->SetupSpot(camera);
+                    auto intersection = camera->GetFrustum()->IsPointInside(light->GetGlobalPosition());
+                    if (Intersection::OUTSIDE != intersection)
+                        Generate2DShadowMap(0, light);
+                    else if (Intersection::OUTSIDE != camera->GetFrustum()->IsInside(BoundingBox(*shadowCamera->GetFrustum())))
+                        Generate2DShadowMap(0, light);
+                    light->SetShadowSplits(1);
+                }
+                break;
+
+            default: //DIRECTIONAL
+                {
+                    auto farZ = camera->GetZFar();
+                    auto nearSplit = camera->GetZNear();
+                    auto camFrustum = camera->GetFrustum();
+                    BoundingBox camFullFrustumViewBox(*camFrustum);
+                    auto receiversViewBox = Camera::GetViewBox(camFrustum.get(), light->GetScene().get(), true, false);
+                    float splits[MAX_SPLITS];
+                    int shadowSplits = CalculateSplits(camera, splits, camFullFrustumViewBox, receiversViewBox);
+                    light->SetShadowSplits(shadowSplits);
+                    int split = 0;
+                    // Setup the shadow camera for each split
+                    while (split < shadowSplits)
+                    {
+                        if (nearSplit > farZ)
+                            break;
+                        auto farSplit = std::min(farZ, splits[split]);
+                        auto shadowCamera = light->GetShadowCamera(split);
+                        shadowCamera->SetupDirectional(camera, nearSplit, farSplit);
+                        nearSplit = farSplit;
+                        ++split;
+                    }
+
+                    for (int i = 0; i < shadowSplits; i++)
+                        Generate2DShadowMap(i, light);
+                }
+                break;
         }
     }
 
@@ -291,7 +461,7 @@ namespace NSG
         auto lights = scene_->GetLights();
         for (auto light : lights)
             if (light->DoShadows())
-                light->GenerateShadowMaps(camera_);
+               GenerateShadowMaps(camera_, light);
     }
 
     void Renderer::OpaquePasses(std::vector<SceneNode*>& objs)
@@ -348,10 +518,9 @@ namespace NSG
             auto meshLines = debugRenderer->GetDebugLines();
             if (!meshLines->IsEmpty())
             {
-				auto ctx = graphics_.lock();
-				ctx->SetMesh(meshLines.get());
-                if (ctx->SetupProgram(&debugPass_, scene_, camera_, nullptr, debugMaterial_.get(), nullptr))
-					ctx->DrawActiveMesh();
+                context_->SetMesh(meshLines.get());
+                if (context_->SetupProgram(&debugPass_, scene_, camera_, nullptr, debugMaterial_.get(), nullptr))
+                    context_->DrawActiveMesh();
                 debugRenderer->Clear();
             }
         }
@@ -363,36 +532,11 @@ namespace NSG
         auto meshLines = debugRenderer_->GetDebugLines();
         if (!meshLines->IsEmpty())
         {
-			auto ctx = graphics_.lock();
-			ctx->SetMesh(meshLines.get());
-            if (ctx->SetupProgram(&debugPass_, scene_, camera_, nullptr, debugMaterial_.get(), nullptr))
-				ctx->DrawActiveMesh();
+            context_->SetMesh(meshLines.get());
+            if (context_->SetupProgram(&debugPass_, scene_, camera_, nullptr, debugMaterial_.get(), nullptr))
+                context_->DrawActiveMesh();
             debugRenderer_->Clear();
         }
-    }
-
-    void Renderer::Render(const Pass* pass, Mesh* mesh, Material* material)
-    {
-		auto ctx = graphics_.lock();
-		ctx->SetMesh(mesh);
-        if (ctx->SetupProgram(pass, nullptr, nullptr, nullptr, material, nullptr))
-			ctx->DrawActiveMesh();
-    }
-
-    void Renderer::Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light)
-    {
-		auto ctx = graphics_.lock();
-        ctx->SetMesh(node->GetMesh().get());
-        if (ctx->SetupProgram(pass, scene, camera, node, node->GetMaterial().get(), light))
-            ctx->DrawActiveMesh();
-    }
-
-    void Renderer::Render(Window* window, Scene* scene)
-    {
-        if (scene)
-            Render(window, scene, scene->GetMainCamera().get());
-        else
-            Render(window, nullptr, nullptr);
     }
 
     void Renderer::RenderOverlays()
@@ -423,65 +567,147 @@ namespace NSG
 
     void Renderer::RenderFiltered(const std::vector<SceneNode*>& objs)
     {
-        auto filtered = objs;
-		auto ctx = graphics_.lock();
-        auto oldFrameBuffer = ctx->GetFrameBuffer();
-        auto filterFrameBuffer = window_->GetFilterFrameBuffer();
-        do
+        if(filterFrameBuffer_->IsReady())
         {
-            ctx->SetFrameBuffer(filterFrameBuffer);
-            ctx->SetClearColor(Color(0, 0, 0, 0));
-            ctx->ClearBuffers(true, false, false);
-            auto filter = filtered[0]->GetFilter();
-            auto it = std::partition(filtered.begin(), filtered.end(), [&](SceneNode * obj)
+            auto oldFrameBuffer = context_->GetFrameBuffer();
+            auto filtered = objs;
+            do
             {
-                return obj->GetFilter().get() == filter.get();
-            });
+                context_->SetFrameBuffer(filterFrameBuffer_.get());
+                context_->SetClearColor(Color(0, 0, 0, 0));
+                context_->ClearBuffers(true, false, false);
+                auto filter = filtered[0]->GetFilter();
+                auto it = std::partition(filtered.begin(), filtered.end(), [&](SceneNode * obj)
+                {
+                    return obj->GetFilter().get() == filter.get();
+                });
 
-            std::vector<SceneNode*> nodesSameFilter(filtered.begin() , it);
-            FilterPass(nodesSameFilter);
-            filtered.erase(filtered.begin(), it);
-            ctx->SetFrameBuffer(oldFrameBuffer);
-            filter->SetTexture(MaterialTexture::DIFFUSE_MAP, filterFrameBuffer->GetColorTexture());
-            Renderer::GetPtr()->Render(&addPass_, QuadMesh::GetNDC().get(), filter.get());
+                std::vector<SceneNode*> nodesSameFilter(filtered.begin() , it);
+                FilterPass(nodesSameFilter);
+                filtered.erase(filtered.begin(), it);
+                context_->SetFrameBuffer(oldFrameBuffer);
+                filter->SetTexture(MaterialTexture::DIFFUSE_MAP, filterFrameBuffer_->GetColorTexture());
+                Render(&addPass_, QuadMesh::GetNDC().get(), filter.get());
+            }
+            while (filtered.size());
         }
-        while (filtered.size());
+    }
+
+    void Renderer::ApplyPostProcessing()
+    {
+        if (camera_)
+        {
+            if(filterFrameBuffer_->IsReady())
+            {
+                auto filters = camera_->GetFilters();
+                for(auto filter: filters)
+                {
+                    context_->SetFrameBuffer(filterFrameBuffer_.get());
+                    filter->SetTexture(MaterialTexture::DIFFUSE_MAP, frameBuffer_->GetColorTexture());
+                    filter->FlipYTextureCoords(true);
+                    Render(&showMapPass_, QuadMesh::GetNDC().get(), filter);
+                    context_->SetFrameBuffer(frameBuffer_.get());
+                    showMapMaterial_->SetTexture(filterFrameBuffer_->GetColorTexture());
+                    Render(&showMapPass_, QuadMesh::GetNDC().get(), showMapMaterial_.get());
+                }
+            }
+        }
+    }
+
+    void Renderer::Render(const Pass* pass, Mesh* mesh, Material* material)
+    {
+        context_->SetMesh(mesh);
+        if (context_->SetupProgram(pass, nullptr, nullptr, nullptr, material, nullptr))
+            context_->DrawActiveMesh();
+    }
+
+    void Renderer::Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light)
+    {
+        context_->SetMesh(node->GetMesh().get());
+        if (context_->SetupProgram(pass, scene, camera, node, node->GetMaterial().get(), light))
+            context_->DrawActiveMesh();
+    }
+
+    void Renderer::Render(Window* window, Scene* scene)
+    {
+        if (scene)
+            Render(window, scene, scene->GetMainCamera().get());
+        else
+            Render(window, nullptr, nullptr);
+    }
+
+    static Window* nullWindow = nullptr;
+    void Renderer::Render(FrameBuffer* frameBuffer, Scene* scene, Camera* camera)
+    {
+        auto oldFrameBuffer = context_->SetFrameBuffer(frameBuffer);
+        Render(nullWindow, scene, camera);
+        context_->SetFrameBuffer(oldFrameBuffer);
+    }
+
+    void Renderer::Render(FrameBuffer* frameBuffer, Scene* scene)
+    {
+        auto oldFrameBuffer = context_->SetFrameBuffer(frameBuffer);
+        if(scene)
+            Render(nullWindow, scene, scene->GetMainCamera().get());
+        else
+            Render(nullWindow, nullptr, nullptr);
+        context_->SetFrameBuffer(oldFrameBuffer);
     }
 
     void Renderer::Render(Window* window, Scene* scene, Camera* camera)
     {
-        window_ = window;
+        bool useFrameBuffer = false;
+        int width = 0;
+        int height = 0;
+        if(window)
+        {
+            window->SetContext();
+            context_->SetFrameBuffer(nullptr);
+            context_->SetViewport(*window);
+            width = window->GetWidth();
+            height = window->GetHeight();
+        }
+        else
+        {
+            auto currentFrameBuffer = context_->GetFrameBuffer();
+            CHECK_CONDITION(currentFrameBuffer);
+            width = currentFrameBuffer->GetWidth();
+            height = currentFrameBuffer->GetHeight();
+        }
         scene_ = scene;
         camera_ = camera;
-		auto ctx = graphics_.lock();
-		if(window)
-			ctx->SetWindow(SharedFromPointer(window));
-		else
-			ctx->SetWindow(PWindow());
         if (!scene)
-            ctx->ClearAllBuffers();
+            context_->ClearAllBuffers();
         else if (scene->GetDrawablesNumber())
         {
             std::vector<SceneNode*> visibles;
             if (camera_)
             {
                 scene->GetVisibleNodes(camera_, visibles);
-                ctx->SetClearColor(Color(1));
+                context_->SetClearColor(Color(1));
                 ShadowGenerationPass();
             }
             else
                 visibles = scene->GetDrawables();
             if (!visibles.empty())
             {
+                bool hasPostProcessing = camera && camera->HasPostProcessing();
                 auto filtered = ExtractFiltered(visibles);
+                if(hasPostProcessing || !filtered.empty())
+                {
+                    frameBuffer_->SetSize(width, height);
+                    filterFrameBuffer_->SetSize(width, height);
+                    if(frameBuffer_->IsReady())
+                    {
+                        context_->SetFrameBuffer(frameBuffer_.get());
+                        useFrameBuffer = true;
+                    }
+                }
                 RemoveFrom(visibles, filtered);
-                // we need to render to a framebuffer in order to blend the filters
-                auto hasFiltered = !filtered.empty() && window_->UseFrameRender();
                 auto transparent = ExtractTransparent(visibles);
                 RemoveFrom(visibles, transparent);
-                ctx->SetClearColor(Color(scene->GetHorizonColor(), 1));
-                ctx->ClearAllBuffers();
-
+                context_->SetClearColor(Color(scene->GetHorizonColor(), 1));
+                context_->ClearAllBuffers();
                 if (!visibles.empty())
                 {
                     SortSolidFrontToBack(visibles);
@@ -496,14 +722,13 @@ namespace NSG
                     for (auto& obj : transparent)
                         obj->ClearUniform();
                 }
-                if (hasFiltered)
+                if (!filtered.empty())
                 {
                     RenderFiltered(filtered);
                     for (auto& obj : filtered)
                         obj->ClearUniform();
                 }
-				if(window)
-					window->RenderFilters();
+                ApplyPostProcessing();
                 if (debugPhysics_)
                     DebugPhysicsPass();
                 DebugRendererPass();
@@ -513,12 +738,17 @@ namespace NSG
         }
         else
         {
-            ctx->ClearAllBuffers();
+            context_->ClearAllBuffers();
             camera_ = overlaysCamera_.get();
             RenderOverlays();
         }
-		if(window)
-			window->ShowMap();
+
+        if(useFrameBuffer)
+        {
+            context_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
+            showMapMaterial_->SetTexture(frameBuffer_->GetColorTexture());
+            Render(&showMapPass_, QuadMesh::GetNDC().get(), showMapMaterial_.get());
+        }
     }
 
     SignalDebugRenderer::PSignal Renderer::SigDebugRenderer()
@@ -527,10 +757,9 @@ namespace NSG
         return signalDebugRenderer;
     }
 
-    RendererContext Renderer::SetContext(RendererContext context)
+    RendererContext Renderer::SetContextType(RendererContext type)
     {
-        auto old = context_;
-        context_ = context;
-        return old;
+        std::swap(contextType_, type);
+        return type;
     }
 }

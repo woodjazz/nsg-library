@@ -35,9 +35,10 @@ static std::string GetOverlayName(int life)
     return "Life" + ToString(life);
 }
 
-Player::Player(PScene scene)
+Player::Player(PScene scene, PWindow window)
     : node_(scene->CreateChild<SceneNode>()),
       child_(node_->CreateChild<SceneNode>()),
+      control_(window),
       body_(child_->GetOrCreateRigidBody()),
       explo_(std::make_shared<Explo>(child_)),
       collisionGroup_((int)CollisionMask::PLAYER),

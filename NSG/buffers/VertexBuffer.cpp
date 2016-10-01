@@ -31,19 +31,16 @@ namespace NSG
 {
     static VertexsData emptyVertexes;
     VertexBuffer::VertexBuffer(GLenum usage)
-        : Buffer(0, GL_ARRAY_BUFFER, usage),
-          vertexes_(emptyVertexes),
-          bytesNeeded_(0)
+        : Buffer(GL_ARRAY_BUFFER, usage),
+          vertexes_(emptyVertexes)
     {
 
     }
 
-    VertexBuffer::VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage)
-        : Buffer(bufferSize, GL_ARRAY_BUFFER, usage),
-          vertexes_(vertexes),
-          bytesNeeded_(bytesNeeded)
+    VertexBuffer::VertexBuffer(const VertexsData& vertexes, GLenum usage)
+        : Buffer(GL_ARRAY_BUFFER, usage),
+          vertexes_(vertexes)
     {
-        CHECK_ASSERT(bufferSize >= bytesNeeded);
     }
 
     VertexBuffer::~VertexBuffer()
@@ -53,19 +50,9 @@ namespace NSG
     void VertexBuffer::AllocateResources()
     {
         Buffer::AllocateResources();
-
         context_->SetVertexBuffer(this);
-
-        glBufferData(type_, bufferSize_, nullptr, usage_);
-
-        std::vector<GLubyte> emptyData(bufferSize_, 0);
-
-        SetBufferSubData(0, bufferSize_, &emptyData[0]); //created with initialized data to avoid warnings when profiling
-
-        GLsizeiptr bytes2Set = vertexes_.size() * sizeof(VertexData);
-        CHECK_ASSERT(bytes2Set <= bytesNeeded_);
-
-        SetBufferSubData(0, bytes2Set, &vertexes_[0]);
+        auto bytesNeeded = vertexes_.size() * sizeof(VertexData);
+        glBufferData(type_, bytesNeeded, &vertexes_[0], usage_);
     }
 
     void VertexBuffer::ReleaseResources()
@@ -87,16 +74,8 @@ namespace NSG
         if(IsReady())
         {
             CHECK_GL_STATUS();
-            context_->SetVertexBuffer(this, true);
-            GLsizeiptr bytes2Set = vertexes_.size() * sizeof(VertexData);
-            if (bytes2Set > bufferSize_)
-            {
-                //rebuild buffer
-                glBufferData(type_, bytes2Set, &vertexes_[0], usage_);
-                bufferSize_ = bytes2Set;
-            }
-            else
-                SetBufferSubData(0, bytes2Set, &vertexes_[0]);
+            auto bytesNeeded = vertexes_.size() * sizeof(VertexData);
+            glBufferData(type_, bytesNeeded, &vertexes_[0], usage_);
             CHECK_GL_STATUS();
         }
     }

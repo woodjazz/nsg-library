@@ -29,15 +29,13 @@ misrepresented as being the original software.
 #include "RenderingContext.h"
 #include "RenderingCapabilities.h"
 #include "Window.h"
-#include <assert.h>
 
 namespace NSG
 {
-    Buffer::Buffer(GLsizeiptr bufferSize, GLenum type, GLenum usage)
+    Buffer::Buffer(GLenum type, GLenum usage)
         : Object(GetUniqueName("Buffer")),
           type_(type),
           usage_(usage),
-          bufferSize_(bufferSize),
           dynamic_(usage != GL_STATIC_DRAW)
     {
     }
@@ -74,29 +72,24 @@ namespace NSG
 
     void Buffer::SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data)
     {
-        if (IsReady())
+        #if !defined(ANDROID) && !defined(EMSCRIPTEN)
+        if (RenderingCapabilities::GetPtr()->HasMapBufferRange())
         {
-            CHECK_ASSERT(offset + size <= bufferSize_);
+            void* old_data = glMapBufferRange(type_, offset, size,
+                                              GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 
-            #if !defined(ANDROID) && !defined(EMSCRIPTEN)
-            if (RenderingCapabilities::GetPtr()->HasMapBufferRange())
-            {
-                void* old_data = glMapBufferRange(type_, offset, size,
-                                                  GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+            CHECK_ASSERT(old_data);
 
-                CHECK_ASSERT(old_data);
+            memcpy(old_data, data, size);
 
-                memcpy(old_data, data, size);
+            glFlushMappedBufferRange(type_, offset, size);
 
-                glFlushMappedBufferRange(type_, offset, size);
-
-                CHECK_CONDITION(glUnmapBuffer(type_));
-            }
-            else
-            #endif
-            {
-                glBufferSubData(type_, offset, size, data);
-            }
+            CHECK_CONDITION(glUnmapBuffer(type_));
+        }
+        else
+        #endif
+        {
+            glBufferSubData(type_, offset, size, data);
         }
     }
 

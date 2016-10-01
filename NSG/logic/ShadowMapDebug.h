@@ -32,14 +32,13 @@ namespace NSG
 	class ShadowMapDebug
 	{
 	public:
-		ShadowMapDebug(PLight light);
+        ShadowMapDebug(PWindow window, PLight light);
 		~ShadowMapDebug();
-		void SetWindow(PWindow window);
-		void OnKey(int key, int action, int modifier);
-	private:
+        void SetWindow(PWindow window);
+    private:
+        void OnKey(int key, int action, int modifier);
 		PLight light_;
 		PWeakWindow window_;
-		SignalWindow::PSlot slotWindow_;
 		SignalKey::PSlot slotKey_;
 		SignalDebugRenderer::PSlot slotDebugRenderer_;
 		bool debugRendererEnabled_;

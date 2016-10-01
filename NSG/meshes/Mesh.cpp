@@ -66,7 +66,8 @@ namespace NSG
 
     bool Mesh::IsValid()
     {
-        return Window::GetMainWindow() != nullptr && !vertexsData_.empty();
+        auto mainWindow = Window::GetMainWindow();
+        return mainWindow && mainWindow->IsReady() && !vertexsData_.empty();
     }
 
     void Mesh::AllocateResources()
@@ -81,12 +82,10 @@ namespace NSG
         CHECK_ASSERT(!vertexsData_.empty());
         CHECK_ASSERT(GetSolidDrawMode() != GL_TRIANGLES || indexes_.size() % 3 == 0);
 
-        GLsizeiptr bytesNeeded = sizeof(VertexData) * vertexsData_.size();
-
         if (isStatic_)
-            pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_STATIC_DRAW));
+            pVBuffer_ = PVertexBuffer(new VertexBuffer(vertexsData_, GL_STATIC_DRAW));
 		else if (!pVBuffer_)
-			pVBuffer_ = PVertexBuffer(new VertexBuffer(bytesNeeded, bytesNeeded, vertexsData_, GL_DYNAMIC_DRAW));
+			pVBuffer_ = PVertexBuffer(new VertexBuffer(vertexsData_, GL_DYNAMIC_DRAW));
 		else
             pVBuffer_->UpdateData();
 
@@ -94,11 +93,10 @@ namespace NSG
 
         if (!indexes_.empty())
         {
-            GLsizeiptr bytesNeeded = sizeof(IndexType) * indexes_.size();
             if (isStatic_)
-                pIBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexes_, GL_STATIC_DRAW));
+                pIBuffer_ = PIndexBuffer(new IndexBuffer(indexes_, GL_STATIC_DRAW));
 			else if (!pIBuffer_)
-				pIBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexes_, GL_DYNAMIC_DRAW));
+				pIBuffer_ = PIndexBuffer(new IndexBuffer(indexes_, GL_DYNAMIC_DRAW));
 			else
                 pIBuffer_->UpdateData();
 
@@ -107,18 +105,16 @@ namespace NSG
 
         if (!indexesWireframe_.empty())
         {
-            GLsizeiptr bytesNeeded = sizeof(IndexType) * indexesWireframe_.size();
             if (isStatic_)
-                pIWireBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexesWireframe_, GL_STATIC_DRAW));
+                pIWireBuffer_ = PIndexBuffer(new IndexBuffer(indexesWireframe_, GL_STATIC_DRAW));
 			else if (!pIWireBuffer_)
-				pIWireBuffer_ = PIndexBuffer(new IndexBuffer(bytesNeeded, bytesNeeded, indexesWireframe_, GL_DYNAMIC_DRAW));
+				pIWireBuffer_ = PIndexBuffer(new IndexBuffer(indexesWireframe_, GL_DYNAMIC_DRAW));
 			else
                 pIWireBuffer_->UpdateData();
 
             CHECK_CONDITION(pIWireBuffer_->IsReady());
 		}
 
-        CHECK_GL_STATUS();
         for (auto& vertex : vertexsData_)
         {
             bb_.Merge(vertex.position_);

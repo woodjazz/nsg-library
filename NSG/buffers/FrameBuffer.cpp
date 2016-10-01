@@ -285,6 +285,7 @@ namespace NSG
             }
             else
             {
+                SetSize(0, 0);
                 slotViewChanged_ = nullptr;
             }
         }

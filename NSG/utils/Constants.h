@@ -86,7 +86,7 @@ namespace NSG
 
 	static const size_t MAX_BONES0 = 64;
 	static const size_t MAX_BONES1 = 48;
-	static const size_t MAX_BONES2 = 32;
+    static const size_t MAX_BONES2 = 32;
 	static const size_t MAX_BONES = MAX_BONES0;
 
     static const float PHI = (1.f + sqrt(5.f)) * 0.5f; //golden ratio

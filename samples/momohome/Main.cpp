@@ -29,15 +29,15 @@ int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
     auto window = Window::Create();
-    //window->IsReady();
     PSceneNode player;
     LoaderXML loader("loader");
     auto slotLoaded = loader.Load(Resource::GetOrCreateClass<ResourceFile>("data/scene.xml"))->Connect([&]()
     {
         auto scene = loader.GetScene(0);
         auto light = scene->GetChild<Light>("Sun", false);
-        static ShadowMapDebug shadowMapDebug(light);
+        static ShadowMapDebug shadowMapDebug(window, light);
         auto camera = scene->GetChild<Camera>("Camera", false);
+        camera->SetWindow(window);
         static auto control = std::make_shared<CameraControl>(camera);
         static auto followCamera = std::make_shared<FollowCamera>(camera);
         player = scene->GetChild<SceneNode>("RigMomo", true);
@@ -249,7 +249,7 @@ int NSG_MAIN(int argc, char* argv[])
         window->SetScene(scene);
         fsm.Go();
 
-        static auto playerControl = std::make_shared<PlayerControl>();
+        static auto playerControl = std::make_shared<PlayerControl>(window);
 
         static auto slotMoved = playerControl->SigMoved()->Connect([&](float x, float y)
         {
@@ -280,7 +280,6 @@ int NSG_MAIN(int argc, char* argv[])
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 1));
     camera->EnableOrtho();
-    camera->SetWindow(nullptr);
     loadingNode->SetMesh(font->GetOrCreateMesh("Loading...", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT));
     loadingMaterial->SetTextMap(atlasTexture);
     loadingNode->SetMaterial(loadingMaterial);

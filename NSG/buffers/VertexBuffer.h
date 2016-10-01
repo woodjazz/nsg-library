@@ -34,7 +34,7 @@ namespace NSG
 	{
 	public:
 		VertexBuffer(GLenum usage);
-		VertexBuffer(GLsizeiptr bufferSize, GLsizeiptr bytesNeeded, const VertexsData& vertexes, GLenum usage);
+        VertexBuffer(const VertexsData& vertexes, GLenum usage);
 		~VertexBuffer();
         void UpdateData();
 		static void Unbind();
@@ -43,6 +43,5 @@ namespace NSG
         void AllocateResources() override;
         void ReleaseResources() override;
         const VertexsData& vertexes_;
-        GLsizeiptr bytesNeeded_;
 	};
 }

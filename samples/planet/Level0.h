@@ -36,7 +36,6 @@ public:
     ~Level0();
 private:
 	void GenerateEnemies();
-    PCamera camera_;
     std::shared_ptr<Player> player_;
 	SignalEmpty::PSlot slotEnemyDestroyed_;
 	PCameraControl control_;

@@ -56,7 +56,10 @@ namespace NSG
 				log.resize(logLength);
 				glGetShaderInfoLog(id_, logLength, &logLength, &log[0]);
 				LOGE("Shader creation failed: %s", log.c_str());
-				//LOGI("%s", source);
+                //LOGE("%s", source);
+                auto e = glGetError();
+                glDeleteShader(id_);
+                throw GLException(e);
 			}
 		}
         CHECK_GL_STATUS();

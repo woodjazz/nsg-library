@@ -38,6 +38,5 @@ public:
 	~Level1();
 private:
 	void GenerateEnemies();
-	PCamera camera_;
 	std::shared_ptr<Player> player_;
 };

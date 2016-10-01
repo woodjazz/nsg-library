@@ -71,10 +71,6 @@ namespace NSG
         virtual void Destroy() {}
         Recti GetViewport() const;
         const std::string& GetName() const { return name_; }
-        bool HasFilters() const { return !filters_.empty() && filtersEnabled_; }
-        void EnableFilters(bool enable);
-        FrameBuffer* GetFrameBuffer() const { return frameBuffer_.get(); }
-        FrameBuffer* GetFilterFrameBuffer() const { return filterFrameBuffer_.get(); }
         void SetScene(PScene scene);
         PWeakScene GetScene() const { return scene_; }
         void ShowMap(PTexture texture);
@@ -107,17 +103,11 @@ namespace NSG
         SignalTouchFinger::PSignal SigTouchFinger() { return signalTouchFinger_; }
         PixelFormat GetPixelFormat() const { return pixelFormat_; }
         void SetPixelFormat(PixelFormat value) { pixelFormat_ = value; }
-        void RenderFilters();
         virtual void SetupImgui();
         virtual void BeginImguiRender() {}
         virtual void SetContext() {}
         void SetRender(IRender* render);
         void RemoveRender(IRender* render);
-        PShowTexture GetShowMap() const { return showMap_; }
-        void AddFilter(PMaterial filter);
-        void RemoveFilter(PMaterial filter);
-        bool UseFrameRender();
-        void ShowMap();
     protected:
         Window(const std::string& name);
         void SetSize(int width, int height);
@@ -126,11 +116,10 @@ namespace NSG
         bool isMainWindow_;
         int width_;
         int height_;
-        bool filtersEnabled_;
         PWeakScene scene_; //scene to render in this window
         static std::vector<PWeakWindow> windows_;
         static Window* mainWindow_;
-        PRenderingContext graphics_;
+        PRenderingContext context_;
         PRenderer renderer_;
     private:
         void AllocateResources() override;
@@ -138,11 +127,6 @@ namespace NSG
 		void OnMouseMove(float x, float y);
 		void OnMouseDown(int button, float x, float y);
 		void OnMouseUp(int button, float x, float y);
-        bool BeginFrameRender();
-        std::vector<PWeakMaterial> filters_;
-        PFrameBuffer frameBuffer_;
-        PFrameBuffer filterFrameBuffer_;
-        PShowTexture showMap_;
         SignalSizeChanged::PSignal signalViewChanged_;
         SignalFloatFloat::PSignal signalFloatFloat_;
         SignalMouseMoved::PSignal signalMouseMoved_;
@@ -161,7 +145,6 @@ namespace NSG
         SignalJoystickAxisMotion::PSignal signalJoystickAxisMotion_;
         SignalEmpty::PSignal signalDrawIMGUI_;
         SignalTouchFinger::PSignal signalTouchFinger_;
-        PTexture showTexture_;
         static int nWindows2Remove_;
         PixelFormat pixelFormat_;
         IRender* render_;

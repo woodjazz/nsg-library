@@ -37,6 +37,7 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto scene = loader.GetScene(0);
         auto camera = scene->GetOrCreateChild<Camera>("Camera");
+        camera->SetWindow(window);
         control = std::make_shared<CameraControl>(camera);
         {
             auto armature = scene->GetChild<SceneNode>("RigMomo", true);

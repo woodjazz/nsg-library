@@ -34,7 +34,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    PlayerControl::PlayerControl()
+    PlayerControl::PlayerControl(PWindow window)
         : signalMoved_(new SignalFloatFloat),
           signalLeftStickMoved_(new SignalFloatFloat),
           signalRightStickMoved_(new SignalFloatFloat),
@@ -50,14 +50,7 @@ namespace NSG
           leftFingerId_{false, 0},
           rightFingerId_{false, 0}
     {
-        auto graphics = RenderingContext::GetPtr();
-        if (graphics)
-            SetWindow(graphics->GetWindow().lock());
-        slotWindow_ = RenderingContext::SigWindow()->Connect([this](Window * window)
-        {
-            if (!window_.lock())
-                SetWindow(SharedFromPointer(window));
-        });
+        SetWindow(window);
 
         slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
         {

@@ -2,18 +2,14 @@
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
-
 Copyright (c) 2014-2016 Néstor Silveira Gorski
-
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
-
 Permission is granted to anyone to use this software for any purpose,
 including commercial applications, and to alter it and redistribute it
 freely, subject to the following restrictions:
-
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software. If you use this software
 in a product, an acknowledgment in the product documentation would be
@@ -27,6 +23,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Singleton.h"
 #include "Pass.h"
+#include "Constants.h"
 
 namespace NSG
 {
@@ -35,22 +32,30 @@ namespace NSG
     public:
         Renderer();
         ~Renderer();
-        void Render(const Pass* pass, Mesh* mesh, Material* material);
-        void Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light);
-        void Render(Window* window, Scene* scene, Camera* camera);
         void Render(Window* window, Scene* scene);
+        void Render(FrameBuffer* frameBuffer, Scene* scene, Camera* camera);
+        void Render(FrameBuffer* frameBuffer, Scene* scene);
+        void Render(Window* window, Scene* scene, Camera* camera);
         void GenerateBatches(std::vector<SceneNode*>& visibles, std::vector<Batch>& batches);
-        void DrawShadowPass(Batch* batch, const Light* light, const ShadowCamera* camera);
         void EnableDebugPhysics(bool enable) { debugPhysics_ = enable; }
         PDebugRenderer GetDebugRenderer() const { return debugRenderer_; }
         static SignalDebugRenderer::PSignal SigDebugRenderer();
-        RendererContext SetContext(RendererContext context);
-        RendererContext GetContext() const { return context_; }
+        RendererContext SetContextType(RendererContext type);
+        RendererContext GetContextType() const { return contextType_; }
     private:
+        void Render(const Pass* pass, Mesh* mesh, Material* material);
+        void Render(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* node, const Light* light);
+        void DrawShadowPass(Batch* batch, const Light* light, const ShadowCamera* camera);
         void SortTransparentBackToFront(std::vector<SceneNode*>& objs);
         void SortSolidFrontToBack(std::vector<SceneNode*>& objs);
         void SortOverlaysBackToFront(std::vector<SceneNode*>& objs);
         void Draw(const Batch* batch, const Pass* pass, const Light* light, const Camera* camera);
+        int GetShadowFrameBufferSize(int split) const;
+        int CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
+        void GenerateShadowMapCubeFace(const Light* light);
+        void Generate2DShadowMap(int split, const Light* light);
+        void GenerateCubeShadowMap(const Camera* camera, const Light* light);
+        void GenerateShadowMaps(const Camera* camera, const Light* light);
         void Generate2DShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
         void GenerateShadowMapCubeFace(const Light* light, const std::vector<SceneNode*>& shadowCasters);
         void GenerateCubeShadowMap(const Light* light, std::vector<SceneNode*>& shadowCasters);
@@ -68,8 +73,8 @@ namespace NSG
         void DebugRendererPass();
         void RenderOverlays();
         void RenderFiltered(const std::vector<SceneNode*>& objs);
-		PWeakRenderingContext graphics_;
-        Window* window_;
+        void ApplyPostProcessing();
+        PRenderingContext context_;
         Scene* scene_;
         Camera* camera_;
         Pass shadowPass_;
@@ -80,12 +85,16 @@ namespace NSG
         Pass debugPass_;
         Pass filterPass_;
         Pass addPass_;
+        Pass showMapPass_;
+        PMaterial showMapMaterial_;
         bool debugPhysics_;
         PMaterial debugMaterial_;
         PDebugRenderer debugRenderer_;
-        RendererContext context_;
+        RendererContext contextType_;
         std::vector<SceneNode*> overlays_;
         PCamera overlaysCamera_;
         PInstanceBuffer instanceBuffer_;
+        PFrameBuffer filterFrameBuffer_;
+        PFrameBuffer frameBuffer_;
     };
 }

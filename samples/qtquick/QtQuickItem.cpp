@@ -51,6 +51,7 @@ void QtQuickItemRenderer::Paint()
     {
         if (!initialized_)
         {
+            CHECK_CONDITION(window->IsReady());
             initialized_ = true;
             initializeOpenGLFunctions();
         }

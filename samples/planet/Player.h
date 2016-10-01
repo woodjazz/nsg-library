@@ -31,7 +31,7 @@ class Explo;
 class Player : public GameObject
 {
 public:
-    Player(PScene scene);
+    Player(PScene scene, PWindow window);
     ~Player();
     PNode GetCameraNode() const { return node_; }
     void Destroyed() override;

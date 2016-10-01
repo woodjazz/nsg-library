@@ -28,7 +28,7 @@ misrepresented as being the original software.
 LevelOver::LevelOver(PWindow window)
 	: Level(window)
 {
-	scene_ = std::make_shared<Scene>();
+    scene_ = std::make_shared<Scene>();
 	auto loadingNode = scene_->CreateOverlay("loadingNode");
 	loadingNode->SetText("Over", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
 	loadingNode->SetFont("data/AnonymousPro32.xml", "data/AnonymousPro32.png");

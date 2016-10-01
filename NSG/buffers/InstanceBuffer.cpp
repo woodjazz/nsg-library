@@ -34,7 +34,7 @@ misrepresented as being the original software.
 namespace NSG
 {
     InstanceBuffer::InstanceBuffer()
-        : Buffer(0, GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
+        : Buffer(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
         maxInstances_(0)
     {
     }
@@ -65,13 +65,16 @@ namespace NSG
         context_->SetVertexBuffer(this);
         if (maxInstances_ >= data.size())
         {
+            auto size = data.size() * sizeof(InstanceData);
+            auto bufferSize = maxInstances_ * sizeof(InstanceData);
+            CHECK_ASSERT(size <= bufferSize);
             SetBufferSubData(0, data.size() * sizeof(InstanceData), &(data[0]));
         }
         else
         {
             maxInstances_ = data.size();
-            bufferSize_ = maxInstances_ * sizeof(InstanceData);
-            glBufferData(type_, bufferSize_, &(data[0]), usage_);
+            auto bufferSize = maxInstances_ * sizeof(InstanceData);
+            glBufferData(type_, bufferSize, &(data[0]), usage_);
         }
 	}
 

@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "Explo.h"
 #include "GameObject.h"
+#include "Level.h"
 #include <random>
 static std::random_device rd;
 static std::mt19937 mt(rd());
@@ -75,7 +76,7 @@ void Explo::Start()
         data.time_ += deltaTime * 0.3f;
         if(data.time_ > 0.5f)
         {
-            Window::GetMainWindow()->RemoveFilter(filter_);
+            Level::GetCurrent()->GetCamera()->RemoveFilter(filter_);
             data.time_ = 0;
         }
         filter_->SetFilterShockWave(data);
@@ -111,7 +112,7 @@ void Explo::Start()
     });
 
     sound_->Play();
-    Window::GetMainWindow()->AddFilter(filter_);
+    Level::GetCurrent()->GetCamera()->AddFilter(filter_);
 
     auto camera = sprite_->GetScene()->GetMainCamera();
     auto posNDC = camera->WorldToScreen(sprite_->GetGlobalPosition());

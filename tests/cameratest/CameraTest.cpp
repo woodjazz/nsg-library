@@ -464,7 +464,7 @@ static void Test05()
 static void Test06()
 {
 
-	PScene scene = std::make_shared<Scene>();
+    PScene scene = std::make_shared<Scene>();
 	PCamera camera = scene->CreateChild<Camera>();
 	camera->EnableOrtho();
     camera->SetNearClip(0);
@@ -544,7 +544,7 @@ static void Test06()
 
 static void Test07()
 {
-	PScene scene = std::make_shared<Scene>();
+    PScene scene = std::make_shared<Scene>();
 	PCamera camera = scene->CreateChild<Camera>();
 	camera->EnableOrtho();
 	camera->SetNearClip(0);
@@ -573,7 +573,6 @@ static void Test07()
 void CameraTest()
 {
     auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
-    CHECK_CONDITION(window->IsReady());
     FrustumTest();
     Test01();
     Test02();

@@ -51,6 +51,13 @@ namespace NSG
 {
     class Path;
 
+    struct GLException : std::exception
+    {
+        int code;
+        GLException(int e) : code(e) {}
+    };
+
+
     struct Recti
     {
         int x, y, z, w;
@@ -445,7 +452,7 @@ namespace NSG
     struct SignalEmpty : Signal<> {};
     struct SignalBool : Signal<bool> {};
 	struct SignalFloat : Signal<float> {};
-    struct SignalWindow : Signal<Window*> {};
+    struct SignalWindow : Signal<PWindow> {};
     struct SignalJoystickButton : Signal<int, JoystickButton> {};
     struct SignalJoystickAxisMotion : Signal<int, JoystickAxis, float> {};
     struct SignalHTTPRequestOnLoad : Signal<std::string> {};

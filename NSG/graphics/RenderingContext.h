@@ -2,18 +2,14 @@
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
-
 Copyright (c) 2014-2016 Néstor Silveira Gorski
-
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
 arising from the use of this software.
-
 Permission is granted to anyone to use this software for any purpose,
 including commercial applications, and to alter it and redistribute it
 freely, subject to the following restrictions:
-
 1. The origin of this software must not be misrepresented; you must not
 claim that you wrote the original software. If you use this software
 in a product, an acknowledgment in the product documentation would be
@@ -56,7 +52,6 @@ namespace NSG
 		void SetFrontFace(FrontFaceMode mode);
 		void SetTexture(int index, GLuint id, GLenum target = GL_TEXTURE_2D);
 		void SetTexture(int index, Texture* texture);
-		void SetViewport(const Recti& viewport, bool force);
 		bool SetVertexArrayObj(VertexArrayObj* obj);
 		VertexArrayObj* GetVertexArrayObj() const { return vertexArrayObj_; }
 		bool SetVertexBuffer(Buffer* buffer, bool force = false);
@@ -65,8 +60,6 @@ namespace NSG
 		Buffer* GetIndexBuffer() const { return indexBuffer_; }
 		bool SetProgram(Program* program);
 		Program* GetProgram() const { return activeProgram_; }
-		void SetWindow(PWindow window);
-		PWeakWindow GetWindow() const { return activeWindow_; }
 		FrameBuffer* SetFrameBuffer(FrameBuffer* buffer);
 		FrameBuffer* SetFrameBuffer(FrameBuffer* buffer, TextureTarget colorTarget);
 		FrameBuffer* GetFrameBuffer() const { return currentFbo_; }
@@ -88,12 +81,13 @@ namespace NSG
 		bool SetupProgram(const Pass* pass, const Scene* scene, const Camera* camera, SceneNode* sceneNode, Material* material, const Light* light);
 		void SetupPass(const Pass* pass);
 		void SetSlopeScaledBias(float slopeScaledBias);
-		static SignalWindow::PSignal SigWindow();
 		static std::string GetExtensions();
+        void SetViewport(const Window& window);
 	private:
+        void SetViewport(const Recti& viewport, bool force);
 		RenderingContext();
-		void SetUpViewport();
 		Recti viewport_;
+        Recti windowViewport_;
 		GLint systemFbo_;
 		FrameBuffer* currentFbo_;
 		TextureTarget currentColorTarget_;
@@ -107,7 +101,6 @@ namespace NSG
 		const Mesh* lastMesh_; // last mesh drawn
 		Program* lastProgram_; // last used program
 		Mesh* activeMesh_; // mesh that is going to be drawn
-		PWeakWindow activeWindow_;
 		CullFaceMode cullFaceMode_;
 		FrontFaceMode frontFaceMode_;
 		DepthFunc depthFunc_;

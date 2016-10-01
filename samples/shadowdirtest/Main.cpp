@@ -68,11 +68,12 @@ int NSG_MAIN(int argc, char* argv[])
 #endif
     //SetFog(scene);
     auto light = scene->CreateChild<Light>("Light");
-    ShadowMapDebug shadowMapDebug(light);
+    ShadowMapDebug shadowMapDebug(window, light);
     light->SetType(LightType::DIRECTIONAL);
     light->SetShadowColor(Vector4(COLOR_BLACK, 1.f));
     //light->SetBias(0.1000f);
     auto camera = scene->CreateChild<Camera>();
+    camera->SetWindow(window);
     camera->SetFarClip(100);
     #ifdef TEST1
     light->SetGlobalLookAtPosition(Vector3(-10, -1, 0));
