@@ -7,7 +7,7 @@ addons:
       name: woodjazz/nsg-library
       description: Build submitted via Travis CI
     notification_email: silveira.nestor@gmail.com
-    build_command_prepend: mkdir debug; cd debug; cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug"
+    build_command_prepend: mkdir debug && cd debug && cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug"
     build_command: make
     branch_pattern: master
 language:
