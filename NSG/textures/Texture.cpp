@@ -132,15 +132,16 @@ namespace NSG
 
     void Texture::AllocateResources()
     {
+        auto ctx = RenderingContext::GetSharedPtr();
+        CHECK_ASSERT(ctx);
         CHECK_GL_STATUS();
-        context_ = RenderingContext::Create();
         glGenTextures(1, &texture_);
-        context_->SetTexture(0, this);
+        ctx->SetTexture(0, this);
 
         auto maxSize = RenderingCapabilities::GetPtr()->GetMaxTextureSize();
 		width_ = Clamp(width_, 0, maxSize);
 		height_ = Clamp(height_, 0, maxSize);
-        if (!context_->IsTextureSizeCorrect(width_, height_))
+        if (!ctx->IsTextureSizeCorrect(width_, height_))
 			GetPowerOfTwoValues(width_, height_);
 
         if (image_)
@@ -184,7 +185,7 @@ namespace NSG
             width_ = height_ = value;
         }
 
-        CHECK_ASSERT(context_->IsTextureSizeCorrect(width_, height_));
+        CHECK_ASSERT(ctx->IsTextureSizeCorrect(width_, height_));
         CHECK_ASSERT(RenderingCapabilities::GetPtr()->GetMaxTextureSize() >= width_ && RenderingCapabilities::GetPtr()->GetMaxTextureSize() >= height_);
 
         switch (wrapMode_)
@@ -263,9 +264,10 @@ namespace NSG
 
     void Texture::ReleaseResources()
     {
-        glDeleteTextures(1, &texture_);
+        auto ctx = RenderingContext::GetSharedPtr();
+        if(ctx)
+            glDeleteTextures(1, &texture_);
         texture_ = 0;
-        context_ = nullptr;
     }
 
     std::string Texture::TranslateFlags() const

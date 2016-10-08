@@ -49,18 +49,23 @@ namespace NSG
 
     void VertexBuffer::AllocateResources()
     {
+        auto ctx = RenderingContext::GetSharedPtr();
+        CHECK_ASSERT(ctx);
         Buffer::AllocateResources();
-        context_->SetVertexBuffer(this);
+        ctx->SetVertexBuffer(this);
         auto bytesNeeded = vertexes_.size() * sizeof(VertexData);
         glBufferData(type_, bytesNeeded, &vertexes_[0], usage_);
     }
 
     void VertexBuffer::ReleaseResources()
     {
-        if (context_->GetVertexBuffer() == this)
-            context_->SetVertexBuffer(nullptr);
-
-        Buffer::ReleaseResources();
+        auto ctx = RenderingContext::GetSharedPtr();
+        if (ctx)
+        {
+            if (ctx->GetVertexBuffer() == this)
+                ctx->SetVertexBuffer(nullptr);
+            Buffer::ReleaseResources();
+        }
     }
 
 
@@ -71,7 +76,7 @@ namespace NSG
 
     void VertexBuffer::UpdateData()
     {
-        if(IsReady())
+        if (IsReady())
         {
             CHECK_GL_STATUS();
             auto bytesNeeded = vertexes_.size() * sizeof(VertexData);
@@ -82,8 +87,9 @@ namespace NSG
 
     void VertexBuffer::SetData(GLsizeiptr size, const GLvoid* data)
     {
+        auto ctx = RenderingContext::GetSharedPtr();
         CHECK_GL_STATUS();
-        context_->SetVertexBuffer(this, true);
+        ctx->SetVertexBuffer(this, true);
         glBufferData(type_, size, data, usage_);
         CHECK_GL_STATUS();
     }

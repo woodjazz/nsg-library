@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "RenderingContext.h"
 #include "RenderingCapabilities.h"
 #include "Window.h"
+#include <cstring>
 
 namespace NSG
 {
@@ -52,7 +53,6 @@ namespace NSG
 
     void Buffer::AllocateResources()
     {
-        context_ = RenderingContext::Create();
         CHECK_GL_STATUS();
         glGenBuffers(1, &id_);
 
@@ -62,7 +62,6 @@ namespace NSG
     {
         CHECK_GL_STATUS();
         glDeleteBuffers(1, &id_);
-        context_ = nullptr;
     }
 
     void Buffer::Bind()

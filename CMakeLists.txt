@@ -162,8 +162,8 @@ set_property(TARGET StanHull PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 # SDL
 ###########################
 if (USE_SDL)
-	add_definitions(-DSDL)
-	if((NOT EMSCRIPTEN) AND (NOT USING_BLENDER_FILES)) #EMSCRIPTEN supports/includes SDL 1.2
+	if(NOT EMSCRIPTEN) #EMSCRIPTEN supports/includes SDL 1.2
+		add_definitions(-DSDL)
 		include (CheckIncludeFiles)	
 		set(SDL_INCLUDE_DIR ${DEPENDENCIES_DIR}/SDL/include)
 		include_directories(${DEPENDENCIES_BINARY_DIR}/SDL/include ${SDL_INCLUDE_DIR})
@@ -219,13 +219,14 @@ if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
 	##################################
 	include_directories(${TOOLS_DIR}/common)
 	add_subdirectory(${TOOLS_DIR}/common)
-	list(APPEND LIBRARIES_2_LINK common)
+	set(LIBRARIES_2_LINK common NSG) #reset libraries to link: common will have all the dependencies already set 
 	
 	###########################
 	# converter
 	###########################
 	add_subdirectory(${TOOLS_DIR}/converter)
-	list(REMOVE_ITEM LIBRARIES_2_LINK common)
+	set(LIBRARIES_2_LINK NSG) #reset libraries to link: NSG will have all the dependencies already set 
+	#list(REMOVE_ITEM LIBRARIES_2_LINK common)
 
 endif()
 

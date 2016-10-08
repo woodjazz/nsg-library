@@ -6,3 +6,6 @@ file(GLOB hdr "*.h")
 setup_library()
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
+
+
+

@@ -138,7 +138,7 @@ namespace NSG
         Invalidate();
     }
 
-    void Program::ReduceShaderComplexity()
+    bool Program::ReduceShaderComplexity()
     {
         std::string::size_type pos0 = 0;
         std::string::size_type pos1 = defines_.find('\n', 0);
@@ -147,13 +147,14 @@ namespace NSG
             auto def = defines_.substr(pos0, pos1 - pos0 + 1);
             if(def.find("NORMALMAP") != std::string::npos )
             {
+                LOGW("Reduncing shader complexity (removing NORMALMAP)!!!");
                 defines_.replace(pos0, pos1 - pos0 + 1, "");
-                break;
+                return true;
             }
             pos0 = pos1 + 1;
             pos1 = defines_.find('\n', pos0);
-        } ;
-
+        }
+        return false;
     }
 
     void Program::ConfigureShaders(std::string& vertexShader, std::string& fragmentShader)
@@ -207,7 +208,8 @@ namespace NSG
 
     void Program::AllocateResources()
     {
-        graphics_ = RenderingContext::GetSharedPtr();
+        auto ctx = RenderingContext::GetSharedPtr();
+        CHECK_ASSERT(ctx);
         for(;;)
         {
             std::string vShader;
@@ -221,32 +223,35 @@ namespace NSG
             }
             catch(GLException&)
             {
-                LOGW("Reduncing shader complexity!!!");
-                ReduceShaderComplexity();
+                if(!ReduceShaderComplexity())
+                    break;
             }
         }
 
         if (Initialize())
         {
-            graphics_.lock()->SetProgram(this);
+            ctx->SetProgram(this);
             SetUniformLocations();
         }
     }
 
     void Program::ReleaseResources()
     {
-        if (pVShader_)
-            glDetachShader(id_, pVShader_->GetId());
-        if (pFShader_)
-            glDetachShader(id_, pFShader_->GetId());
+        auto ctx = RenderingContext::GetSharedPtr();
+        if(ctx)
+        {
+            if (pVShader_)
+                glDetachShader(id_, pVShader_->GetId());
+            if (pFShader_)
+                glDetachShader(id_, pFShader_->GetId());
 
-        pVShader_ = nullptr;
-        pFShader_ = nullptr;
-        glDeleteProgram(id_);
+            pVShader_ = nullptr;
+            pFShader_ = nullptr;
+            glDeleteProgram(id_);
 
-		auto ctx = graphics_.lock();
-        if (ctx && ctx->GetProgram() == this)
-			ctx->SetProgram(nullptr);
+            if (ctx->GetProgram() == this)
+                ctx->SetProgram(nullptr);
+        }
 
         activeSkeleton_ = nullptr;
         activeNode_ = nullptr;
@@ -514,9 +519,10 @@ namespace NSG
             {
                 if (textureLoc_[index] != -1)
                 {
+                    auto ctx = RenderingContext::GetSharedPtr();
                     MaterialTexture type = (MaterialTexture)index;
                     auto texture = material_->GetTexture(type).get();
-                    graphics_.lock()->SetTexture(index, texture);
+                    ctx->SetTexture(index, texture);
 
                     if (u_uvTransformLoc_[index] != -1)
                         glUniform4fv(u_uvTransformLoc_[index], 1, &texture->GetUVTransform()[0]);
@@ -583,7 +589,8 @@ namespace NSG
             const std::vector<std::string>& names = skeleton_->GetShaderOrder();
             size_t nBones = names.size();
             PNode armatureNode = node_->GetArmature();
-            CHECK_ASSERT(graphics_.lock()->GetMesh()->HasDeformBones());
+            auto ctx = RenderingContext::GetSharedPtr();
+            CHECK_ASSERT(ctx->GetMesh()->HasDeformBones());
             CHECK_ASSERT(armatureNode);
             Matrix4 globalInverseModelMatrix(1);
             // In order to make all the bones relatives to the armature.
@@ -613,7 +620,8 @@ namespace NSG
     Matrix4 Program::AdjustProjection(const Matrix4& m) const
     {
         auto slopeScaledBias = material_->GetSlopeScaledBias() * light_->GetSlopeScaledBias();
-        graphics_.lock()->SetSlopeScaledBias(slopeScaledBias);
+        auto ctx = RenderingContext::GetSharedPtr();
+        ctx->SetSlopeScaledBias(slopeScaledBias);
 
         Matrix4 m1(m);
         // Add constant depth bias to the projection matrix
@@ -775,7 +783,8 @@ namespace NSG
                     if (textureLoc_[index] != -1)
                     {
                         auto shadowMap = light_->GetShadowMap(i).get();
-                        graphics_.lock()->SetTexture(index, shadowMap);
+                        auto ctx = RenderingContext::GetSharedPtr();
+                        ctx->SetTexture(index, shadowMap);
                     }
                 }
             }

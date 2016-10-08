@@ -37,6 +37,7 @@ misrepresented as being the original software.
 
 #include <array>
 #include <cctype>
+#include <cstring>
 
 namespace NSG
 {

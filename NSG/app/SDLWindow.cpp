@@ -51,27 +51,9 @@ misrepresented as being the original software.
 #include <codecvt>
 #endif
 
-#if EMSCRIPTEN
-#include <emscripten.h>
-#include <html5.h>
-#endif
-
 namespace NSG
 {
-    #if EMSCRIPTEN
-    static EM_BOOL EmscriptenResizeCallback(int eventType, const EmscriptenUiEvent* keyEvent, void* userData)
-    {
-        using namespace NSG;
-        Window* window = Window::GetMainWindow();
-        if (window)
-            window->ViewChanged(keyEvent->windowInnerWidth, keyEvent->windowInnerHeight);
-        return false;
-    }
-    static EM_BOOL EmscripteGamepadCallback(int eventType, const EmscriptenGamepadEvent* gamepadEvent, void* userData)
-    {
-        return false;
-    }
-    #elif defined(IS_TARGET_MOBILE)
+    #if defined(IS_TARGET_MOBILE)
     static int EventWatch(void* userdata, SDL_Event* event)
     {
         SDLWindow* window = static_cast<SDLWindow*>(userdata);
@@ -173,10 +155,8 @@ namespace NSG
             auto& state = it.second;
             if (state.deviceIndex == deviceIndex)
             {
-                #if !defined(EMSCRIPTEN)
                 if (SDL_IsGameController(state.deviceIndex))
                     SDL_GameControllerClose(static_cast<SDL_GameController*>(state.pad_));
-                #endif
                 SDL_JoystickClose((SDL_Joystick*)state.joystick_);
                 joysticks_.erase(state.instanceID_);
                 LOGI("Joystick number: %d has been removed.", deviceIndex);
@@ -197,14 +177,8 @@ namespace NSG
         static std::once_flag onceFlag_;
         std::call_once(onceFlag_, [&]()
         {
-            #if EMSCRIPTEN
-            int flags = 0;
-            #else
             int flags = SDL_INIT_EVENTS;
-            #endif
-
             CHECK_CONDITION(0 == SDL_Init(flags));
-
             OpenJoysticks();
 
             #if defined(IS_TARGET_MOBILE)
@@ -212,11 +186,7 @@ namespace NSG
             #endif
         });
 
-        #if EMSCRIPTEN
-        flags_ = SDL_INIT_JOYSTICK | SDL_INIT_VIDEO;
-        #else
         flags_ = SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER | SDL_INIT_VIDEO;
-        #endif
 
         CHECK_CONDITION(0 == SDL_InitSubSystem(flags_));
 
@@ -243,76 +213,63 @@ namespace NSG
         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, ALPHA_SIZE);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, STENCIL_SIZE);
 
-        #if EMSCRIPTEN
+        Uint32 sdlFlags = 0;
+
+        if (flags & (int)WindowFlag::SHOWN)
+            sdlFlags |= SDL_WINDOW_SHOWN;
+
+        if (flags & (int)WindowFlag::HIDDEN)
+            sdlFlags |= SDL_WINDOW_HIDDEN;
+
+        #if IOS || ANDROID
         {
-            CHECK_CONDITION( nullptr != SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE));
-            isMainWindow_ = true;
-            Window::SetMainWindow(this);
-            emscripten_set_resize_callback(nullptr, nullptr, false, EmscriptenResizeCallback);
-            emscripten_set_gamepadconnected_callback(nullptr, false, EmscripteGamepadCallback);
-            emscripten_set_gamepaddisconnected_callback(nullptr, false, EmscripteGamepadCallback);
+            sdlFlags |= SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL;
         }
         #else
         {
-            Uint32 sdlFlags = 0;
-
-            if (flags & (int)WindowFlag::SHOWN)
-                sdlFlags |= SDL_WINDOW_SHOWN;
-
-            if (flags & (int)WindowFlag::HIDDEN)
-                sdlFlags |= SDL_WINDOW_HIDDEN;
-
-            #if IOS || ANDROID
-            {
-                sdlFlags |= SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL;
-            }
-            #else
-            {
-                sdlFlags |= SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-            }
-            #endif
-
-            auto win = SDL_CreateWindow(name_.c_str(), x, y, width, height, sdlFlags);
-            CHECK_CONDITION(win && "failed SDL_CreateWindow");
-            windowID_ = SDL_GetWindowID(win);
-
-            if (Window::mainWindow_)
-            {
-                isMainWindow_ = false;
-                // Do not create a new context. Instead, share the main window's context.
-                auto context = SDL_GL_GetCurrentContext();
-                SDL_GL_MakeCurrent(win, context);
-            }
-            else
-            {
-                SDL_GL_CreateContext(win);
-                Window::SetMainWindow(this);
-            }
-            SDL_GL_SetSwapInterval(1);
-            SDL_GetWindowSize(win, &width, &height);
-            SDL_DisplayMode mode;
-            SDL_GetCurrentDisplayMode(0, &mode);
-            LOGI("Display format = %s", SDL_GetPixelFormatName(mode.format));
-            switch (mode.format)
-            {
-                case SDL_PIXELFORMAT_RGB888:
-                    SetPixelFormat(PixelFormat::RGB888);
-                    break;
-                case SDL_PIXELFORMAT_RGB565:
-                    SetPixelFormat(PixelFormat::RGB565);
-                    break;
-                case SDL_PIXELFORMAT_RGBA8888:
-                    SetPixelFormat(PixelFormat::RGBA8888);
-                    break;
-                case SDL_PIXELFORMAT_ARGB8888:
-                    SetPixelFormat(PixelFormat::ARGB8888);
-                    break;
-                default:
-                    CHECK_ASSERT(!"Unknown pixel format!!!");
-                    break;
-            }
+            sdlFlags |= SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
         }
         #endif
+
+        auto win = SDL_CreateWindow(name_.c_str(), x, y, width, height, sdlFlags);
+        CHECK_CONDITION(win && "failed SDL_CreateWindow");
+        windowID_ = SDL_GetWindowID(win);
+
+        if (Window::mainWindow_)
+        {
+            isMainWindow_ = false;
+            // Do not create a new context. Instead, share the main window's context.
+            auto context = SDL_GL_GetCurrentContext();
+            SDL_GL_MakeCurrent(win, context);
+        }
+        else
+        {
+            SDL_GL_CreateContext(win);
+            Window::SetMainWindow(this);
+        }
+        SDL_GL_SetSwapInterval(1);
+        SDL_GetWindowSize(win, &width, &height);
+        SDL_DisplayMode mode;
+        SDL_GetCurrentDisplayMode(0, &mode);
+        LOGI("Display format = %s", SDL_GetPixelFormatName(mode.format));
+        switch (mode.format)
+        {
+            case SDL_PIXELFORMAT_RGB888:
+                SetPixelFormat(PixelFormat::RGB888);
+                break;
+            case SDL_PIXELFORMAT_RGB565:
+                SetPixelFormat(PixelFormat::RGB565);
+                break;
+            case SDL_PIXELFORMAT_RGBA8888:
+                SetPixelFormat(PixelFormat::RGBA8888);
+                break;
+            case SDL_PIXELFORMAT_ARGB8888:
+                SetPixelFormat(PixelFormat::ARGB8888);
+                break;
+            default:
+                CHECK_ASSERT(!"Unknown pixel format!!!");
+                break;
+        }
 
         SetSize(width, height);
 
@@ -348,9 +305,7 @@ namespace NSG
             CHECK_ASSERT(value == STENCIL_SIZE);
         }
 
-        #if !defined(EMSCRIPTEN)
         SDL_SetWindowData(SDL_GetWindowFromID(windowID_), InternalPointer, this);
-        #endif
     }
 
     void SDLWindow::Close()
@@ -361,15 +316,12 @@ namespace NSG
 
     void SDLWindow::SetContext()
     {
-        #if !defined(EMSCRIPTEN)
         auto context = SDL_GL_GetCurrentContext();
         SDL_GL_MakeCurrent(SDL_GetWindowFromID(windowID_), context);
-        #endif
     }
 
     void SDLWindow::Destroy()
     {
-        #if !defined(EMSCRIPTEN)
         if (!isClosed_)
         {
             isClosed_ = true;
@@ -381,26 +333,19 @@ namespace NSG
             }
             SDL_DestroyWindow(SDL_GetWindowFromID(windowID_));
         }
-        #endif
     }
 
     void SDLWindow::ViewChanged(int width, int height)
     {
         if (width_ != width || height_ != height)
         {
-            #if EMSCRIPTEN
-            CHECK_CONDITION( nullptr != SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_RESIZABLE));
-            //emscripten_set_canvas_size(width, height);
-            #endif
             Window::ViewChanged(width, height);
         }
     }
 
     void SDLWindow::SwapWindowBuffers()
     {
-        #if !defined(EMSCRIPTEN)
         SDL_GL_SwapWindow(SDL_GetWindowFromID(windowID_));
-        #endif
     }
 
     void SDLWindow::EnterBackground()
@@ -411,7 +356,6 @@ namespace NSG
 
     void SDLWindow::RestoreContext()
     {
-        #if !defined(EMSCRIPTEN)
         if (!SDL_GL_GetCurrentContext())
         {
             // On Android the context may be lost behind the scenes as the application is minimized
@@ -421,30 +365,20 @@ namespace NSG
             SDL_GL_MakeCurrent(win, context);
             context_->ResetCachedState();
         }
-        #endif
     }
 
     SDLWindow* SDLWindow::GetWindowFromID(uint32_t windowID)
     {
-        #if EMSCRIPTEN
-        return static_cast<SDLWindow*>(Window::mainWindow_);
-        #else
         return static_cast<SDLWindow*>(SDL_GetWindowData(SDL_GetWindowFromID(windowID), InternalPointer));
-        #endif
     }
 
     SDLWindow* SDLWindow::GetCurrentWindow()
     {
-        #if EMSCRIPTEN
-        return static_cast<SDLWindow*>(Window::mainWindow_);
-        #else
         return static_cast<SDLWindow*>(SDL_GetWindowData(SDL_GL_GetCurrentWindow(), InternalPointer));
-        #endif
     }
 
     JoystickAxis SDLWindow::ConvertAxis(int axis)
     {
-        #if !defined(EMSCRIPTEN)
         switch (axis)
         {
             case SDL_CONTROLLER_AXIS_LEFTX:
@@ -471,20 +405,10 @@ namespace NSG
                     return JoystickAxis::UNKNOWN;
                 }
         }
-        #else
-        if (axis >= (int)JoystickAxis::FIRST && axis < (int)JoystickAxis::LAST)
-            return (JoystickAxis)axis;
-        else
-        {
-            LOGW("Unknown joystick axis: %d", axis);
-            return JoystickAxis::UNKNOWN;
-        }
-        #endif
     }
 
     JoystickButton SDLWindow::ConvertButton(int button)
     {
-        #if !defined(EMSCRIPTEN)
         switch (button)
         {
             case SDL_CONTROLLER_BUTTON_A:
@@ -523,51 +447,7 @@ namespace NSG
                     return JoystickButton::UNKNOWN;
                 }
         }
-        #else
-        if (button >= (int)JoystickButton::FIRST && button < (int)JoystickButton::LAST)
-            return (JoystickButton)button;
-        else
-        {
-            LOGW("Unknown joystick button: %d", button);
-            return JoystickButton::UNKNOWN;
-        }
-        #endif
     }
-
-    #if defined(EMSCRIPTEN)
-    void SDLWindow::HandleGamepad()
-    {
-        EmscriptenGamepadEvent gamepadState;
-        if (EMSCRIPTEN_RESULT_SUCCESS == emscripten_get_gamepad_status(0, &gamepadState))
-        {
-            static EmscriptenGamepadEvent prevGamepadState = gamepadState;
-            SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
-            if (gamepadState.connected && window)
-            {
-                const auto PRECISION_ERROR = 0.15;
-                for (int i = 0; i < gamepadState.numAxes; i++)
-                {
-                    if (std::abs(gamepadState.axis[i]) < PRECISION_ERROR)
-                        gamepadState.axis[i] = 0;
-                    window->OnJoystickAxisMotion(gamepadState.index, (JoystickAxis)i, gamepadState.axis[i]);
-                }
-                for (int i = 0; i < gamepadState.numButtons; i++)
-                {
-                    if (gamepadState.digitalButton[i] != prevGamepadState.digitalButton[i])
-                    {
-                        bool triggered = gamepadState.digitalButton[i] != 0;
-                        auto button = (JoystickButton)i;
-                        if (triggered)
-                            window->OnJoystickDown(gamepadState.index, button);
-                        else
-                            window->OnJoystickUp(gamepadState.index, button);
-                    }
-                }
-                prevGamepadState = gamepadState;
-            }
-        }
-    }
-    #endif
 
     static int64_t s_touchId = 0;
     void SDLWindow::HandleTouchUpEvent()
@@ -595,9 +475,7 @@ namespace NSG
 
     void SDLWindow::HandleEvents()
     {
-        #if defined(EMSCRIPTEN)
-        SDLWindow::HandleGamepad();
-        #elif defined(IS_TARGET_MOBILE)
+        #if defined(IS_TARGET_MOBILE)
         SDLWindow::HandleTouchUpEvent();
         #endif
         SDL_Event event;
@@ -634,7 +512,6 @@ namespace NSG
                         break;
                 }
             }
-            #if !defined(EMSCRIPTEN)
             else if (event.type == SDL_DROPFILE)
             {
                 SDLWindow* window = GetCurrentWindow();
@@ -642,7 +519,6 @@ namespace NSG
                 window->DropFile(event.drop.file);
                 SDL_free(event.drop.file);
             }
-            #endif
             else if (event.type == SDL_KEYDOWN)
             {
                 SDLWindow* window = GetWindowFromID(event.key.windowID);
@@ -748,7 +624,6 @@ namespace NSG
                 window->OnMultiGesture(event.mgesture.timestamp, -1 + 2 * x, 1 + -2 * y, event.mgesture.dTheta, event.mgesture.dDist, (int)event.mgesture.numFingers);
             }
             #endif
-            #if !defined(EMSCRIPTEN)
             else if (event.type == SDL_JOYDEVICEADDED)
             {
                 SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
@@ -793,7 +668,6 @@ namespace NSG
                 auto position = Clamp(value / 32767.0f, -1.0f, 1.0f);
                 window->OnJoystickAxisMotion(state.instanceID_, axis, position);
             }
-            #endif
 
             else if (event.type == SDL_JOYBUTTONDOWN)
             {
@@ -836,24 +710,17 @@ namespace NSG
 
     void SDLWindow::Show()
     {
-        #if !defined(EMSCRIPTEN)
         SDL_ShowWindow(SDL_GetWindowFromID(windowID_));
-        #endif
     }
 
     void SDLWindow::Hide()
     {
-        #if !defined(EMSCRIPTEN)
         SDL_HideWindow(SDL_GetWindowFromID(windowID_));
-        #endif
-
     }
 
     void SDLWindow::Raise()
     {
-        #if !defined(EMSCRIPTEN)
         SDL_RaiseWindow(SDL_GetWindowFromID(windowID_));
-        #endif
     }
 
     static const char* ImGuiGetClipboardText()

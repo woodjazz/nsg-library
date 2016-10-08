@@ -50,8 +50,10 @@ namespace NSG
 
     void InstanceBuffer::ReleaseResources()
     {
-        if (context_->GetVertexBuffer() == this)
-            context_->SetVertexBuffer(nullptr);
+        auto ctx = RenderingContext::GetSharedPtr();
+        CHECK_ASSERT(ctx);
+        if (ctx->GetVertexBuffer() == this)
+            ctx->SetVertexBuffer(nullptr);
         Buffer::ReleaseResources();
     }
 
@@ -62,7 +64,8 @@ namespace NSG
 
 	void InstanceBuffer::UpdateData(const std::vector<InstanceData>& data)
 	{
-        context_->SetVertexBuffer(this);
+        auto ctx = RenderingContext::GetSharedPtr();
+        ctx->SetVertexBuffer(this);
         if (maxInstances_ >= data.size())
         {
             auto size = data.size() * sizeof(InstanceData);

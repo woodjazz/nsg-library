@@ -325,11 +325,16 @@ macro (setup_executable isQTProject)
     else()
 
         add_executable(${PROJECT_NAME} ${src} ${hdr} ${qt_resources} )
-        target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
-        if(UNIX)
-            target_link_libraries(${PROJECT_NAME} ${CMAKE_DL_LIBS} ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB} ${X11_Xcursor_LIB})
+        if(IS_TARGET_LINUX)
+            #message("1-)${LIBRARIES_2_LINK}")
+            find_package(X11 REQUIRED)
+            set(LIBRARIES_2_LINK ${LIBRARIES_2_LINK} ${CMAKE_DL_LIBS} ${X11_X11_LIB} ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB} ${X11_Xcursor_LIB} )
+            #message("2-)${LIBRARIES_2_LINK}")
+
         endif()
+
+        target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
 
     endif()
 
@@ -401,6 +406,11 @@ endmacro (setup_viewer)
 ##################################################################################
 macro (setup_library)
     add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} ${src} ${hdr} ${assets} ${shaders})
+    if(IS_TARGET_LINUX)
+        find_package(X11 REQUIRED)
+        list(APPEND LIBRARIES_2_LINK ${CMAKE_DL_LIBS}) #needed to fix cycle dependencies
+    endif()
+
     setup_common_ios_properties()
 endmacro (setup_library)
 

@@ -35,23 +35,23 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-	bool VAOKey::operator < (const VAOKey& obj) const
-	{
-		return program < obj.program ||
-			(!(obj.program < program) && mesh < obj.mesh) ||
-			(!(obj.program < program) && !(obj.mesh < mesh) && instancesBuffer < obj.instancesBuffer) ||
-            (!(obj.program < program) && !(obj.mesh < mesh) && !(obj.instancesBuffer < instancesBuffer) && solid < obj.solid);
-	}
+    bool VAOKey::operator < (const VAOKey& obj) const
+    {
+        return program < obj.program ||
+               (!(obj.program < program) && mesh < obj.mesh) ||
+               (!(obj.program < program) && !(obj.mesh < mesh) && instancesBuffer < obj.instancesBuffer) ||
+               (!(obj.program < program) && !(obj.mesh < mesh) && !(obj.instancesBuffer < instancesBuffer) && solid < obj.solid);
+    }
 
-	std::string VAOKey::GetName() const
-	{
-		if(instancesBuffer)
-			return program->GetName() + mesh->GetName() + "_VAOI";
-		else
-			return program->GetName() + mesh->GetName() + "_VAO";
-	}
+    std::string VAOKey::GetName() const
+    {
+        if (instancesBuffer)
+            return program->GetName() + mesh->GetName() + "_VAOI";
+        else
+            return program->GetName() + mesh->GetName() + "_VAO";
+    }
 
-	VertexArrayObj::VAOMap VertexArrayObj::vaoMap_;
+    VertexArrayObj::VAOMap VertexArrayObj::vaoMap_;
 
     VertexArrayObj::VertexArrayObj(const VAOKey& key)
         : Object(key.GetName()),
@@ -73,21 +73,22 @@ namespace NSG
     {
         CHECK_GL_STATUS();
 
-        context_ = RenderingContext::Create();
-	
-		auto vBuffer = key_.mesh->GetVertexBuffer();
-		auto iBuffer = key_.mesh->GetIndexBuffer(key_.solid);
-		auto program = key_.program;
+        auto ctx = RenderingContext::GetSharedPtr();
+        CHECK_ASSERT(ctx);
+
+        auto vBuffer = key_.mesh->GetVertexBuffer();
+        auto iBuffer = key_.mesh->GetIndexBuffer(key_.solid);
+        auto program = key_.program;
         auto mesh = key_.mesh;
 
-		//CHECK_ASSERT(!vBuffer->IsDynamic() && (!iBuffer || !iBuffer->IsDynamic()));
+        //CHECK_ASSERT(!vBuffer->IsDynamic() && (!iBuffer || !iBuffer->IsDynamic()));
 
         glGenVertexArrays(1, &vao_);
 
         CHECK_ASSERT(vao_ != 0);
 
-        context_->SetVertexArrayObj(this);
-        context_->SetVertexBuffer(vBuffer, true);
+        ctx->SetVertexArrayObj(this);
+        ctx->SetVertexBuffer(vBuffer, true);
 
         GLuint position_loc = program->GetAttPositionLoc();
         GLuint texcoord_loc0 = program->GetAttTextCoordLoc0();
@@ -122,14 +123,14 @@ namespace NSG
         if (bones_weight != -1)
             glEnableVertexAttribArray((int)AttributesLoc::BONES_WEIGHT);
 
-        context_->SetVertexAttrPointers();
+        ctx->SetVertexAttrPointers();
 
-        context_->SetIndexBuffer(iBuffer, true);
+        ctx->SetIndexBuffer(iBuffer, true);
 
         if (key_.instancesBuffer)
         {
-            context_->SetVertexBuffer(key_.instancesBuffer);
-            context_->SetInstanceAttrPointers(program);
+            ctx->SetVertexBuffer(key_.instancesBuffer);
+            ctx->SetInstanceAttrPointers(program);
         }
 
         CHECK_GL_STATUS();
@@ -147,17 +148,23 @@ namespace NSG
 
     void VertexArrayObj::ReleaseResources()
     {
-        if (context_->GetVertexArrayObj() == this)
-            context_->SetVertexArrayObj(nullptr);
-        glDeleteVertexArrays(1, &vao_);
+        auto ctx = RenderingContext::GetSharedPtr();
+        if (ctx)
+        {
+            if (ctx->GetVertexArrayObj() == this)
+                ctx->SetVertexArrayObj(nullptr);
+            glDeleteVertexArrays(1, &vao_);
+        }
         vao_ = 0;
-        context_ = nullptr;
     }
 
     void VertexArrayObj::Use()
     {
         if (IsReady())
-            context_->SetVertexArrayObj(this);
+        {
+            auto ctx = RenderingContext::GetSharedPtr();
+            ctx->SetVertexArrayObj(this);
+        }
     }
 
     void VertexArrayObj::Bind()
@@ -174,14 +181,14 @@ namespace NSG
     {
         auto it = vaoMap_.find(key);
         if (it != vaoMap_.end())
-        	return it->second;
-		auto vao = std::make_shared<VertexArrayObj>(key);
+            return it->second;
+        auto vao = std::make_shared<VertexArrayObj>(key);
         CHECK_CONDITION(vaoMap_.insert(VAOMap::value_type(key, vao)).second);
         return vao;
     }
 
     void VertexArrayObj::Clear()
     {
-    	vaoMap_.clear();
+        vaoMap_.clear();
     }
 }

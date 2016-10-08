@@ -40,6 +40,7 @@ misrepresented as being the original software.
 #include "pugixml.hpp"
 #include "b64/encode.h"
 #include "b64/decode.h"
+#include <cstring>
 
 namespace NSG
 {

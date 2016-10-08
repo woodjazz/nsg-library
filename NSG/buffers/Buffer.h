@@ -46,7 +46,6 @@ namespace NSG
 		GLuint id_;
 		GLenum usage_;
 		bool dynamic_;
-        PRenderingContext context_;
 	};
 }
 

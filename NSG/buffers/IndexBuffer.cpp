@@ -53,10 +53,11 @@ namespace NSG
 
     void IndexBuffer::AllocateResources()
     {
+        auto ctx = RenderingContext::GetSharedPtr();
+        CHECK_ASSERT(ctx);
         Buffer::AllocateResources();
-
         CHECK_GL_STATUS();
-        context_->SetIndexBuffer(this);
+        ctx->SetIndexBuffer(this);
         auto bytesNeeded = sizeof(IndexType) * indexes_.size();
         glBufferData(type_, bytesNeeded, &indexes_[0], usage_);
         //SetBufferSubData(0, bytesNeeded, &indexes_[0]);
@@ -65,10 +66,13 @@ namespace NSG
 
     void IndexBuffer::ReleaseResources()
     {
-        if (context_->GetIndexBuffer() == this)
-            context_->SetIndexBuffer(nullptr);
-
-        Buffer::ReleaseResources();
+        auto ctx = RenderingContext::GetSharedPtr();
+        if (ctx)
+        {
+            if (ctx->GetIndexBuffer() == this)
+                ctx->SetIndexBuffer(nullptr);
+            Buffer::ReleaseResources();
+        }
     }
 
     void IndexBuffer::Unbind()
@@ -78,7 +82,7 @@ namespace NSG
 
     void IndexBuffer::UpdateData()
     {
-        if(IsReady())
+        if (IsReady())
         {
             CHECK_GL_STATUS();
             auto bytesNeeded = sizeof(IndexType) * indexes_.size();
@@ -87,12 +91,13 @@ namespace NSG
         }
     }
 
-    void IndexBuffer::SetData(GLsizeiptr size, const GLvoid * data)
+    void IndexBuffer::SetData(GLsizeiptr size, const GLvoid* data)
     {
-        if(IsReady())
+        if (IsReady())
         {
+            auto ctx = RenderingContext::GetSharedPtr();
             CHECK_GL_STATUS();
-            context_->SetIndexBuffer(this, true);
+            ctx->SetIndexBuffer(this, true);
             glBufferData(type_, size, data, usage_);
             CHECK_GL_STATUS();
         }

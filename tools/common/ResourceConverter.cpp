@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "ResourceConverter.h"
+#include <cstring>
 
 namespace NSG
 {

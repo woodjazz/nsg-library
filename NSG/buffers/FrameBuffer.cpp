@@ -127,20 +127,22 @@ namespace NSG
     {
         CHECK_GL_STATUS();
 
-        context_ = RenderingContext::Create();
+        auto context = RenderingContext::GetSharedPtr();
+
+        CHECK_ASSERT(context);
 
         auto maxSize = RenderingCapabilities::GetPtr()->GetMaxTextureSize();
         width_ = Clamp(width_, 0, maxSize);
         height_ = Clamp(height_, 0, maxSize);
 
-        if (!context_->IsTextureSizeCorrect(width_, height_))
+        if (!context->IsTextureSizeCorrect(width_, height_))
             GetPowerOfTwoValues(width_, height_);
 
         LOGI("Framebuffer width=%d, height=%d", width_, height_);
 
         glGenFramebuffers(1, &framebuffer_);
 
-        auto oldFrameBuffer = context_->SetFrameBuffer(this, GetDefaultTextureTarget());
+        auto oldFrameBuffer = context->SetFrameBuffer(this, GetDefaultTextureTarget());
 
         CHECK_GL_STATUS();
 
@@ -213,16 +215,23 @@ namespace NSG
             LOGE("Frame buffer failed with error = 0x%x", status);
         }
 
-        context_->SetFrameBuffer(oldFrameBuffer);
+        context->SetFrameBuffer(oldFrameBuffer);
 
         CHECK_GL_STATUS();
     }
 
     void FrameBuffer::ReleaseResources()
     {
+        auto ctx = RenderingContext::GetSharedPtr();
+        if(!ctx)
+            return;
+
         CHECK_GL_STATUS();
 
-        context_->UnboundTextures();
+        if (ctx->GetFrameBuffer() == this)
+            ctx->SetFrameBuffer(nullptr);
+
+        ctx->UnboundTextures();
 
         if (stencilRenderBuffer_)
         {
@@ -247,10 +256,6 @@ namespace NSG
         glDeleteFramebuffers(1, &framebuffer_);
 
         framebuffer_ = 0;
-
-        //context_->SetFrameBuffer(nullptr);
-
-        context_ = nullptr;
 
         CHECK_GL_STATUS();
     }
@@ -314,8 +319,9 @@ namespace NSG
         CHECK_GL_STATUS();
         if (flags_ & Flag::COLOR_USE_TEXTURE)
         {
+            auto ctx = RenderingContext::GetSharedPtr();
             CHECK_ASSERT(colorTexTarget != TextureTarget::UNKNOWN);
-            CHECK_ASSERT(this == context_->GetFrameBuffer());
+            CHECK_ASSERT(this == ctx->GetFrameBuffer());
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, (GLenum)colorTexTarget, colorTexture_->GetID(), 0);
         }
 

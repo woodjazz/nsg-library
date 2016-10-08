@@ -44,9 +44,6 @@ namespace NSG
         void EnterBackground() override;
         void RestoreContext();
     private:
-        #if defined(EMSCRIPTEN)
-        static void HandleGamepad();
-		#endif
         static void HandleTouchUpEvent();
         void SetContext() override;
         void Show() override;

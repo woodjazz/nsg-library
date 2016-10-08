@@ -83,13 +83,14 @@ static void Test01()
         Path::ReplaceString(str, "%20", " ");
         CHECK_CONDITION(str == "localhost:8000/loader/Hello Color");
     }
-    
+#if !defined(IS_TARGET_APPLE)
 	{
 		Path path("data/testfile.txt");
 		auto mtime = path.GetModificationTime();
 		CHECK_CONDITION(!mtime.empty());
 		LOGI("%s", mtime.c_str());
 	}
+#endif
 
 
 }

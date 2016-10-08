@@ -38,6 +38,8 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "SDLWindow.h"
 #include "WinWindow.h"
+#include "LinuxWindow.h"
+#include "EmscriptenWindow.h"
 #include "ExternalWindow.h"
 #include "Keys.h"
 #include "Texture.h"
@@ -111,8 +113,12 @@ namespace NSG
         {
             #if defined(SDL)
             auto window = std::make_shared<SDLWindow>(name, flags);
+            #elif defined(EMSCRIPTEN)
+            auto window = std::make_shared<EmscriptenWindow>(name, flags);
             #elif defined(IS_TARGET_WINDOWS)
             auto window = std::make_shared<WinWindow>(name, flags);
+            #elif defined(IS_TARGET_LINUX)
+            auto window = std::make_shared<LinuxWindow>(name, flags);
             #else
 #error("Unknown platform!!!")
             #endif
@@ -128,8 +134,12 @@ namespace NSG
         {
             #if defined(SDL)
             auto window = std::make_shared<SDLWindow>(name, x, y, width, height, flags);
+            #elif defined(EMSCRIPTEN)
+            auto window = std::make_shared<EmscriptenWindow>(name, flags);
             #elif defined(IS_TARGET_WINDOWS)
             auto window = std::make_shared<WinWindow>(name, x, y, width, height, flags);
+            #elif defined(IS_TARGET_LINUX)
+            auto window = std::make_shared<LinuxWindow>(name, x, y, width, height, flags);
             #else
 #error("Unknown platform!!!")
             #endif
@@ -246,7 +256,7 @@ namespace NSG
 
     void Window::OnKey(int key, int action, int modifier)
     {
-        signalKey_->Run(key, action, modifier);
+        signalKey_->Run(MapKey(key), action, modifier);
     }
 
     void Window::OnChar(unsigned int character)
@@ -425,8 +435,12 @@ namespace NSG
     {
         #if SDL
         SDLWindow::HandleEvents();
+        #elif EMSCRIPTEN
+        EmscriptenWindow::HandleEvents();
         #elif IS_TARGET_WINDOWS
         WinWindow::HandleEvents();
+        #elif IS_TARGET_LINUX
+        LinuxWindow::HandleEvents();
         #else
 #error("Unknown platform!!!")
         #endif

@@ -77,6 +77,5 @@ namespace NSG
 		SignalSizeChanged::PSlot slotViewChanged_;
         PWeakWindow window_;
 		bool autoSize_;
-        PRenderingContext context_;
     };
 }

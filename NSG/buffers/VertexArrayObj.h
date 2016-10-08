@@ -62,6 +62,5 @@ namespace NSG
         SignalEmpty::PSlot slotMeshReleased_;
 		typedef std::map<VAOKey, PVertexArrayObj> VAOMap;
 		static VAOMap vaoMap_;
-        PRenderingContext context_;
     };
 }

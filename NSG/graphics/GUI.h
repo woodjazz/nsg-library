@@ -49,6 +49,7 @@ namespace NSG
 		PTexture2D fontTexture_;
 		SignalKey::PSlot slotKey_;
 		SignalText::PSlot slotText_;
+        SignalUnsigned::PSlot slotChar_;
 		SignalMouseMoved::PSlot slotMouseMoved_;
 		SignalMouseButtonInt::PSlot slotMouseDown_;
 		SignalMouseButtonInt::PSlot slotMouseUp_;

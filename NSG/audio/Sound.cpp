@@ -29,7 +29,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Path.h"
 #include "Check.h"
-#ifdef SDL
+#if defined(SDL) || defined(EMSCRIPTEN)
 #include "SDL_mixer.h"
 #endif
 #include "pugixml.hpp"
@@ -48,7 +48,7 @@ namespace NSG
 
     Sound::~Sound()
     {
-#ifdef SDL
+#if defined(SDL) || defined(EMSCRIPTEN)
         if(sound_)        
             Mix_FreeChunk(sound_);
 #endif        
@@ -71,7 +71,7 @@ namespace NSG
 
     void Sound::AllocateResources()
     {
-#ifdef SDL        
+#if defined(SDL) || defined(EMSCRIPTEN)        
         SDL_RWops* assetHandle = SDL_RWFromConstMem(resource_->GetData(), int(resource_->GetBytes()));
         sound_ = Mix_LoadWAV_RW(assetHandle, 1);
 		CHECK_CONDITION(sound_);
@@ -80,7 +80,7 @@ namespace NSG
 
     bool Sound::IsPlaying() const
     {
-#ifdef SDL        
+#if defined(SDL) || defined(EMSCRIPTEN)        
         return sound_ && Mix_Playing(channel_) ? true : false;
 #else
         return false;
@@ -91,7 +91,7 @@ namespace NSG
     {
         if (IsReady())
         {
-#ifdef SDL
+#if defined(SDL) || defined(EMSCRIPTEN)
             Stop();
             channel_ = Mix_PlayChannel(-1, sound_, loop ? -1 : 0);
             return true;
@@ -103,7 +103,7 @@ namespace NSG
 
     void Sound::Stop()
     {
-#ifdef SDL
+#if defined(SDL) || defined(EMSCRIPTEN)
         if (IsPlaying())
         {
             Mix_HaltChannel(channel_);
@@ -114,7 +114,7 @@ namespace NSG
 
     void Sound::Pause()
     {
-#ifdef SDL
+#if defined(SDL) || defined(EMSCRIPTEN)
         if (IsPlaying())
         {
             Mix_Pause(channel_);
@@ -124,7 +124,7 @@ namespace NSG
 
     void Sound::Resume()
     {
-#ifdef SDL
+#if defined(SDL) || defined(EMSCRIPTEN)
         if (Mix_Paused(channel_))
         {
             Mix_Resume(channel_);

@@ -227,6 +227,14 @@ namespace NSG
             io.AddInputCharactersUTF8(text.c_str());
         });
 
+        slotChar_ = mainWindow->SigUnsigned()->Connect([this](unsigned int character)
+        {
+            ImGui::SetCurrentContext(state_);
+            ImGuiIO& io = ImGui::GetIO();
+            io.AddInputCharacter(character);
+        });
+
+
         slotMouseMoved_ = mainWindow->SigMouseMoved()->Connect([this](int x, int y)
         {
             ImGui::SetCurrentContext(state_);
