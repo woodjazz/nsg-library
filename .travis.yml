@@ -7,7 +7,7 @@ addons:
       name: woodjazz/nsg-library
       description: Build submitted via Travis CI
     notification_email: silveira.nestor@gmail.com
-    build_command_prepend: mkdir debug; cd debug; cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug"
+    build_command_prepend: "mkdir debug ; cd debug ; cmake .. -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=\"Debug\""
     build_command: make
     branch_pattern: master
 language:
@@ -35,4 +35,5 @@ before_script:
 - travis_retry git submodule update --init --recursive
 script:
 - chmod +x travis_script.sh
-- ./travis_script.sh
+- if [ "$COVERITY_SCAN" != "1" ]; then ./travis_script.sh ; fi
+
