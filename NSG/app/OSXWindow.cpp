@@ -40,6 +40,36 @@ misrepresented as being the original software.
 #ifndef __GNUC__
 #include <codecvt>
 #endif
+#import <Cocoa/Cocoa.h>
+
+@interface AppDelegate : NSObject<NSApplicationDelegate>
+{
+    bool terminated;
+}
+
++ (AppDelegate *)sharedDelegate;
+- (id)init;
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
+- (bool)applicationHasTerminated;
+
+@end
+
+@interface Window : NSObject<NSWindowDelegate>
+{
+    uint32_t windowCount;
+}
+
++ (Window*)sharedDelegate;
+- (id)init;
+- (void)windowCreated:(NSWindow*)window;
+- (void)windowWillClose:(NSNotification*)notification;
+- (BOOL)windowShouldClose:(NSWindow*)window;
+- (void)windowDidResize:(NSNotification*)notification;
+- (void)windowDidBecomeKey:(NSNotification *)notification;
+- (void)windowDidResignKey:(NSNotification *)notification;
+
+@end
+
 
 namespace NSG
 {
