@@ -35,5 +35,5 @@ before_script:
 - travis_retry git submodule update --init --recursive
 script:
 - chmod +x travis_script.sh
-- if [ "$COVERITY_SCAN" != "1" ]; then ./travis_script.sh ; fi
+- ./travis_script.sh
 
