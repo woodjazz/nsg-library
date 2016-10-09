@@ -39,6 +39,7 @@ misrepresented as being the original software.
 #include "SDLWindow.h"
 #include "WinWindow.h"
 #include "LinuxWindow.h"
+#include "OSXWindow.h"
 #include "EmscriptenWindow.h"
 #include "ExternalWindow.h"
 #include "Keys.h"
@@ -119,6 +120,8 @@ namespace NSG
             auto window = std::make_shared<WinWindow>(name, flags);
             #elif defined(IS_TARGET_LINUX)
             auto window = std::make_shared<LinuxWindow>(name, flags);
+            #elif defined(IS_TARGET_OSX)
+            auto window = std::make_shared<OSXWindow>(name, flags);
             #else
 #error("Unknown platform!!!")
             #endif
@@ -140,6 +143,8 @@ namespace NSG
             auto window = std::make_shared<WinWindow>(name, x, y, width, height, flags);
             #elif defined(IS_TARGET_LINUX)
             auto window = std::make_shared<LinuxWindow>(name, x, y, width, height, flags);
+            #elif defined(IS_TARGET_OSX)
+            auto window = std::make_shared<OSXWindow>(name, x, y, width, height, flags);
             #else
 #error("Unknown platform!!!")
             #endif
@@ -441,6 +446,8 @@ namespace NSG
         WinWindow::HandleEvents();
         #elif IS_TARGET_LINUX
         LinuxWindow::HandleEvents();
+        #elif IS_TARGET_OSX
+        OSXWindow::HandleEvents();
         #else
 #error("Unknown platform!!!")
         #endif

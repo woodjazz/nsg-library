@@ -118,6 +118,8 @@ namespace NSG
                 return NSG_KEY_PAGEUP;
             case XK_Page_Down:
                 return NSG_KEY_PAGEDOWN;
+                #elif defined(IS_TARGET_OSX)
+                return key;
                 #else
 #error("Unknown platform!!!")
                 #endif
