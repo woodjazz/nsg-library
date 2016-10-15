@@ -9,7 +9,7 @@ addons:
     notification_email: silveira.nestor@gmail.co
     build_command_prepend: "mkdir debug ; cd debug ; cmake .."
     build_command: make
-    branch_pattern: master
+    branch_pattern: coverity_scan
 language:
 - cpp
 sudo: required
