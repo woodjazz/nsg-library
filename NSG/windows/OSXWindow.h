@@ -24,53 +24,31 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if SDL
+#if defined(IS_TARGET_OSX) && !defined(SDL)
 #include "Types.h"
 #include "Window.h"
 #include <string>
-#include <map>
 
 namespace NSG
 {
-    class SDLWindow : public Window
+    class OSXWindow : public Window
     {
     public:
-		SDLWindow(const std::string& name, WindowFlags flags);
-		SDLWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-		~SDLWindow();
+        OSXWindow(const std::string& name, WindowFlags flags);
+        OSXWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
+        ~OSXWindow();
         void SwapWindowBuffers() override;
         void Destroy() override;
-        static void HandleEvents();
-        void EnterBackground() override;
-        void RestoreContext();
+        void HandleEvents() override;
     private:
-        static void HandleTouchUpEvent();
         void SetContext() override;
         void Show() override;
         void Hide() override;
         void Raise() override;
         void SetupImgui() override;
         void BeginImguiRender() override;
-        static JoystickAxis ConvertAxis(int axis);
-        static JoystickButton ConvertButton(int button);
-        void OpenJoystick(int index);
-        void CloseJoystick(int index);
-        void OpenJoysticks();
-        static SDLWindow* GetWindowFromID(uint32_t windowID);
-        static SDLWindow* GetCurrentWindow();
         void Initialize(int x, int y, int width, int height, WindowFlags flags);
         void Close() override;
-        void ViewChanged(int width, int height) override;
-        uint32_t windowID_;
-        struct JoystickState
-        {
-            int deviceIndex;
-            void* joystick_;
-            void* pad_;
-            int instanceID_;
-            JoystickState() : deviceIndex(-1), joystick_(nullptr), pad_(nullptr), instanceID_(-1) {};
-        };
-        std::map<int, JoystickState> joysticks_;
         int flags_;
     };
 }

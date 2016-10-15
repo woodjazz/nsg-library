@@ -216,6 +216,49 @@ misrepresented as being the original software.
 #define     NSG_BUTTON_MIDDLE   2
 #define     NSG_BUTTON_RIGHT    3
 
+#elif defined(IS_TARGET_ANDROID)
+
+#define     NSG_KEY_MOD_SHIFT       1
+#define     NSG_KEY_MOD_CONTROL     2
+#define     NSG_KEY_MOD_ALT         3
+
+#define     NSG_KEY_A         uint8_t('A')
+#define     NSG_KEY_C         uint8_t('C')
+#define     NSG_KEY_D         uint8_t('D')
+#define     NSG_KEY_E         uint8_t('E')
+#define     NSG_KEY_F         uint8_t('F')
+#define     NSG_KEY_G         uint8_t('G')
+#define     NSG_KEY_M         uint8_t('M')
+#define     NSG_KEY_P         uint8_t('P')
+#define     NSG_KEY_Q         uint8_t('Q')
+#define     NSG_KEY_R         uint8_t('R')
+#define     NSG_KEY_S         uint8_t('S')
+#define     NSG_KEY_V         uint8_t('V')
+#define     NSG_KEY_W         uint8_t('W')
+#define     NSG_KEY_X         uint8_t('X')
+#define     NSG_KEY_Y         uint8_t('Y')
+#define     NSG_KEY_Z         uint8_t('Z')
+
+#define     NSG_KEY_LALT      12
+#define     NSG_KEY_LSHIFT    13
+
+#define     NSG_KEY_0		uint8_t('0')
+#define     NSG_KEY_1		uint8_t('1')
+#define     NSG_KEY_2		uint8_t('2')
+#define     NSG_KEY_3		uint8_t('3')
+#define     NSG_KEY_4		uint8_t('4')
+#define     NSG_KEY_5		uint8_t('5')
+#define     NSG_KEY_6		uint8_t('6')
+#define     NSG_KEY_7		uint8_t('7')
+#define     NSG_KEY_8		uint8_t('8')
+#define     NSG_KEY_9		uint8_t('9')
+
+
+#define     NSG_BUTTON_LEFT     1
+#define     NSG_BUTTON_MIDDLE   2
+#define     NSG_BUTTON_RIGHT    3
+
+
 #else
 
 #error("Unknown platform!!!")

@@ -23,8 +23,8 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if defined(IS_TARGET_OSX) && !defined(SDL)
-#include "OSXWindow.h"
+#if defined(IS_TARGET_IOS) && !defined(SDL)
+#include "IOSWindow.h"
 #include "Engine.h"
 #include "Tick.h"
 #include "Keys.h"
@@ -73,7 +73,7 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    OSXWindow::OSXWindow(const std::string& name, WindowFlags flags)
+    IOSWindow::IOSWindow(const std::string& name, WindowFlags flags)
         : Window(name),
           flags_(0)
     {
@@ -82,7 +82,7 @@ namespace NSG
         LOGI("Window %s created.", name_.c_str());
     }
 
-    OSXWindow::OSXWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags)
+    IOSWindow::IOSWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags)
         : Window(name),
           flags_(0)
     {
@@ -90,26 +90,26 @@ namespace NSG
         LOGI("Window %s created.", name_.c_str());
     }
 
-    OSXWindow::~OSXWindow()
+    IOSWindow::~IOSWindow()
     {
         Close();
     }
 
-    void OSXWindow::Initialize(int x, int y, int width, int height, WindowFlags flags)
+    void IOSWindow::Initialize(int x, int y, int width, int height, WindowFlags flags)
     {
 
     }
 
-    void OSXWindow::Close()
+    void IOSWindow::Close()
     {
         Window::Close();
     }
 
-    void OSXWindow::SetContext()
+    void IOSWindow::SetContext()
     {
     }
 
-    void OSXWindow::Destroy()
+    void IOSWindow::Destroy()
     {
         if (!isClosed_)
         {
@@ -122,31 +122,23 @@ namespace NSG
         }
     }
 
-    void OSXWindow::ViewChanged(int width, int height)
-    {
-        if (width_ != width || height_ != height)
-        {
-            Window::ViewChanged(width, height);
-        }
-    }
-
-    void OSXWindow::SwapWindowBuffers()
+    void IOSWindow::SwapWindowBuffers()
     {
     }
 
-    void OSXWindow::HandleEvents()
+    void IOSWindow::HandleEvents()
     {
     }
 
-    void OSXWindow::Show()
+    void IOSWindow::Show()
     {
     }
 
-    void OSXWindow::Hide()
+    void IOSWindow::Hide()
     {
     }
 
-    void OSXWindow::Raise()
+    void IOSWindow::Raise()
     {
     }
 
@@ -159,7 +151,7 @@ namespace NSG
     {
     }
 
-    void OSXWindow::SetupImgui()
+    void IOSWindow::SetupImgui()
     {
         Window::SetupImgui();
         ImGuiIO& io = ImGui::GetIO();
@@ -167,7 +159,7 @@ namespace NSG
         io.GetClipboardTextFn = ImGuiGetClipboardText;
     }
 
-    void OSXWindow::BeginImguiRender()
+    void IOSWindow::BeginImguiRender()
     {
         ImGuiIO& io = ImGui::GetIO();
         //io.ImeWindowHandle = (void*)hwnd_;

@@ -187,7 +187,6 @@ namespace NSG
         ImGuiIO& io = ImGui::GetIO();
         auto width = (float)window->GetWidth();
         auto height = (float)window->GetHeight();
-
         if (area_ != Rect(0))
             io.DisplaySize = ImVec2{ Clamp(area_.z, 0.f, width), Clamp(area_.w, 0.f, height) };
         else
@@ -229,9 +228,9 @@ namespace NSG
 
         slotChar_ = mainWindow->SigUnsigned()->Connect([this](unsigned int character)
         {
-            ImGui::SetCurrentContext(state_);
-            ImGuiIO& io = ImGui::GetIO();
-            io.AddInputCharacter(character);
+//            ImGui::SetCurrentContext(state_);
+//            ImGuiIO& io = ImGui::GetIO();
+//            io.AddInputCharacter(character);
         });
 
 

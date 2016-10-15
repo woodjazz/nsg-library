@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
+
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;

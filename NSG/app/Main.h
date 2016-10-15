@@ -23,7 +23,12 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if IOS || ANDROID
+#pragma once
+#if defined(IS_TARGET_ANDROID) && !defined(SDL)
+#define NSG_MAIN NSG_main
+struct android_app;
+extern "C" void android_main(struct android_app* app);
+#elif IOS || ANDROID
 extern "C" int SDL_main(int argc, char** argv);
 #define NSG_MAIN SDL_main
 #else

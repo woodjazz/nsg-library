@@ -204,22 +204,31 @@ macro (setup_executable isQTProject)
     endif()
 
     if(ANDROID)
-        
-        add_library(${PROJECT_NAME} SHARED ${src} ${hdr})
-        target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
-        target_link_libraries(${PROJECT_NAME} dl GLESv2 log android EGL)
 
+        
         if(USE_SDL)
             set(android_host_dir ${CMAKE_SOURCE_DIR}/host/androidSDL)
         else()
             set(android_host_dir ${CMAKE_SOURCE_DIR}/host/android)
         endif()
 
+        add_library(${PROJECT_NAME} SHARED ${src} ${hdr})
+        target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
+        target_link_libraries(${PROJECT_NAME} dl GLESv2 log android EGL)
+        # Use: $ANDROID_NDK/ndk-depends lib${PROJECT_NAME}.so to see dependencies
+        #target_link_libraries(${PROJECT_NAME} log m dl c android EGL GLESv2)
+
         if(EXISTS "${android_host_dir}")
             add_custom_command(
                 TARGET ${PROJECT_NAME} POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${android_host_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+            # if (NOT CMAKE_BUILD_TYPE STREQUAL Release)
+            #     include(AndroidNdkGdb)
+            #     android_ndk_gdb_enable(${CMAKE_CURRENT_BINARY_DIR}/AndroidHost)
+            #     android_ndk_gdb_debuggable(${PROJECT_NAME})    
+            # endif()
 
             configure_file(${android_host_dir}/src/com/nsg/NSGActivity.in ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/src/com/nsg/${PROJECT_NAME}/${PROJECT_NAME}Activity.java)
             configure_file(${android_host_dir}/AndroidManifest.in ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/AndroidManifest.xml)
@@ -328,11 +337,8 @@ macro (setup_executable isQTProject)
         add_executable(${PROJECT_NAME} ${src} ${hdr} ${qt_resources} )
 
         if(IS_TARGET_LINUX)
-            #message("1-)${LIBRARIES_2_LINK}")
             find_package(X11 REQUIRED)
             set(LIBRARIES_2_LINK ${LIBRARIES_2_LINK} ${CMAKE_DL_LIBS} ${X11_X11_LIB} ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB} ${X11_Xcursor_LIB} )
-            #message("2-)${LIBRARIES_2_LINK}")
-
         endif()
 
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})

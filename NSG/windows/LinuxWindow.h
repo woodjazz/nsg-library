@@ -24,24 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if defined(IS_TARGET_WINDOWS) && !defined(SDL)
+#if defined(IS_TARGET_LINUX) && !defined(SDL)
 #include "Types.h"
 #include "Window.h"
 #include <string>
-#include <windows.h>
+#include <X11/Xlib.h>
+#include <GL/glx.h>
 
 namespace NSG
 {
-    class WinWindow : public Window
+    class LinuxWindow : public Window
     {
     public:
-        WinWindow(const std::string& name, WindowFlags flags);
-        WinWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-        ~WinWindow();
+        LinuxWindow(const std::string& name, WindowFlags flags);
+        LinuxWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
+        ~LinuxWindow();
         void SwapWindowBuffers() override;
         void Destroy() override;
-        static void HandleEvents();
-		HWND GetHWND() const { return hwnd_; }
+        void HandleEvents() override;
     private:
         void SetContext() override;
         void Show() override;
@@ -51,9 +51,14 @@ namespace NSG
         void BeginImguiRender() override;
         void Initialize(int x, int y, int width, int height, WindowFlags flags);
         void Close() override;
-        void ViewChanged(int width, int height) override;
         int flags_;
-		HWND hwnd_;
+		GLXContext context_;
+        XVisualInfo* visualInfo_;
+        ::Window hwnd_;
+        int keyModifier_;
+        static Display* display_;
+        static XIM im_;
+        static XIC ic_;
     };
 }
 #endif

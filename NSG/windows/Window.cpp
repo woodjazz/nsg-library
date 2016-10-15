@@ -40,6 +40,8 @@ misrepresented as being the original software.
 #include "WinWindow.h"
 #include "LinuxWindow.h"
 #include "OSXWindow.h"
+#include "IOSWindow.h"
+#include "AndroidWindow.h"
 #include "EmscriptenWindow.h"
 #include "ExternalWindow.h"
 #include "Keys.h"
@@ -122,6 +124,10 @@ namespace NSG
             auto window = std::make_shared<LinuxWindow>(name, flags);
             #elif defined(IS_TARGET_OSX)
             auto window = std::make_shared<OSXWindow>(name, flags);
+            #elif defined(IS_TARGET_IOS)
+            auto window = std::make_shared<IOSWindow>(name, flags);
+            #elif defined(IS_TARGET_ANDROID)
+            auto window = std::make_shared<AndroidWindow>(name, flags);
             #else
 #error("Unknown platform!!!")
             #endif
@@ -145,6 +151,10 @@ namespace NSG
             auto window = std::make_shared<LinuxWindow>(name, x, y, width, height, flags);
             #elif defined(IS_TARGET_OSX)
             auto window = std::make_shared<OSXWindow>(name, x, y, width, height, flags);
+            #elif defined(IS_TARGET_IOS)
+            auto window = std::make_shared<IOSWindow>(name, x, y, width, height, flags);
+            #elif defined(IS_TARGET_ANDROID)
+            auto window = std::make_shared<AndroidWindow>(name, x, y, width, height, flags);
             #else
 #error("Unknown platform!!!")
             #endif
@@ -396,9 +406,12 @@ namespace NSG
                 auto scene = scene_.lock();
                 renderer_->Render(this, scene.get());
                 if (SigDrawIMGUI()->HasSlots())
+                {
                     gui_->Render(SharedFromPointer(this), [this]() { SigDrawIMGUI()->Run(); });
+                }
             }
             SwapWindowBuffers();
+
         }
     }
 
@@ -434,23 +447,6 @@ namespace NSG
             std::this_thread::sleep_for(Milliseconds(100));
         }
         return true;
-    }
-
-    void Window::HandleEvents()
-    {
-        #if SDL
-        SDLWindow::HandleEvents();
-        #elif EMSCRIPTEN
-        EmscriptenWindow::HandleEvents();
-        #elif IS_TARGET_WINDOWS
-        WinWindow::HandleEvents();
-        #elif IS_TARGET_LINUX
-        LinuxWindow::HandleEvents();
-        #elif IS_TARGET_OSX
-        OSXWindow::HandleEvents();
-        #else
-#error("Unknown platform!!!")
-        #endif
     }
 
     void Window::SetScene(PScene scene)

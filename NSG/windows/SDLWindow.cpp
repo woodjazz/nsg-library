@@ -335,14 +335,6 @@ namespace NSG
         }
     }
 
-    void SDLWindow::ViewChanged(int width, int height)
-    {
-        if (width_ != width || height_ != height)
-        {
-            Window::ViewChanged(width, height);
-        }
-    }
-
     void SDLWindow::SwapWindowBuffers()
     {
         SDL_GL_SwapWindow(SDL_GetWindowFromID(windowID_));

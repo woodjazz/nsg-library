@@ -27,14 +27,22 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Util.h"
 #include <fstream>
+#if defined(IS_TARGET_ANDROID)
+#include <android/asset_manager.h>
+#include <android_native_app_glue.h>
+#endif
 
 namespace NSG
 {
+    #if defined(IS_TARGET_ANDROID)
+    extern android_app* androidApp;
+    #endif
+
     ResourceFile::ResourceFile(const Path& path)
         : Resource(path.GetFullAbsoluteFilePath()),
           path_(path)
     {
-		EnableInvalidation();
+        EnableInvalidation();
         #if defined(EMSCRIPTEN)
         isLocal_ = false;
         #else
@@ -94,6 +102,18 @@ namespace NSG
         {
             #if defined(EMSCRIPTEN) || !defined(SDL)
             {
+                #if defined(IS_TARGET_ANDROID)
+                CHECK_ASSERT(androidApp->activity->assetManager);
+                auto filename = path_.GetFilePath();
+                AAsset* pAsset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_BUFFER);
+                if (pAsset)
+                {
+                    off_t filelength = AAsset_getLength(pAsset);
+                    buffer_.resize((int)filelength);
+                    AAsset_read(pAsset, &buffer_[0], filelength);
+                    AAsset_close(pAsset);
+                }
+                #else
                 auto filename = path_.GetFilePath();
                 std::ifstream file(filename.c_str(), std::ios::binary);
                 if (file.is_open())
@@ -107,6 +127,7 @@ namespace NSG
                     file.close();
                     LOGI("%s has been loaded with size=%u", filename.c_str(), (unsigned)buffer_.size());
                 }
+                #endif
                 else
                 {
                     LOGE("Cannot load %s", filename.c_str());
