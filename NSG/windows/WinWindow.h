@@ -24,48 +24,35 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if EMSCRIPTEN
+#if defined(IS_TARGET_WINDOWS) && !defined(SDL)
 #include "Types.h"
 #include "Window.h"
 #include <string>
-#include <map>
+#include <windows.h>
 
 namespace NSG
 {
-    class EmscriptenWindow : public Window
+    class WinWindow : public Window
     {
     public:
-		EmscriptenWindow(const std::string& name, WindowFlags flags);
-		EmscriptenWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-		~EmscriptenWindow();
-        static void HandleEvents();
-        void EnterBackground() override;
+        WinWindow(const std::string& name, WindowFlags flags);
+        WinWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
+        ~WinWindow();
+        void SwapWindowBuffers() override;
+        void Destroy() override;
+        void HandleEvents() override;
+		HWND GetHWND() const { return hwnd_; }
     private:
-        static void HandleGamepad();
-        static void HandleTouchUpEvent();
+        void SetContext() override;
+        void Show() override;
+        void Hide() override;
+        void Raise() override;
         void SetupImgui() override;
         void BeginImguiRender() override;
-        static JoystickAxis ConvertAxis(int axis);
-        static JoystickButton ConvertButton(int button);
-        void OpenJoystick(int index);
-        void CloseJoystick(int index);
-        void OpenJoysticks();
-        static EmscriptenWindow* GetWindowFromID(uint32_t windowID);
-        static EmscriptenWindow* GetCurrentWindow();
         void Initialize(int x, int y, int width, int height, WindowFlags flags);
         void Close() override;
-        void ViewChanged(int width, int height) override;
-        uint32_t windowID_;
-        struct JoystickState
-        {
-            int deviceIndex;
-            void* joystick_;
-            void* pad_;
-            int instanceID_;
-            JoystickState() : deviceIndex(-1), joystick_(nullptr), pad_(nullptr), instanceID_(-1) {};
-        };
-        std::map<int, JoystickState> joysticks_;
         int flags_;
+		HWND hwnd_;
     };
 }
 #endif

@@ -1,0 +1,688 @@
+CMake Deprecation Warning at /usr/local/share/cmake-3.6/Modules/CMakeForceCompiler.cmake:79 (message):
+  The CMAKE_FORCE_C_COMPILER macro is deprecated.  Instead just set
+  CMAKE_C_COMPILER and allow CMake to identify the compiler.
+Call Stack (most recent call first):
+  cmake/toolchains/android.toolchain.cmake:1128 (CMAKE_FORCE_C_COMPILER)
+  /home/nestor/dev/andbuild/CMakeFiles/3.6.1/CMakeSystem.cmake:6 (include)
+  CMakeLists.txt:7 (PROJECT)
+
+
+CMake Deprecation Warning at /usr/local/share/cmake-3.6/Modules/CMakeForceCompiler.cmake:93 (message):
+  The CMAKE_FORCE_CXX_COMPILER macro is deprecated.  Instead just set
+  CMAKE_CXX_COMPILER and allow CMake to identify the compiler.
+Call Stack (most recent call first):
+  cmake/toolchains/android.toolchain.cmake:1140 (CMAKE_FORCE_CXX_COMPILER)
+  /home/nestor/dev/andbuild/CMakeFiles/3.6.1/CMakeSystem.cmake:6 (include)
+  CMakeLists.txt:7 (PROJECT)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "animation".  Use the
+  target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/animation/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/editor/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "editor".  Use the
+  target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/editor/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/editor/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/editor/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/helloworld/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "helloworld".  Use the
+  target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/helloworld/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/helloworld/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/helloworld/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/loader/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "loader".  Use the
+  target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/loader/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/loader/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/loader/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/meshes/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "meshes".  Use the
+  target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/meshes/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/meshes/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/meshes/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momo/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "momo".  Use the
+  target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momo/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momo/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momo/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momoanimations/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "momoanimations".  Use
+  the target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momoanimations/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momoanimations/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momoanimations/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momohome/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "momohome".  Use the
+  target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momohome/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momohome/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/momohome/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/particles/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "particles".  Use the
+  target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/particles/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/particles/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/particles/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/planet/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "planet".  Use the
+  target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/planet/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/planet/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/planet/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning at cmake/modules/Common.cmake:441 (find_package):
+  By not providing "FindQt5Widgets.cmake" in CMAKE_MODULE_PATH this project
+  has asked CMake to find a package configuration file provided by
+  "Qt5Widgets", but CMake did not find one.
+
+  Could not find a package configuration file provided by "Qt5Widgets" with
+  any of the following names:
+
+    Qt5WidgetsConfig.cmake
+    qt5widgets-config.cmake
+
+  Add the installation prefix of "Qt5Widgets" to CMAKE_PREFIX_PATH or set
+  "Qt5Widgets_DIR" to a directory containing one of the above files.  If
+  "Qt5Widgets" provides a separate development package or SDK, be sure it has
+  been installed.
+Call Stack (most recent call first):
+  samples/qtquick/CMakeLists.txt:1 (setup_qt_sample)
+
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/sceneanimation/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "sceneanimation".  Use
+  the target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/sceneanimation/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/sceneanimation/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/sceneanimation/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/scroller/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "scroller".  Use the
+  target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/scroller/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/scroller/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/scroller/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Error at cmake/modules/AndroidNdkGdb.cmake:50 (add_custom_target):
+  add_custom_target cannot create target "NDK_GDB" because another target
+  with the same name already exists.  The existing target is a custom target
+  created in source directory
+  "/home/nestor/dev/nsg-library/samples/animation".  See documentation for
+  policy CMP0002 for more details.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:216 (android_ndk_gdb_enable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/shadowdirtest/CMakeLists.txt:1 (setup_sample)
+
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:85 (get_property):
+  Policy CMP0026 is not set: Disallow use of the LOCATION target property.
+  Run "cmake --help-policy CMP0026" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+
+  The LOCATION property should not be read from target "shadowdirtest".  Use
+  the target name directly with add_custom_command, or use the generator
+  expression $<TARGET_FILE>, as appropriate.
+
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/shadowdirtest/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:91 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/shadowdirtest/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at cmake/modules/AndroidNdkGdb.cmake:94 (add_custom_command):
+  Policy CMP0040 is not set: The target in the TARGET signature of
+  add_custom_command() must exist.  Run "cmake --help-policy CMP0040" for
+  policy details.  Use the cmake_policy command to set the policy and
+  suppress this warning.
+
+  TARGET 'NDK_GDB' was not created in this directory.
+Call Stack (most recent call first):
+  cmake/modules/Common.cmake:222 (android_ndk_gdb_debuggable)
+  cmake/modules/Common.cmake:432 (setup_executable)
+  samples/shadowdirtest/CMakeLists.txt:1 (setup_sample)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+

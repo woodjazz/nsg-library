@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "VertexBuffer.h"
 #include "RenderingContext.h"
 #include "Check.h"
+#include "Log.h"
 
 namespace NSG
 {
@@ -49,12 +50,17 @@ namespace NSG
 
     void VertexBuffer::AllocateResources()
     {
+        CHECK_GL_STATUS();
         auto ctx = RenderingContext::GetSharedPtr();
         CHECK_ASSERT(ctx);
         Buffer::AllocateResources();
         ctx->SetVertexBuffer(this);
-        auto bytesNeeded = vertexes_.size() * sizeof(VertexData);
-        glBufferData(type_, bytesNeeded, &vertexes_[0], usage_);
+        if (vertexes_.size())
+        {
+            auto bytesNeeded = vertexes_.size() * sizeof(VertexData);
+            glBufferData(type_, bytesNeeded, &vertexes_[0], usage_);
+        }
+        CHECK_GL_STATUS();
     }
 
     void VertexBuffer::ReleaseResources()

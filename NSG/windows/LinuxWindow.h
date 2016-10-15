@@ -24,13 +24,41 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if defined(IS_TARGET_ANDROID) && !defined(SDL)
-#define NSG_MAIN NSG_main
-struct android_app;
-extern "C" void android_main(struct android_app* app);
-#elif IOS || ANDROID
-extern "C" int SDL_main(int argc, char** argv);
-#define NSG_MAIN SDL_main
-#else
-#define NSG_MAIN main
+#if defined(IS_TARGET_LINUX) && !defined(SDL)
+#include "Types.h"
+#include "Window.h"
+#include <string>
+#include <X11/Xlib.h>
+#include <GL/glx.h>
+
+namespace NSG
+{
+    class LinuxWindow : public Window
+    {
+    public:
+        LinuxWindow(const std::string& name, WindowFlags flags);
+        LinuxWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
+        ~LinuxWindow();
+        void SwapWindowBuffers() override;
+        void Destroy() override;
+        void HandleEvents() override;
+    private:
+        void SetContext() override;
+        void Show() override;
+        void Hide() override;
+        void Raise() override;
+        void SetupImgui() override;
+        void BeginImguiRender() override;
+        void Initialize(int x, int y, int width, int height, WindowFlags flags);
+        void Close() override;
+        int flags_;
+		GLXContext context_;
+        XVisualInfo* visualInfo_;
+        ::Window hwnd_;
+        int keyModifier_;
+        static Display* display_;
+        static XIM im_;
+        static XIC ic_;
+    };
+}
 #endif

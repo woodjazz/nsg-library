@@ -24,24 +24,22 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if defined(IS_TARGET_WINDOWS) && !defined(SDL)
+#if defined(IS_TARGET_IOS) && !defined(SDL)
 #include "Types.h"
 #include "Window.h"
 #include <string>
-#include <windows.h>
 
 namespace NSG
 {
-    class WinWindow : public Window
+    class IOSWindow : public Window
     {
     public:
-        WinWindow(const std::string& name, WindowFlags flags);
-        WinWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-        ~WinWindow();
+        IOSWindow(const std::string& name, WindowFlags flags);
+        IOSWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
+        ~IOSWindow();
         void SwapWindowBuffers() override;
         void Destroy() override;
-        static void HandleEvents();
-		HWND GetHWND() const { return hwnd_; }
+        void HandleEvents() override;
     private:
         void SetContext() override;
         void Show() override;
@@ -51,9 +49,7 @@ namespace NSG
         void BeginImguiRender() override;
         void Initialize(int x, int y, int width, int height, WindowFlags flags);
         void Close() override;
-        void ViewChanged(int width, int height) override;
         int flags_;
-		HWND hwnd_;
     };
 }
 #endif

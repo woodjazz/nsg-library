@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "RenderingContext.h"
 #include "Check.h"
+#include "Log.h"
 #include <vector>
 #include <algorithm>
 #include <sstream>
@@ -53,13 +54,16 @@ namespace NSG
 
     void IndexBuffer::AllocateResources()
     {
+        CHECK_GL_STATUS();
         auto ctx = RenderingContext::GetSharedPtr();
         CHECK_ASSERT(ctx);
         Buffer::AllocateResources();
-        CHECK_GL_STATUS();
         ctx->SetIndexBuffer(this);
-        auto bytesNeeded = sizeof(IndexType) * indexes_.size();
-        glBufferData(type_, bytesNeeded, &indexes_[0], usage_);
+        if(indexes_.size())
+        {
+            auto bytesNeeded = sizeof(IndexType) * indexes_.size();
+            glBufferData(type_, bytesNeeded, &indexes_[0], usage_);
+        }
         //SetBufferSubData(0, bytesNeeded, &indexes_[0]);
         CHECK_GL_STATUS();
     }

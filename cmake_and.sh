@@ -44,12 +44,18 @@ cmake -E make_directory $1
 cd $1
 
 echo "*** CONFIGURING PROJECTS ***"
-#cmake $SOURCE_FOLDER -G "Unix Makefiles" -DANDROID_STL=gnustl_shared -DBUILD_PROJECT="all" -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.6" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/android.toolchain.cmake" -DANDROID_TOOLCHAIN_NAME=arm-linux-androideabi-4.9 -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD
-cmake $SOURCE_FOLDER -G "Unix Makefiles" -DANDROID_STL=gnustl_shared -DBUILD_PROJECT="all" -DANDROID_TOOLCHAIN_NAME="arm-linux-androideabi-clang3.6" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/android.toolchain.cmake" -DANDROID_TOOLCHAIN_NAME=arm-linux-androideabi-4.9 -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD
-
+if [ $2 = "debug" ]; then
+	echo "Building DEBUG version..."
+	cmake $SOURCE_FOLDER -G "Unix Makefiles" -DANDROID_STL=gnustl_shared -DBUILD_PROJECT="all" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/android.toolchain.cmake" -DANDROID_TOOLCHAIN_NAME=arm-linux-androideabi-4.9 -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD 
+else	
+	echo "Building RELEASE version..."
+	cmake $SOURCE_FOLDER -G "Unix Makefiles" -DANDROID_STL=gnustl_shared -DBUILD_PROJECT="all" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/android.toolchain.cmake" -DANDROID_TOOLCHAIN_NAME=arm-linux-androideabi-4.9 -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD
+fi
 
 echo "*** BUILDING $2 ***"
-make $2
+make $3
+
+#$ANDROID_NDK/ndk-gdb
 
 echo "*** CLEARING LOGCAT ****"
 $ANDROID_SDK/platform-tools/adb logcat -c
@@ -59,3 +65,4 @@ $ANDROID_SDK/platform-tools/adb logcat -c
 
 echo "*** FILTERING LOGCAT FOR nsg-library ***"
 $ANDROID_SDK/platform-tools/adb logcat nsg-library *:S
+#$ANDROID_SDK/platform-tools/adb logcat

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.nsg.${PROJECT_NAME}"
+    android:versionCode="1"
+    android:versionName="1.0">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-feature android:glEsVersion="0x00020000" />
+    <uses-sdk android:targetSdkVersion="12" android:minSdkVersion="10" />
+    <application android:label="${PROJECT_NAME}"> <!-- android:debuggable="true">-->
+        <activity android:name=".${PROJECT_NAME}Activity"
+                  android:label="${PROJECT_NAME}"
+                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+                  android:configChanges="screenSize|orientation|keyboardHidden"
+                  android:screenOrientation="sensorLandscape">
+                  <!-- Tell NativeActivity the name of or .so -->
+                  <meta-data android:name="android.app.lib_name" 
+                    android:value="${PROJECT_NAME}" />
+                  <intent-filter>
+                      <action android:name="android.intent.action.MAIN" />
+                      <category android:name="android.intent.category.LAUNCHER" />
+                  </intent-filter>
+        </activity>
+    </application>
+</manifest>

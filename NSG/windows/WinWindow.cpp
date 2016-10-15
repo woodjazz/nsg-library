@@ -296,14 +296,6 @@ namespace NSG
         }
     }
 
-    void WinWindow::ViewChanged(int width, int height)
-    {
-        if (width_ != width || height_ != height)
-        {
-            Window::ViewChanged(width, height);
-        }
-    }
-
     void WinWindow::SwapWindowBuffers()
     {
         SwapBuffers(wglGetCurrentDC());

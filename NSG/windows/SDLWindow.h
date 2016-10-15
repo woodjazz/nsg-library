@@ -24,42 +24,53 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if defined(IS_TARGET_LINUX) && !defined(SDL)
+#if SDL
 #include "Types.h"
 #include "Window.h"
 #include <string>
-#include <X11/Xlib.h>
-#include <GL/glx.h>
+#include <map>
 
 namespace NSG
 {
-    class LinuxWindow : public Window
+    class SDLWindow : public Window
     {
     public:
-        LinuxWindow(const std::string& name, WindowFlags flags);
-        LinuxWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-        ~LinuxWindow();
+		SDLWindow(const std::string& name, WindowFlags flags);
+		SDLWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
+		~SDLWindow();
         void SwapWindowBuffers() override;
         void Destroy() override;
-        static void HandleEvents();
+        void HandleEvents() override;
+        void EnterBackground() override;
+        void RestoreContext();
     private:
+        static void HandleTouchUpEvent();
         void SetContext() override;
         void Show() override;
         void Hide() override;
         void Raise() override;
         void SetupImgui() override;
         void BeginImguiRender() override;
+        static JoystickAxis ConvertAxis(int axis);
+        static JoystickButton ConvertButton(int button);
+        void OpenJoystick(int index);
+        void CloseJoystick(int index);
+        void OpenJoysticks();
+        static SDLWindow* GetWindowFromID(uint32_t windowID);
+        static SDLWindow* GetCurrentWindow();
         void Initialize(int x, int y, int width, int height, WindowFlags flags);
         void Close() override;
-        void ViewChanged(int width, int height) override;
+        uint32_t windowID_;
+        struct JoystickState
+        {
+            int deviceIndex;
+            void* joystick_;
+            void* pad_;
+            int instanceID_;
+            JoystickState() : deviceIndex(-1), joystick_(nullptr), pad_(nullptr), instanceID_(-1) {};
+        };
+        std::map<int, JoystickState> joysticks_;
         int flags_;
-		GLXContext context_;
-        XVisualInfo* visualInfo_;
-        ::Window hwnd_;
-        int keyModifier_;
-        static Display* display_;
-        static XIM im_;
-        static XIC ic_;
     };
 }
 #endif

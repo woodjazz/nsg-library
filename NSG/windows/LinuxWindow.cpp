@@ -248,14 +248,6 @@ namespace NSG
         }
     }
 
-    void LinuxWindow::ViewChanged(int width, int height)
-    {
-        if (width_ != width || height_ != height)
-        {
-            Window::ViewChanged(width, height);
-        }
-    }
-
     void LinuxWindow::SwapWindowBuffers()
     {
         glXSwapBuffers(LinuxWindow::display_, hwnd_);
@@ -263,7 +255,7 @@ namespace NSG
 
     void LinuxWindow::HandleEvents()
     {
-        if (!Window::GetMainWindow() || !XPending(LinuxWindow::display_))
+        if (!XPending(LinuxWindow::display_))
             return;
 
         XEvent event;

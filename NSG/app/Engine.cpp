@@ -67,7 +67,9 @@ namespace NSG
 
     void Engine::BeginTicks()
     {
-        Window::HandleEvents();
+        auto mainWindow = Window::GetMainWindow();
+        if(mainWindow)
+            mainWindow->HandleEvents();
     }
 
     void Engine::DoTick(float delta)

@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "RenderingContext.h"
 #include "RenderingCapabilities.h"
 #include "Window.h"
+#include "Log.h"
 #include <cstring>
 
 namespace NSG
@@ -53,14 +54,11 @@ namespace NSG
 
     void Buffer::AllocateResources()
     {
-        CHECK_GL_STATUS();
         glGenBuffers(1, &id_);
-
     }
 
     void Buffer::ReleaseResources()
     {
-        CHECK_GL_STATUS();
         glDeleteBuffers(1, &id_);
     }
 
