@@ -487,8 +487,10 @@ namespace NSG
                             break;
                         case TextureType::SPEC:
                             if (!defaultPass)
+                            {
                                 defines += "SPECULARMAP" + ToString(uvIndex) + "\n";
                                 defines += "SPECULARMAP_CHANNELS" + ToString(channels) + "\n";
+                            }
                             break;
                         case TextureType::EMIT:
                             if (defaultPass)

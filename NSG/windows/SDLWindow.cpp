@@ -576,7 +576,7 @@ namespace NSG
                 if (!window) continue;
                 window->OnMouseWheel((float)event.wheel.x, (float)event.wheel.y);
             }
-            else if (event.type == SDL_FINGERDOWN || event.type == SDL_FINGERDOWN || event.type == SDL_FINGERMOTION)
+            else if (event.type == SDL_FINGERDOWN || event.type == SDL_FINGERUP || event.type == SDL_FINGERMOTION)
             {
                 SDLWindow* window = static_cast<SDLWindow*>(Window::mainWindow_);
                 if (!window) continue;

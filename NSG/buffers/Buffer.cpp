@@ -37,6 +37,7 @@ namespace NSG
     Buffer::Buffer(GLenum type, GLenum usage)
         : Object(GetUniqueName("Buffer")),
           type_(type),
+          id_(0),
           usage_(usage),
           dynamic_(usage != GL_STATIC_DRAW)
     {
