@@ -177,7 +177,10 @@ namespace NSG
         }
 
         int nr = segments + 1;
-        int index0, index1, index2, index3;
+        int index0 = 0;
+        int index1 = 0;
+        int index2 = 0;
+        int index3 = 0;
 
         // Triangles
         // Front Face CCW

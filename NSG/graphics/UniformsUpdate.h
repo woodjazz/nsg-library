@@ -29,7 +29,7 @@ namespace NSG
 {
 	struct UniformsUpdate
 	{
-		UniformsUpdate() {}
+		UniformsUpdate() : needUpdate_(true) {}
 		~UniformsUpdate() {}
 		inline bool UniformsNeedUpdate() const { return needUpdate_; }
 		inline void SetUniformsNeedUpdate() const { needUpdate_ = true; }
