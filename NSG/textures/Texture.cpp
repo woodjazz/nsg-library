@@ -134,7 +134,6 @@ namespace NSG
     {
         auto ctx = RenderingContext::GetSharedPtr();
         CHECK_ASSERT(ctx);
-        CHECK_GL_STATUS();
         glGenTextures(1, &texture_);
         ctx->SetTexture(0, this);
 
@@ -208,7 +207,7 @@ namespace NSG
         }
 
         Define();
-
+        
         mipmapLevels_ = 0;
         if (flags_ & (int)TextureFlag::GENERATE_MIPMAPS)
         {
