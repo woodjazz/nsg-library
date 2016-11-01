@@ -42,6 +42,8 @@ namespace NSG
         void Destroy() override;
         void HandleEvents() override;
         NSWindow* GetNSWindow() const { return window_; }
+        void Close() override;        
+        void GetMousePos(int& outX, int& outY) const;        
     private:
         void CreateContext();
         void SetContext() override;
@@ -51,7 +53,6 @@ namespace NSG
         void SetupImgui() override;
         void BeginImguiRender() override;
         void Initialize(int x, int y, int width, int height, WindowFlags flags);
-        void Close() override;
         int flags_;
         int32_t style_;
         NSWindow* window_;

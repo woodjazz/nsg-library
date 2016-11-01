@@ -33,6 +33,7 @@ misrepresented as being the original software.
 #include "UTF8String.h"
 #include "AppConfiguration.h"
 #include "imgui.h"
+#include "Maths.h"
 #include <memory>
 #include <string>
 #include <locale>
@@ -46,7 +47,7 @@ misrepresented as being the original software.
     bool terminated;
 }
 
-+ (AppDelegate*)sharedDelegate;
++ (AppDelegate*)sharedInstance;
 - (id)init;
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender;
 - (bool)applicationHasTerminated;
@@ -55,13 +56,12 @@ misrepresented as being the original software.
 
 @interface Window : NSObject<NSWindowDelegate>
 {
-    uint32_t windowCount;
     NSG::OSXWindow* window_;
 }
 
-+ (Window*)sharedDelegate;
++ (Window*)sharedInstance;
 - (id)init;
-- (void)windowCreated:(NSWindow*) window:(NSG::OSXWindow*) osxWindow;
+- (void)windowCreated:(NSWindow*)window osxWindow:(NSG::OSXWindow*)myWindow;
 - (void)windowWillClose:(NSNotification*)notification;
 - (BOOL)windowShouldClose:(NSWindow*)window;
 - (void)windowDidResize:(NSNotification*)notification;
@@ -72,7 +72,7 @@ misrepresented as being the original software.
 
 @implementation AppDelegate
 
-+ (AppDelegate*)sharedDelegate
++ (AppDelegate*)sharedInstance
 {
     static id delegate = [AppDelegate new];
     return delegate;
@@ -81,12 +81,10 @@ misrepresented as being the original software.
 - (id)init
 {
     self = [super init];
-
     if (nil == self)
     {
         return nil;
     }
-
     self->terminated = false;
     return self;
 }
@@ -106,7 +104,7 @@ misrepresented as being the original software.
 
 @implementation Window
 
-+ (Window*)sharedDelegate
++ (Window*)sharedInstance
 {
     static id windowDelegate = [Window new];
     return windowDelegate;
@@ -119,20 +117,14 @@ misrepresented as being the original software.
     {
         return nil;
     }
-
-    self->windowCount = 0;
     return self;
 }
 
-- (void)windowCreated:(NSWindow*) window:(NSG::OSXWindow*) osxWindow
+- (void)windowCreated:(NSWindow*)window osxWindow:(NSG::OSXWindow*)myWindow
 {
-    assert(window);
-
+    CHECK_ASSERT(window);
     [window setDelegate:self];
-
-    assert(self->windowCount < ~0u);
-    self->windowCount += 1;
-    self->window_ = osxWindow;
+    self->window_ = myWindow;
 }
 
 - (void)windowWillClose:(NSNotification*)notification
@@ -141,19 +133,9 @@ misrepresented as being the original software.
 
 - (BOOL)windowShouldClose:(NSWindow*)window
 {
-    assert(window);
-
+    CHECK_ASSERT(window);
     [window setDelegate:nil];
-
-    assert(self->windowCount);
-    self->windowCount -= 1;
-
-    if (self->windowCount == 0)
-    {
-        [NSApp terminate:self];
-        return false;
-    }
-
+    self->window_->Close();
     return true;
 }
 
@@ -165,10 +147,6 @@ misrepresented as being the original software.
     uint32_t width  = uint32_t(rect.size.width);
     uint32_t height = uint32_t(rect.size.height);
     window_->SetSize(width, height);
-    // Make sure mouse button state is 'up' after resize.
-    //m_eventQueue.postMouseEvent(s_defaultWindow, m_mx, m_my, m_scroll, MouseButton::Left,  false);
-    //m_eventQueue.postMouseEvent(s_defaultWindow, m_mx, m_my, m_scroll, MouseButton::Right, false);
-
 }
 
 - (void)windowDidBecomeKey:(NSNotification*)notification
@@ -213,47 +191,13 @@ namespace NSG
         Close();
     }
 
-    static id dg = 0;
-    static id quitMenuItem = 0;
-    static id appMenu = 0;
-    static id appMenuItem = 0;
-    static id menubar = 0;
     void OSXWindow::Initialize(int x, int y, int width, int height, WindowFlags flags)
     {
         static std::once_flag onceFlag_;
         std::call_once(onceFlag_, [&]()
         {
-            [NSApplication sharedApplication];
-
-            dg = [AppDelegate sharedDelegate];
+            id dg = [AppDelegate sharedInstance];
             [NSApp setDelegate:dg];
-            [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-            [NSApp activateIgnoringOtherApps:YES];
-            [NSApp finishLaunching];
-
-            [[NSNotificationCenter defaultCenter]
-             postNotificationName:NSApplicationWillFinishLaunchingNotification
-             object:NSApp];
-
-            [[NSNotificationCenter defaultCenter]
-             postNotificationName:NSApplicationDidFinishLaunchingNotification
-             object:NSApp];
-
-            quitMenuItem = [NSMenuItem new];
-            [quitMenuItem
-             initWithTitle:@"Quit"
-             action:@selector(terminate:)
-             keyEquivalent:@"q"];
-
-            appMenu = [NSMenu new];
-            [appMenu addItem:quitMenuItem];
-
-            appMenuItem = [NSMenuItem new];
-            [appMenuItem setSubmenu:appMenu];
-
-            menubar = [[NSMenu new] autorelease];
-            [menubar addItem:appMenuItem];
-            [NSApp setMainMenu:menubar];
         });
 
         style_ = 0
@@ -268,17 +212,19 @@ namespace NSG
         const float centerY = (screenRect.size.height - (float)height) * 0.5f;
 
         NSRect rect = NSMakeRect(centerX, centerY, width, height);
+
         window_ = [[NSWindow alloc]
                    initWithContentRect:rect
                    styleMask:style_
                    backing:NSBackingStoreBuffered defer:NO
                   ];
+
         NSString* appName = [[NSProcessInfo processInfo] processName];
         [window_ setTitle:appName];
         [window_ makeKeyAndOrderFront:window_];
         [window_ setAcceptsMouseMovedEvents:YES];
         [window_ setBackgroundColor:[NSColor blackColor]];
-        [[::Window sharedDelegate] windowCreated:window_:this];
+        [[::Window sharedInstance] windowCreated:window_ osxWindow:this];
         windowFrame_ = [window_ frame];
 
         if (Window::mainWindow_)
@@ -304,24 +250,13 @@ namespace NSG
 
     void OSXWindow::CreateContext()
     {
-        struct AutoreleasePoolHolder
-        {
-            AutoreleasePoolHolder() : pool_([[NSAutoreleasePool alloc] init]) {}
-            ~AutoreleasePoolHolder() { [pool_ release]; }
-        private:
-            NSAutoreleasePool* const pool_;
-        } pool;
+        static_assert(MAC_OS_X_VERSION_MAX_ALLOWED && MAC_OS_X_VERSION_MAX_ALLOWED >= 1070, "Cannot compile in this old OSX!!!");
 
-        #if defined(MAC_OS_X_VERSION_MAX_ALLOWED) && (MAC_OS_X_VERSION_MAX_ALLOWED >= 1070)
-        NSOpenGLPixelFormatAttribute profile = NSOpenGLProfileVersion3_2Core;
-        //            NSOpenGLProfileVersionLegacy
-        #endif
-
+        NSOpenGLPixelFormatAttribute profile = NSOpenGLProfileVersionLegacy;
+        //NSOpenGLPixelFormatAttribute profile = NSOpenGLProfileVersion3_2Core;
         NSOpenGLPixelFormatAttribute pixelFormatAttributes[] =
         {
-            #if defined(MAC_OS_X_VERSION_MAX_ALLOWED) && (MAC_OS_X_VERSION_MAX_ALLOWED >= 1070)
             NSOpenGLPFAOpenGLProfile, profile,
-            #endif // defined(MAC_OS_X_VERSION_MAX_ALLOWED) && (MAC_OS_X_VERSION_MAX_ALLOWED >= 1070)
             NSOpenGLPFAColorSize,     24,
             NSOpenGLPFAAlphaSize,     8,
             NSOpenGLPFADepthSize,     24,
@@ -363,7 +298,12 @@ namespace NSG
             Window::NotifyOneWindow2Remove();
             if (isMainWindow_)
             {
+                [view_ release];
+                view_ = nullptr;
+                context_ = nullptr;
                 Window::SetMainWindow(nullptr);
+                //[NSApp terminate:self];
+
             }
         }
     }
@@ -372,6 +312,19 @@ namespace NSG
     {
         [context_ makeCurrentContext];
         [context_ flushBuffer];
+    }
+
+    void OSXWindow::GetMousePos(int& outX, int& outY) const
+    {
+        NSRect originalFrame = [window_ frame];
+        NSPoint location = [window_ mouseLocationOutsideOfEventStream];
+        NSRect adjustFrame = [window_ contentRectForFrameRect:originalFrame];
+
+        int x = location.x;
+        int y = (int)adjustFrame.size.height - (int)location.y;
+
+        outX = Clamp(x, 0, (int)adjustFrame.size.width);
+        outY = Clamp(y, 0, (int)adjustFrame.size.height);
     }
 
     static NSEvent* PeekEvent()
@@ -384,12 +337,12 @@ namespace NSG
                ];
     }
 
-
     static bool DispatchEvent(NSEvent* event)
     {
         if (event)
         {
             NSEventType eventType = [event type];
+            auto window = static_cast<OSXWindow*>(NSG::Window::GetMainWindow());
 
             switch (eventType)
             {
@@ -398,41 +351,65 @@ namespace NSG
                 case NSRightMouseDragged:
                 case NSOtherMouseDragged:
                     {
+                        int x, y;
+                        window->GetMousePos(x, y);
+                        window->OnMouseMove(x, y);
                         break;
                     }
 
                 case NSLeftMouseDown:
                     {
+                        int x, y;
+                        window->GetMousePos(x, y);                        
+                        auto button = ([event modifierFlags] & NSCommandKeyMask) ? NSG_BUTTON_MIDDLE : NSG_BUTTON_LEFT;
+                        window->OnMouseDown(button, x, y);
                         break;
                     }
 
                 case NSLeftMouseUp:
                     {
+                        int x, y;
+                        window->GetMousePos(x, y);                        
+                        auto button = ([event modifierFlags] & NSCommandKeyMask) ? NSG_BUTTON_MIDDLE : NSG_BUTTON_LEFT;
+                        window->OnMouseUp(button, x, y);
                         break;
                     }
 
                 case NSRightMouseDown:
                     {
+                        int x, y;
+                        window->GetMousePos(x, y);                        
+                        window->OnMouseDown(NSG_BUTTON_RIGHT, x, y);
                         break;
                     }
 
                 case NSRightMouseUp:
                     {
+                        int x, y;
+                        window->GetMousePos(x, y);                        
+                        window->OnMouseUp(NSG_BUTTON_RIGHT, x, y);
                         break;
                     }
 
                 case NSOtherMouseDown:
                     {
+                        int x, y;
+                        window->GetMousePos(x, y);                        
+                        window->OnMouseDown(NSG_BUTTON_MIDDLE, x, y);
                         break;
                     }
 
                 case NSOtherMouseUp:
                     {
+                        int x, y;
+                        window->GetMousePos(x, y);                        
+                        window->OnMouseUp(NSG_BUTTON_MIDDLE, x, y);
                         break;
                     }
 
                 case NSScrollWheel:
                     {
+                        window->OnMouseWheel([event deltaX], [event deltaY]);
                         break;
                     }
 
