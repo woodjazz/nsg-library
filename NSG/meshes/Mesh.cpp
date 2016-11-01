@@ -72,6 +72,8 @@ namespace NSG
 
     void Mesh::AllocateResources()
     {
+        CHECK_GL_STATUS();
+
         if (!areTangentsCalculated_)
             CalculateTangents();
 
@@ -120,6 +122,9 @@ namespace NSG
             bb_.Merge(vertex.position_);
             boundingSphereRadius_ = std::max(boundingSphereRadius_, vertex.position_.Length());
         }
+        
+        CHECK_GL_STATUS();
+
     }
 
     void Mesh::ReleaseResources()

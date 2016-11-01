@@ -390,6 +390,8 @@ namespace NSG
             glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttribs_);
             LOGI("GL_MAX_VERTEX_ATTRIBS = %d", maxVertexAttribs_);
         }
+
+        CHECK_GL_STATUS();
     }
 
     RenderingCapabilities::~RenderingCapabilities()

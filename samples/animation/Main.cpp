@@ -32,6 +32,7 @@ int NSG_MAIN(int argc, char* argv[])
 
 	PAnimationController acontrol;
     auto window = Window::Create();
+
     LoaderXML loader("loader");
     auto slotLoaded = loader.Load(Resource::GetOrCreateClass<ResourceFile>("data/duck.xml"))->Connect([&]()
     {

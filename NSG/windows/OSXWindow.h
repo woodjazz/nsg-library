@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Window.h"
 #include <string>
+#import <Cocoa/Cocoa.h>
 
 namespace NSG
 {
@@ -40,7 +41,11 @@ namespace NSG
         void SwapWindowBuffers() override;
         void Destroy() override;
         void HandleEvents() override;
+        NSWindow* GetNSWindow() const { return window_; }
+        void Close() override;        
+        void GetMousePos(int& outX, int& outY) const;        
     private:
+        void CreateContext();
         void SetContext() override;
         void Show() override;
         void Hide() override;
@@ -48,8 +53,12 @@ namespace NSG
         void SetupImgui() override;
         void BeginImguiRender() override;
         void Initialize(int x, int y, int width, int height, WindowFlags flags);
-        void Close() override;
         int flags_;
+        int32_t style_;
+        NSWindow* window_;
+        NSRect windowFrame_;
+        static NSOpenGLView* view_;
+        static NSOpenGLContext* context_;        
     };
 }
 #endif

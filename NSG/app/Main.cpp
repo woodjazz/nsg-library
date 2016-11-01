@@ -34,12 +34,56 @@ namespace NSG
 }
 
 extern int NSG_main(int argc, char* argv[]);
-
 void android_main(struct android_app* app)
 {
-	LOGI("android_main");
+    LOGI("android_main");
     NSG::androidApp = app;
     NSG_main(0, nullptr);
+}
+
+#elif defined(IS_TARGET_OSX) && !defined(SDL)
+#import <Cocoa/Cocoa.h>
+extern int NSG_main(int argc, char* argv[]);
+int main(int argc, char* argv[])
+{	
+    struct AutoreleasePoolHolder
+    {
+        AutoreleasePoolHolder() : pool_([[NSAutoreleasePool alloc] init]) {}
+        ~AutoreleasePoolHolder() { [pool_ release]; }
+    private:
+        NSAutoreleasePool* const pool_;
+    } pool;
+
+    [NSApplication sharedApplication];
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+    [NSApp activateIgnoringOtherApps:YES];
+    [NSApp finishLaunching];
+
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:NSApplicationWillFinishLaunchingNotification
+     object:NSApp];
+
+    [[NSNotificationCenter defaultCenter]
+     postNotificationName:NSApplicationDidFinishLaunchingNotification
+     object:NSApp];
+
+    id quitMenuItem = [NSMenuItem new];
+    [quitMenuItem
+     initWithTitle:@"Quit"
+     action:@selector(terminate:)
+     keyEquivalent:@"q"];
+
+    id appMenu = [NSMenu new];
+    [appMenu addItem:quitMenuItem];
+
+    id appMenuItem = [NSMenuItem new];
+    [appMenuItem setSubmenu:appMenu];
+
+    id menubar = [[NSMenu new] autorelease];
+    [menubar addItem:appMenuItem];
+    [NSApp setMainMenu:menubar];
+
+    NSG_main(argc, argv);
 }
 
 #endif

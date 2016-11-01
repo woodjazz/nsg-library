@@ -108,9 +108,9 @@ namespace NSG
         virtual void SetContext() {}
         void SetRender(IRender* render);
         void RemoveRender(IRender* render);
+        void SetSize(int width, int height);        
     protected:
         Window(const std::string& name);
-        void SetSize(int width, int height);
         bool isClosed_;
         bool minimized_;
         bool isMainWindow_;
