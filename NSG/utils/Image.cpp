@@ -626,9 +626,14 @@ namespace NSG
             case TextureFormat::DEPTH:
                 result = GL_DEPTH_COMPONENT;
                 break;
+                #if !defined(IS_TARGET_IOS) && !defined(IS_TARGET_OSX) 
             case TextureFormat::DXT1:
                 result = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
                 break;
+            case TextureFormat::ETC1:
+                result = GL_ETC1_RGB8_OES;
+                break;                
+                #endif
                 #ifndef GLES2
             case TextureFormat::DXT3:
                 result = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
@@ -637,9 +642,6 @@ namespace NSG
                 result = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
                 break;
                 #else
-            case TextureFormat::ETC1:
-                result = GL_ETC1_RGB8_OES;
-                break;
             case TextureFormat::PVRTC_RGB_2BPP:
                 result = GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
                 break;

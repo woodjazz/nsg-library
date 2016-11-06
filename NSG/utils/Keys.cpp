@@ -120,6 +120,8 @@ namespace NSG
                 return NSG_KEY_PAGEDOWN;
                 #elif defined(IS_TARGET_OSX)
                 return key;
+                #elif defined(IS_TARGET_IOS)
+                return key;
                 #elif defined(IS_TARGET_ANDROID)
                 return key;
                 #else

@@ -266,6 +266,9 @@ namespace NSG
             case SDL_PIXELFORMAT_ARGB8888:
                 SetPixelFormat(PixelFormat::ARGB8888);
                 break;
+            case SDL_PIXELFORMAT_ABGR8888:
+                SetPixelFormat(PixelFormat::ABGR8888);
+                break;
             default:
                 CHECK_ASSERT(!"Unknown pixel format!!!");
                 break;

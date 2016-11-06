@@ -40,6 +40,7 @@ namespace NSG
         void SwapWindowBuffers() override;
         void Destroy() override;
         void HandleEvents() override;
+        static int RunApplication();
     private:
         void SetContext() override;
         void Show() override;

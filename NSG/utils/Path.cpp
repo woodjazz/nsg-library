@@ -154,6 +154,11 @@ namespace NSG
             absolutePath_ = Path::GetBasePath() + path_;
 
         fullFilePath_ = absolutePath_ + "/" + filename_;
+
+        #if defined(IS_TARGET_IOS) && !defined(SDL)
+        filePath_ = fullFilePath_;
+        #endif
+
     }
 
     void Path::ReplaceChar(std::string& filePath, char from, char to)
@@ -288,6 +293,20 @@ namespace NSG
             {
                 path = "./";
             }
+            return path;
+        }
+        #elif defined(IS_TARGET_APPLE) && !defined(SDL)
+        {
+            NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+            NSBundle* bundle = [NSBundle mainBundle];
+            const char* base = nullptr;
+            base = [[bundle bundlePath] fileSystemRepresentation];
+            //base = [[[bundle bundlePath] stringByDeletingLastPathComponent] fileSystemRepresentation];
+            //base = [[bundle resourcePath] fileSystemRepresentation];
+            CHECK_ASSERT(base);
+            std::string path(base);
+            path += "/";
+            [pool release];
             return path;
         }
         #else

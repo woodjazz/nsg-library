@@ -49,8 +49,8 @@ namespace NSG
         : context_(RenderingContext::Create()),
           scene_(nullptr),
           camera_(nullptr),
-          debugPhysics_(false),
           showMapMaterial_(Material::Create("NSGShowMapMaterial")),
+          debugPhysics_(false),
           debugMaterial_(Material::Create("NSGDebugMaterial")),
           debugRenderer_(std::make_shared<DebugRenderer>()),
           contextType_(RendererContext::DEFAULT),
@@ -461,7 +461,7 @@ namespace NSG
         auto lights = scene_->GetLights();
         for (auto light : lights)
             if (light->DoShadows())
-               GenerateShadowMaps(camera_, light);
+                GenerateShadowMaps(camera_, light);
     }
 
     void Renderer::OpaquePasses(std::vector<SceneNode*>& objs)
@@ -567,7 +567,7 @@ namespace NSG
 
     void Renderer::RenderFiltered(const std::vector<SceneNode*>& objs)
     {
-        if(filterFrameBuffer_->IsReady())
+        if (filterFrameBuffer_->IsReady())
         {
             auto oldFrameBuffer = context_->GetFrameBuffer();
             auto filtered = objs;
@@ -597,10 +597,10 @@ namespace NSG
     {
         if (camera_)
         {
-            if(filterFrameBuffer_->IsReady())
+            if (filterFrameBuffer_->IsReady())
             {
                 auto filters = camera_->GetFilters();
-                for(auto filter: filters)
+                for (auto filter : filters)
                 {
                     context_->SetFrameBuffer(filterFrameBuffer_.get());
                     filter->SetTexture(MaterialTexture::DIFFUSE_MAP, frameBuffer_->GetColorTexture());
@@ -647,7 +647,7 @@ namespace NSG
     void Renderer::Render(FrameBuffer* frameBuffer, Scene* scene)
     {
         auto oldFrameBuffer = context_->SetFrameBuffer(frameBuffer);
-        if(scene)
+        if (scene)
             Render(nullWindow, scene, scene->GetMainCamera().get());
         else
             Render(nullWindow, nullptr, nullptr);
@@ -659,7 +659,7 @@ namespace NSG
         bool useFrameBuffer = false;
         int width = 0;
         int height = 0;
-        if(window)
+        if (window)
         {
             window->SetContext();
             context_->SetFrameBuffer(nullptr);
@@ -693,11 +693,11 @@ namespace NSG
             {
                 bool hasPostProcessing = camera && camera->HasPostProcessing();
                 auto filtered = ExtractFiltered(visibles);
-                if(hasPostProcessing || !filtered.empty())
+                if (hasPostProcessing || !filtered.empty())
                 {
                     frameBuffer_->SetSize(width, height);
                     filterFrameBuffer_->SetSize(width, height);
-                    if(frameBuffer_->IsReady())
+                    if (frameBuffer_->IsReady())
                     {
                         context_->SetFrameBuffer(frameBuffer_.get());
                         useFrameBuffer = true;
@@ -743,7 +743,7 @@ namespace NSG
             RenderOverlays();
         }
 
-        if(useFrameBuffer)
+        if (useFrameBuffer)
         {
             context_->SetFrameBuffer(nullptr); //use system framebuffer to show the texture
             showMapMaterial_->SetTexture(frameBuffer_->GetColorTexture());

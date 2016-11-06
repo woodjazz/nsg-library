@@ -30,6 +30,8 @@ struct android_app;
 extern "C" void android_main(struct android_app* app);
 #elif defined(IS_TARGET_OSX) && !defined(SDL)
 #define NSG_MAIN NSG_main
+#elif defined(IS_TARGET_IOS) && !defined(SDL)
+#define NSG_MAIN main
 #elif IOS || ANDROID
 extern "C" int SDL_main(int argc, char** argv);
 #define NSG_MAIN SDL_main

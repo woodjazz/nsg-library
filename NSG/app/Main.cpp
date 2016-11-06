@@ -85,5 +85,4 @@ int main(int argc, char* argv[])
 
     NSG_main(argc, argv);
 }
-
 #endif
