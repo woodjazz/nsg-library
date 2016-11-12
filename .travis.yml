@@ -12,6 +12,7 @@ addons:
     branch_pattern: coverity_scan
 language:
 - cpp
+- android
 sudo: required
 dist: trusty
 os:
