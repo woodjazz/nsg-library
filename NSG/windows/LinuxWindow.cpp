@@ -157,10 +157,9 @@ namespace NSG
 
         windowHwndMap[hwnd_] = this;
         if (flags & (int)WindowFlag::SHOWN)
-            XMapWindow(LinuxWindow::display_, hwnd_);
-
-        if (flags & (int)WindowFlag::HIDDEN)
-            XUnmapWindow(LinuxWindow::display_, hwnd_);
+            Show();
+        else if (flags & (int)WindowFlag::HIDDEN)
+            Hide();
 
         XStoreName(LinuxWindow::display_, hwnd_, name_.c_str());
 

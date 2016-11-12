@@ -221,9 +221,9 @@ namespace NSG
 
         NSString* appName = [[NSProcessInfo processInfo] processName];
         [window_ setTitle:appName];
-        [window_ makeKeyAndOrderFront:window_];
         [window_ setAcceptsMouseMovedEvents:YES];
         [window_ setBackgroundColor:[NSColor blackColor]];
+        
         [[::Window sharedInstance] windowCreated:window_ osxWindow:this];
         windowFrame_ = [window_ frame];
 
@@ -240,7 +240,11 @@ namespace NSG
         }
 
         SetSize(width, height);
-
+        
+        if (flags & (int)WindowFlag::SHOWN)
+            Show();
+        else if (flags & (int)WindowFlag::HIDDEN)
+            Hide();
     }
 
     void OSXWindow::Close()
@@ -444,10 +448,14 @@ namespace NSG
 
     void OSXWindow::Show()
     {
+        [window_ makeKeyAndOrderFront:window_];
+        [NSApp activateIgnoringOtherApps:YES];
+
     }
 
     void OSXWindow::Hide()
     {
+        [window_ orderOut:window_];
     }
 
     void OSXWindow::Raise()

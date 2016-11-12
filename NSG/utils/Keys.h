@@ -90,6 +90,7 @@ misrepresented as being the original software.
 #define     NSG_BUTTON_RIGHT    SDL_BUTTON_RIGHT
 
 #elif defined(IS_TARGET_WINDOWS)
+#include <windows.h>
 
 #define     NSG_KEY_MOD_SHIFT       1 << 0
 #define     NSG_KEY_MOD_CONTROL     1 << 1

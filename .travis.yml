@@ -17,9 +17,9 @@ dist: trusty
 os:
 - linux
 - osx
-matrix:
-  allow_failures:
-  - os: osx
+#matrix:
+#  allow_failures:
+#  - os: osx
 compiler:
 - gcc
 git:
