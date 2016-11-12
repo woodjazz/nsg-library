@@ -23,6 +23,7 @@ os:
 #  - os: osx
 compiler:
 - gcc
+- clang
 git:
   submodules: false
 before_install:
