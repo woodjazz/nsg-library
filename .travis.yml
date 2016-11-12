@@ -10,9 +10,9 @@ addons:
     build_command_prepend: "mkdir debug ; cd debug ; cmake .."
     build_command: make
     branch_pattern: coverity_scan
+
 language:
 - cpp
-- android
 sudo: required
 dist: trusty
 os:
