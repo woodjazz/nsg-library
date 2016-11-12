@@ -31,7 +31,7 @@ namespace NSG
     {
         switch (key)
         {
-                #if defined(SDL) || defined(EMSCRIPTEN)
+                #if defined(EMSCRIPTEN)
             case SDLK_ESCAPE:
                 return NSG_KEY_ESC;
             case SDLK_SPACE:

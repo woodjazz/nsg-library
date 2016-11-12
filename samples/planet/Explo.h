@@ -40,6 +40,5 @@ private:
 	PMaterial material_;
 	PTexture2D texture_;
 	PSceneNode sprite_;
-	PSound sound_;
 	PMaterial filter_;
 };

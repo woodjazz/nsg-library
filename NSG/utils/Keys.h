@@ -46,7 +46,7 @@ misrepresented as being the original software.
 #define		NSG_KEY_PAGEDOWN	13
 
 
-#if defined(SDL) || defined(EMSCRIPTEN)
+#if defined(EMSCRIPTEN)
 #include "SDL_keycode.h"
 #include "SDL_mouse.h"
 

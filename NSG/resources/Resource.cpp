@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #include "Resource.h"
 #include "ResourceFile.h"
 #include "Texture.h"
-#include "Sound.h"
 #include "Log.h"
 #include "Check.h"
 #include "Util.h"

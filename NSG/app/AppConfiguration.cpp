@@ -24,9 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "AppConfiguration.h"
-#if SDL
-#include "SDL.h"
-#endif
 
 namespace NSG
 {
@@ -36,13 +33,8 @@ namespace NSG
       static const int WindowWidth = 640;
       static const int WindowHeight = 480;
     #else
-      #if SDL
-      static const int WindowPosX = SDL_WINDOWPOS_CENTERED;
-      static const int WindowPosY = SDL_WINDOWPOS_CENTERED;
-      #else
       static const int WindowPosX = 0;
       static const int WindowPosY = 0;
-      #endif
       static const int WindowWidth = 1024;
       static const int WindowHeight = 768;
     

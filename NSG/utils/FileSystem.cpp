@@ -88,14 +88,6 @@ namespace NSG
     std::string FileSystem::GetPreferencesPath(const std::string& org, const std::string& app)
     {
         Path path(org + "/" + app + "/");
-        #if defined(SDL) && !defined(EMSCRIPTEN)
-        {
-            char* prefsPath = SDL_GetPrefPath(org.c_str(), app.c_str());
-            CHECK_CONDITION(prefsPath && "Preferences path not supported!!!");
-            path = Path(prefsPath);
-            SDL_free(prefsPath);
-        }
-        #endif
         return path.GetAbsolutePath();
     }
 

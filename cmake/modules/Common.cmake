@@ -204,13 +204,8 @@ macro (setup_executable isQTProject)
     endif()
 
     if(ANDROID)
-
         
-        if(USE_SDL)
-            set(android_host_dir ${CMAKE_SOURCE_DIR}/host/androidSDL)
-        else()
-            set(android_host_dir ${CMAKE_SOURCE_DIR}/host/android)
-        endif()
+        set(android_host_dir ${CMAKE_SOURCE_DIR}/host/android)
 
         add_library(${PROJECT_NAME} SHARED ${src} ${hdr})
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
@@ -356,7 +351,7 @@ macro (setup_executable isQTProject)
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     COMMENT "Copying data directory" VERBATIM)
 
-        elseif(APPLE AND IS_EXECUTABLE_A_BUNDLE)
+        elseif(APPLE)# AND IS_EXECUTABLE_A_BUNDLE)
 
             add_custom_target(${DATA_TARGET} 
                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/data

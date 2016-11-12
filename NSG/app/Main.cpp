@@ -26,7 +26,7 @@ misrepresented as being the original software.
 #include "Main.h"
 #include "Log.h"
 
-#if defined(IS_TARGET_ANDROID) && !defined(SDL)
+#if defined(IS_TARGET_ANDROID)
 
 namespace NSG
 {
@@ -41,7 +41,7 @@ void android_main(struct android_app* app)
     NSG_main(0, nullptr);
 }
 
-#elif defined(IS_TARGET_OSX) && !defined(SDL)
+#elif defined(IS_TARGET_OSX)
 #import <Cocoa/Cocoa.h>
 extern int NSG_main(int argc, char* argv[]);
 int main(int argc, char* argv[])

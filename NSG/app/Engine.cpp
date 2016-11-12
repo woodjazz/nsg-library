@@ -27,12 +27,11 @@ misrepresented as being the original software.
 #include "UniformsUpdate.h"
 #include "RenderingContext.h"
 #include "Window.h"
-#if defined(IS_TARGET_IOS) && !defined(SDL)
+#if defined(IS_TARGET_IOS)
 #include "IOSWindow.h"
 #endif
 #include "FileSystem.h"
 #include "Resource.h"
-#include "Sound.h"
 #include "Mesh.h"
 #include "Material.h"
 #include "Shape.h"
@@ -117,7 +116,7 @@ namespace NSG
             };
             emscripten_set_main_loop_arg(runframe, &saved, 0, 1);
         }
-        #elif defined(IS_TARGET_IOS) && !defined(SDL)
+        #elif defined(IS_TARGET_IOS)
             IOSWindow::RunApplication();
             FileSystem::Save();
         #else
@@ -149,7 +148,6 @@ namespace NSG
     void Engine::ReleaseMemory()
     {
         Resource::Clear();
-        Sound::Clear();
         Mesh::Clear();
         Material::Clear();
         Shape::Clear();

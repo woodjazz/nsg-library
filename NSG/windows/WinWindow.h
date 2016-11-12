@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if defined(IS_TARGET_WINDOWS) && !defined(SDL)
+#if defined(IS_TARGET_WINDOWS)
 #include "Types.h"
 #include "Window.h"
 #include <string>

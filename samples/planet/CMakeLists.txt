@@ -5,7 +5,6 @@ COPY_TOOL(art/earthcolor.jpg data)
 COPY_TOOL(art/earthnormal.jpg data)
 COPY_TOOL(art/earthspecular.jpg data)
 COPY_TOOL(art/explo.png data)
-COPY_TOOL(art/explo.wav data)
 
 
 

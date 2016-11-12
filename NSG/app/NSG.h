@@ -63,8 +63,6 @@ misrepresented as being the original software.
 #include "ResourceFile.h"
 #include "Pass.h"
 #include "AppConfiguration.h"
-#include "Sound.h"
-#include "Music.h"
 #include "BoundingBox.h"
 #include "Frustum.h"
 #include "ResourceFile.h"

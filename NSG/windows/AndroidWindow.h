@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if defined(IS_TARGET_ANDROID) && !defined(SDL)
+#if defined(IS_TARGET_ANDROID)
 #include "Window.h"
 #include <string>
 #include <android/sensor.h>

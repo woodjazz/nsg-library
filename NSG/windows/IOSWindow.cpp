@@ -23,7 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if defined(IS_TARGET_IOS) && !defined(SDL)
+#if defined(IS_TARGET_IOS)
 #include "IOSWindow.h"
 #include "Engine.h"
 #include "Tick.h"

@@ -28,12 +28,11 @@ misrepresented as being the original software.
 #include "Log.h"
 #if IS_TARGET_WINDOWS
 #include <Windows.h>
+#elif defined(IS_TARGET_OSX)
+#import <Cocoa/Cocoa.h>
 #elif defined(EMSCRIPTEN)
 #include <emscripten.h>
 #include <unistd.h>
-#elif defined(IS_TARGET_APPLE) && defined(SDL)
-#include "SDL.h"
-#undef main
 #else
 #include <stdio.h>
 #include <unistd.h>
@@ -155,7 +154,7 @@ namespace NSG
 
         fullFilePath_ = absolutePath_ + "/" + filename_;
 
-        #if defined(IS_TARGET_IOS) && !defined(SDL)
+        #if defined(IS_TARGET_IOS)
         filePath_ = fullFilePath_;
         #endif
 
@@ -280,22 +279,7 @@ namespace NSG
             Path::ReplaceChar(result, '\\', '/');
             return result;
         }
-        #elif (defined(ANDROID) || defined(IS_TARGET_APPLE)) && defined(SDL)
-        {
-            std::string path;
-            char* base_path = SDL_GetBasePath();
-            if (base_path)
-            {
-                path = base_path;
-                SDL_free(base_path);
-            }
-            else
-            {
-                path = "./";
-            }
-            return path;
-        }
-        #elif defined(IS_TARGET_APPLE) && !defined(SDL)
+        #elif defined(IS_TARGET_APPLE)
         {
             NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
             NSBundle* bundle = [NSBundle mainBundle];

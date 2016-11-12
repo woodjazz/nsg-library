@@ -34,10 +34,6 @@ int NSG_MAIN(int argc, char* argv[])
 	LoaderXML loader("loader");
 	auto slotLoaded = loader.Load(resource)->Connect([&]()
 	{
-		auto soundMusic = Sound::Get("nice_music.ogg.004");
-		auto music = Music::Create();
-		music->Set(soundMusic->GetResource());
-		music->Play();
 		auto scene = loader.GetScene(0);
 		scene->SetAmbientColor(ColorRGB(0.5f));
 		scene->GetChild<SceneNode>("Level1", false)->GetMaterial()->SetAmbientIntensity(1);
@@ -56,8 +52,6 @@ int NSG_MAIN(int argc, char* argv[])
 		auto horizontalLimit = cameraHalfWidth - playerHalfWidth;
 		auto verticalLimit = cameraHalfHeight - playerHalfHeight;
 		bool playerDestroyed = false;
-		auto sound = Sound::Get("BigExplosion.wav.001");
-		sound->Play();
 #if 0
 		auto playerRigidBody = camera->GetRigidBody();
 		playerRigidBody->HandleCollisions(true);

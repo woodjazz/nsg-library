@@ -76,8 +76,7 @@ static void Test01()
     window->SetScene(scene);
 
 	auto engine = Engine::Create();
-//	engine->Run();
-	engine->RenderFrame();
+	engine->PerformTicks();
 	auto shadowCam = light->GetShadowCamera(0);
 	CHECK_ASSERT(Distance(shadowCam->GetGlobalPosition(), Vector3(0, 5009.f, 0)) < 0.001f);
 	CHECK_ASSERT(shadowCam->IsOrtho());

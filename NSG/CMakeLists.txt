@@ -30,7 +30,7 @@ FOREACH(subdir ${SUBDIRS})
 	source_group(${subdir} FILES ${tmp_hdr} ${tmp_src} ${assets})
 ENDFOREACH()
 
-if(ANDROID AND NOT USE_SDL)
+if(ANDROID)
 	# See http://developer.android.com/reference/android/app/NativeActivity.html
 	list(APPEND hdr $ENV{ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.h)
 	list(APPEND src $ENV{ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)

@@ -50,9 +50,6 @@ Explo::Explo(PSceneNode node)
 	sprite_->SetMaterial(material_);
     uvTransform_ = Vector4(TEX_SIZE, TEX_SIZE, 0, 0);
 	texture_->SetUVTransform(uvTransform_);
-	sound_ = Sound::Create();
-	sound_->Set(Resource::GetOrCreate<ResourceFile>("data/explo.wav"));
-	sound_->TryReady();
     filter_ = Material::GetOrCreate("ShockWaveMaterial");
     filter_->SetRenderPass(RenderPass::SHOCKWAVE);
 }
@@ -111,7 +108,6 @@ void Explo::Start()
             totalTime_ += deltaTime;
     });
 
-    sound_->Play();
     Level::GetCurrent()->GetCamera()->AddFilter(filter_);
 
     auto camera = sprite_->GetScene()->GetMainCamera();
