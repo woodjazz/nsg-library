@@ -19,6 +19,7 @@ case "${TRAVIS_OS_NAME}" in
     sudo apt-get install -q -y xorg-dev
     sudo apt-get install libglu1-mesa-dev
     sudo apt-get install -q -y --no-install-recommends libasound2-dev
+    sudo apt-get install libc++-dev
     ;;
   osx)
     brew install Caskroom/cask/xquartz
