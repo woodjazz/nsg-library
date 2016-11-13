@@ -71,8 +71,6 @@ apt-get install xorg-dev
 
 apt-get install libglu1-mesa-dev
 
-apt-get install libasound2-dev (not really needed)
-
 If you have g++ and clang++ installed you can switch between them with:
 sudo update-alternatives --config c++
 

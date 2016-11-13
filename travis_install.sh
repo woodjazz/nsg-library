@@ -19,10 +19,18 @@ case "${TRAVIS_OS_NAME}" in
     sudo apt-get install -q -y xorg-dev
     sudo apt-get install libglu1-mesa-dev
     #sudo apt-get install -q -y --no-install-recommends libasound2-dev
-    sudo apt-get install -q -y libc++-dev
+    sudo apt-get install -q -y libc++-dev #needed for clang
+    # EMSCRIPTEN
+    wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
+    tar xvf emsdk-portable.tar.gz
+    cd emsdk_po*
+    ./emsdk update
+    ./emsdk install latest
+    ./emsdk activate latest
+    source ./emsdk_env.sh
     ;;
   osx)
-    brew install Caskroom/cask/xquartz
+    #brew install Caskroom/cask/xquartz
     #wget https://dl.dropboxusercontent.com/u/203889738/gcc/XQuartz.pkg
     #sudo installer -pkg ./XQuartz.pkg -target /
     # SIMULATE GUI (DISPLAY)
