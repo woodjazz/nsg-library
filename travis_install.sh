@@ -21,13 +21,13 @@ case "${TRAVIS_OS_NAME}" in
     #sudo apt-get install -q -y --no-install-recommends libasound2-dev
     sudo apt-get install -q -y libc++-dev #needed for clang
     # EMSCRIPTEN
-    wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
-    tar xvf emsdk-portable.tar.gz
-    cd emsdk_po*
-    ./emsdk update
-    ./emsdk install latest
-    ./emsdk activate latest
-    source ./emsdk_env.sh
+    # wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
+    # tar xvf emsdk-portable.tar.gz
+    # cd emsdk_po*
+    # ./emsdk update
+    # ./emsdk install latest
+    # ./emsdk activate latest
+    # source ./emsdk_env.sh
     ;;
   osx)
     #brew install Caskroom/cask/xquartz

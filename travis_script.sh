@@ -6,7 +6,7 @@ case "${TRAVIS_OS_NAME}" in
 	cd ..
 	mkdir -p release && cd release && cmake .. -G "Unix Makefiles" && make && make test
 	cd ..
-	./cmake_ems.sh emsbuild && cd../emsbuild && make
+	#./cmake_ems.sh emsbuild && cd../emsbuild && make
     ;;
   osx)
 	./cmake_osx.sh osxbuild && cd ../osxbuild && xcodebuild -target ALL_BUILD
