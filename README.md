@@ -71,13 +71,10 @@ apt-get install xorg-dev
 
 apt-get install libglu1-mesa-dev
 
-<<<<<<< HEAD
 You can add installed compiler as selectable alternatives with:
 sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-3.5 100
 sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-3.5 100
 
-=======
->>>>>>> dce45018428eacd9c912c3be501e3bffea18a6e8
 If you have g++ and clang++ installed you can switch between them with:
 sudo update-alternatives --config c++
 
