@@ -144,7 +144,6 @@ namespace NSG
     void PhysicsWorld::setDebugMode(int debugMode)
     {
         debugMode_ = debugMode;
-        setDebugMode(debugMode_);
     }
 
     int PhysicsWorld::getDebugMode() const

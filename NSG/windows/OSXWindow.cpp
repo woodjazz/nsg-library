@@ -481,7 +481,7 @@ namespace NSG
 
     void OSXWindow::BeginImguiRender()
     {
-        ImGuiIO& io = ImGui::GetIO();
+        //ImGuiIO& io = ImGui::GetIO();
         //io.ImeWindowHandle = (void*)hwnd_;
         // Hide OS mouse cursor if ImGui is drawing it
         //ShowCursor(io.MouseDrawCursor ? FALSE : TRUE);

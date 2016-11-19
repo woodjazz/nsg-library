@@ -177,7 +177,6 @@ namespace NSG
 
 	Vector3 Vector3::CatmullRom(const Vector3& v1, const Vector3& v2, const Vector3& v3, const Vector3& v4, float s)
 	{
-		auto s1 = s;
 		auto s2 = Pow2(s);
 		auto s3 = Pow3(s);
 		auto f1 = -s3 + 2 * s2 - s;

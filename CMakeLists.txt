@@ -60,16 +60,6 @@ add_custom_target(BUILD_DATA_FILES
 )
 
 ##################################
-# CivetWeb
-##################################
-if(NOT EMSCRIPTEN)
-	include_directories(${DEPENDENCIES_DIR}/Civetweb/include)
-	add_subdirectory(${DEPENDENCIES_DIR}/Civetweb)
-	list(APPEND LIBRARIES_2_LINK Civetweb)
-	set_property(TARGET Civetweb PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-endif()
-
-##################################
 # LZ4
 ##################################
 include_directories(${DEPENDENCIES_DIR}/LZ4)
