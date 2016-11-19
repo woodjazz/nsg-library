@@ -40,6 +40,10 @@ endif()
 
 setup_library()
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
+if(WIN32)
+  target_link_libraries(${PROJECT_NAME} wsock32 ws2_32)
+endif()
+
 
 
 
