@@ -1,12 +1,13 @@
 env:
   global:
+     #COVERITY_SCAN_TOKEN
     secure: h0gIoDEXpLBTf3wEJBUaPKSintypyneNHiREB5bBWPjVmBF8CKnQDL4oUC00CNreki4Ti1NEA61I39Jx74BZl2yJtMoG4Vxavqe3JpJTJovocI84c0vmszYJWsbnsecNS0QeQYtHP5gU4ZstwGKjy4ddRUlt5BUE4FZPJI0vxOE=
 addons:
   coverity_scan:
     project:
       name: woodjazz/nsg-library
       description: Build submitted via Travis CI
-    notification_email: silveira.nestor@gmail.co
+    notification_email: silveira.nestor@gmail.com
     build_command_prepend: "mkdir debug ; cd debug ; cmake .."
     build_command: make
     branch_pattern: coverity_scan
