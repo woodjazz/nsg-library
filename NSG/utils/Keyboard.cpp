@@ -24,10 +24,6 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Keyboard.h"
-#if SDL
-#include "SDL.h"
-#undef main
-#endif
 
 namespace NSG
 {
@@ -41,17 +37,11 @@ namespace NSG
 
     bool Keyboard::Enable()
     {
-        #if defined(SDL)
-        SDL_StartTextInput();
-        #endif
         return true;
     }
 
     bool Keyboard::Disable()
     {
-        #if defined(SDL)
-        SDL_StopTextInput();
-        #endif
         return true;
     }
 

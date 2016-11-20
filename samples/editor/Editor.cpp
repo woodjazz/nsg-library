@@ -209,7 +209,7 @@ void Editor::ShowWindows()
                 ImGui::SetWindowPos(windowPos);
                 windowSize.y = mainWindowSize.y - windowPos.y;
                 ImGui::SetWindowSize(windowSize);
-				gameGUI_.SetArea(Rect{ windowPos.x, windowPos.y, windowSize.x, windowSize.y });
+                gameGUI_.SetArea(NSG::Rect{ windowPos.x, windowPos.y, windowSize.x, windowSize.y });
                 ShowGame();
             }
             ImGui::End();

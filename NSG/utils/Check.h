@@ -29,13 +29,7 @@ misrepresented as being the original software.
 #include <sstream>
 #include <cassert>
 
-#if defined(SDL) && !defined(EMSCRIPTEN)
-#include "SDL.h"
-#undef main
-#define SHOW_ASSERT_POPUP_ERROR(msg) SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Assert failed", msg, nullptr)
-#else
 #define SHOW_ASSERT_POPUP_ERROR(msg) ((void)0)
-#endif
 
 #if _MSC_VER
 #include <intrin.h>

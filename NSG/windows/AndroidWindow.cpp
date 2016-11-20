@@ -23,7 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if defined(IS_TARGET_ANDROID) && !defined(SDL)
+#if defined(IS_TARGET_ANDROID)
 #include "AndroidWindow.h"
 #include "Engine.h"
 #include "Tick.h"

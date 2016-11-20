@@ -87,7 +87,6 @@ namespace NSG
         VertexsData& data = vertexsData_;
 
         int segments = rings_ * 2;
-        float ringInc = PI / rings_;
         float segInc = TWO_PI / segments;
 
         if (capped_)

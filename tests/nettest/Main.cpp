@@ -30,7 +30,7 @@ extern void Tests();
 
 int NSG_MAIN(int argc, char* argv[])
 {
-    //Tests();
+    Tests();
     return 0;
 };
 

@@ -36,32 +36,38 @@ static int Test01()
 
     auto onLoad0 = [&](const std::string & data)
     {
-		LOGI("HTTP OnLoad0: %s", data.c_str());
+        LOGI("HTTP OnLoad0: %s", data.c_str());
     };
 
-	auto onLoad1 = [&](const std::string & data)
-	{
-		LOGI("HTTP OnLoad1: %u %s", (unsigned)data.size(), data.c_str());
-		window = nullptr;
-	};
+    bool closeWindow = false;
+    auto onLoad1 = [&](const std::string & data)
+    {
+        LOGI("HTTP OnLoad1: %u %s", (unsigned)data.size(), data.c_str());
+        closeWindow = true;
+    };
 
     auto onError = [&](int httpError, const std::string & description)
     {
-		LOGI("HTTP Error: %d. %s", httpError, description.c_str());
-		CHECK_CONDITION(false);
+        LOGI("HTTP Error: %d. %s", httpError, description.c_str());
+        CHECK_CONDITION(false);
     };
 
     auto onProgress = [&](unsigned percentage)
     {
-		LOGI("HTTP Progress: %d", percentage);
+        LOGI("HTTP Progress: %d", percentage);
     };
 
     HTTPRequest postRequest("http://nsg-datacollector.appspot.com/store", form, onLoad0, onError, onProgress);
-	HTTPRequest getRequest("http://nsg-datacollector.appspot.com/retrieve", onLoad1, onError, onProgress);
-	postRequest.StartRequest();
-	getRequest.StartRequest();
-	auto engine = Engine::Create();
-	return engine->Run();
+    HTTPRequest getRequest("http://nsg-datacollector.appspot.com/retrieve", onLoad1, onError, onProgress);
+    postRequest.StartRequest();
+    getRequest.StartRequest();
+    auto engine = Engine::Create();
+    auto slotUpdate = engine->SigUpdate()->Connect([&](float dt)
+    {
+        if (closeWindow)
+            window = nullptr;
+    });
+    return engine->Run();
 }
 
 static int Test02()
@@ -75,66 +81,43 @@ static int Test02()
         CHECK_CONDITION(false);
     };
 
+    bool closeWindow0 = false;
     auto onError0 = [&](int httpError, const std::string & description)
     {
-		LOGI("HTTP Error: %d. %s", httpError, description.c_str());
-        window0 = nullptr;
+        LOGI("HTTP Error: %d. %s", httpError, description.c_str());
+        closeWindow0 = true;
     };
 
+    bool closeWindow1 = false;
     auto onError1 = [&](int httpError, const std::string & description)
     {
-		LOGI("HTTP Error: %d. %s", httpError, description.c_str());
-        window1 = nullptr;
+        LOGI("HTTP Error: %d. %s", httpError, description.c_str());
+        closeWindow1 = true;
     };
 
     auto onProgress = [&](unsigned percentage)
     {
-		LOGI("HTTP Progress: %d", percentage);
+        LOGI("HTTP Progress: %d", percentage);
     };
 
     HTTPRequest request0("http://nsg-datacollector.appspot11111.com/storexasas", form, onLoad, onError0, onProgress);
     HTTPRequest request1("http://nsg-datacollector.appspot.com/retrievesasa", onLoad, onError1, onProgress);
-	request0.StartRequest();
-	request1.StartRequest();
-	auto engine = Engine::Create();
-	return engine->Run();
-}
+    request0.StartRequest();
+    request1.StartRequest();
+    auto engine = Engine::Create();
+    auto slotUpdate = engine->SigUpdate()->Connect([&](float dt)
+    {
+        if (closeWindow0)
+            window0 = nullptr;
+        if (closeWindow1)
+            window1 = nullptr;
 
-static int Test03()
-{
-    auto window0 = Window::Create("hiddenWindow1", (int)WindowFlag::HIDDEN);
-
-	auto onLoad = [&](const std::string & data)
-	{
-		LOGI("HTTP OnLoad0: %s", data.c_str());
-		window0 = nullptr;
-	};
-
-	auto onError = [&](int httpError, const std::string & description)
-	{
-		LOGI("HTTP Error: %d. %s", httpError, description.c_str());
-		CHECK_CONDITION(false);
-	};
-
-	auto onProgress = [&](unsigned percentage)
-	{
-		LOGI("HTTP Progress: %d", percentage);
-	};
-
-	std::string url = "http://localhost:8000/";
-	Path path("data/uvs/scene.xml");
-	auto filename = path.GetFilePath();
-	url += "/" + filename;
-
-	HTTPRequest request(url, onLoad, onError, onProgress);
-	request.StartRequest();
-	auto engine = Engine::Create();
-	return engine->Run();
+    });
+    return engine->Run();
 }
 
 void Tests()
 {
-	Test01();
+    Test01();
     Test02();
-	//Test03();
 }

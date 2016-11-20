@@ -28,12 +28,11 @@ misrepresented as being the original software.
 #include "Log.h"
 #if IS_TARGET_WINDOWS
 #include <Windows.h>
+#elif defined(IS_TARGET_OSX)
+#import <Cocoa/Cocoa.h>
 #elif defined(EMSCRIPTEN)
 #include <emscripten.h>
 #include <unistd.h>
-#elif defined(IS_TARGET_APPLE) && defined(SDL)
-#include "SDL.h"
-#undef main
 #else
 #include <stdio.h>
 #include <unistd.h>
@@ -154,6 +153,11 @@ namespace NSG
             absolutePath_ = Path::GetBasePath() + path_;
 
         fullFilePath_ = absolutePath_ + "/" + filename_;
+
+        #if defined(IS_TARGET_IOS)
+        filePath_ = fullFilePath_;
+        #endif
+
     }
 
     void Path::ReplaceChar(std::string& filePath, char from, char to)
@@ -275,19 +279,18 @@ namespace NSG
             Path::ReplaceChar(result, '\\', '/');
             return result;
         }
-        #elif (defined(ANDROID) || defined(IS_TARGET_APPLE)) && defined(SDL)
+        #elif defined(IS_TARGET_APPLE)
         {
-            std::string path;
-            char* base_path = SDL_GetBasePath();
-            if (base_path)
-            {
-                path = base_path;
-                SDL_free(base_path);
-            }
-            else
-            {
-                path = "./";
-            }
+            NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+            NSBundle* bundle = [NSBundle mainBundle];
+            const char* base = nullptr;
+            base = [[bundle bundlePath] fileSystemRepresentation];
+            //base = [[[bundle bundlePath] stringByDeletingLastPathComponent] fileSystemRepresentation];
+            //base = [[bundle resourcePath] fileSystemRepresentation];
+            CHECK_ASSERT(base);
+            std::string path(base);
+            path += "/";
+            [pool release];
             return path;
         }
         #else

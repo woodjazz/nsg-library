@@ -162,8 +162,7 @@ static void Test05()
     auto node = scene->CreateChild<SceneNode>();
     node->SetMaterial(material);
     node->SetMesh(mesh);
-    Engine::Create()->RenderFrame();
-    //Engine::Create()->Run();
+    Engine::Create()->PerformTicks();
 }
 
 

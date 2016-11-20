@@ -374,3 +374,26 @@ extern PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
 #define glDrawArraysInstanced glDrawArraysInstancedEXT
 #endif
 
+#ifndef GL_EXT_texture_compression_s3tc
+#define GL_EXT_texture_compression_s3tc 1
+#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT   0x83F0
+#define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT  0x83F1
+#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT  0x83F2
+#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT  0x83F3
+#endif /* GL_EXT_texture_compression_s3tc */
+
+#ifndef GL_IMG_texture_compression_pvrtc
+#define GL_IMG_texture_compression_pvrtc 1
+#define GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG 0x8C00
+#define GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG 0x8C01
+#define GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG 0x8C02
+#define GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG 0x8C03
+#endif /* GL_IMG_texture_compression_pvrtc */
+
+#ifndef GL_OES_compressed_ETC1_RGB8_texture
+#define GL_OES_compressed_ETC1_RGB8_texture 1
+#define GL_ETC1_RGB8_OES                  0x8D64
+#endif /* GL_OES_compressed_ETC1_RGB8_texture */
+
+
+

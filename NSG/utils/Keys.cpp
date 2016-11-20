@@ -31,7 +31,7 @@ namespace NSG
     {
         switch (key)
         {
-                #if defined(SDL) || defined(EMSCRIPTEN)
+                #if defined(EMSCRIPTEN)
             case SDLK_ESCAPE:
                 return NSG_KEY_ESC;
             case SDLK_SPACE:
@@ -119,6 +119,8 @@ namespace NSG
             case XK_Page_Down:
                 return NSG_KEY_PAGEDOWN;
                 #elif defined(IS_TARGET_OSX)
+                return key;
+                #elif defined(IS_TARGET_IOS)
                 return key;
                 #elif defined(IS_TARGET_ANDROID)
                 return key;

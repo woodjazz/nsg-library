@@ -621,6 +621,7 @@ namespace NSG
         RGB565,
         RGBA8888,
         ARGB8888,
+        ABGR8888,
         UNKNOWN
     };
 

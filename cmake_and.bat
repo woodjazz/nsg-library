@@ -58,7 +58,7 @@ cmd /C %ANDROID_SDK%/platform-tools/adb logcat -c
 ::cmd /C %ANDROID_SDK%/platform-tools/adb shell am start -a android.intent.action.MAIN -n com.nsg.sample000/android.app.sample000
 
 @echo "*** FILTERING LOGCAT FOR nsg-library ***"
-cmd /C %ANDROID_SDK%/platform-tools/adb logcat SDL nsg-library AndroidRuntime *:S
+cmd /C %ANDROID_SDK%/platform-tools/adb logcat nsg-library AndroidRuntime *:S
 
 
 

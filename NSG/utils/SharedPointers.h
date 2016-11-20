@@ -92,16 +92,6 @@ namespace NSG
     class Frustum;
     typedef std::shared_ptr<Frustum> PFrustum;
 
-    class Audio;
-    typedef std::unique_ptr<Audio> PAudio;
-
-    class Music;
-    typedef std::unique_ptr<Music> PMusic;
-
-    class Sound;
-    typedef std::shared_ptr<Sound> PSound;
-    typedef std::weak_ptr<Sound> PWeakSound;
-
     struct AppConfiguration;
     typedef std::shared_ptr<AppConfiguration> PAppConfiguration;
 

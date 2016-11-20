@@ -58,7 +58,6 @@ namespace NSG
 		SignalEmpty::PSignal signalLoaded_;
 		SignalFloat::PSignal signalProgress_;
 		std::vector<PResource> resources_;
-		std::vector<PSound> sounds_;
 		std::vector<PMesh> meshes_;
 		std::vector<PMaterial> materials_;
 		std::vector<PShape> shapes_;

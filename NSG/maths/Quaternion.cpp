@@ -38,7 +38,7 @@ namespace NSG
     }
 
     Quaternion::Quaternion(float d, float a, float b, float c)
-        : w(d), x(a), y(b), z(c)
+        : x(a), y(b), z(c), w(d)
     {
     }
 

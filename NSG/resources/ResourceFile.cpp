@@ -100,60 +100,36 @@ namespace NSG
     {
         if (!get_)
         {
-            #if defined(EMSCRIPTEN) || !defined(SDL)
+            #if defined(IS_TARGET_ANDROID)
+            CHECK_ASSERT(androidApp->activity->assetManager);
+            auto filename = path_.GetFilePath();
+            AAsset* pAsset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_BUFFER);
+            if (pAsset)
             {
-                #if defined(IS_TARGET_ANDROID)
-                CHECK_ASSERT(androidApp->activity->assetManager);
-                auto filename = path_.GetFilePath();
-                AAsset* pAsset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_BUFFER);
-                if (pAsset)
-                {
-                    off_t filelength = AAsset_getLength(pAsset);
-                    buffer_.resize((int)filelength);
-                    AAsset_read(pAsset, &buffer_[0], filelength);
-                    AAsset_close(pAsset);
-                }
-                #else
-                auto filename = path_.GetFilePath();
-                std::ifstream file(filename.c_str(), std::ios::binary);
-                if (file.is_open())
-                {
-                    file.seekg(0, std::ios::end);
-                    std::streampos filelength = file.tellg();
-                    file.seekg(0, std::ios::beg);
-                    buffer_.resize((int)filelength);
-                    file.read(&buffer_[0], filelength);
-                    CHECK_ASSERT(file.gcount() == filelength);
-                    file.close();
-                    LOGI("%s has been loaded with size=%u", filename.c_str(), (unsigned)buffer_.size());
-                }
-                #endif
-                else
-                {
-                    LOGE("Cannot load %s", filename.c_str());
-                }
+                off_t filelength = AAsset_getLength(pAsset);
+                buffer_.resize((int)filelength);
+                AAsset_read(pAsset, &buffer_[0], filelength);
+                AAsset_close(pAsset);
             }
             #else
+            auto filename = path_.GetFilePath();
+            std::ifstream file(filename.c_str(), std::ios::binary);
+            if (file.is_open())
             {
-                CHECK_ASSERT(isLocal_);
-                auto filename = path_.GetFilePath();
-                SDL_RWops* context = SDL_RWFromFile(filename.c_str(), "rb");
-                if (context)
-                {
-                    SDL_RWseek(context, 0, RW_SEEK_END);
-                    Sint64 filelength = SDL_RWtell(context);
-                    SDL_RWseek(context, 0, RW_SEEK_SET);
-                    buffer_.resize((int)filelength);
-                    SDL_RWread(context, &buffer_[0], buffer_.size(), 1);
-                    SDL_RWclose(context);
-                    LOGI("%s has been loaded with size=%u", filename.c_str(), (unsigned)buffer_.size());
-                }
-                else
-                {
-                    LOGE("Cannot load %s with error %s", filename.c_str(), SDL_GetError());
-                }
+                file.seekg(0, std::ios::end);
+                std::streampos filelength = file.tellg();
+                file.seekg(0, std::ios::beg);
+                buffer_.resize((int)filelength);
+                file.read(&buffer_[0], filelength);
+                CHECK_ASSERT(file.gcount() == filelength);
+                file.close();
+                LOGI("%s has been loaded with size=%u", filename.c_str(), (unsigned)buffer_.size());
             }
             #endif
+            else
+            {
+                LOGE("Cannot load %s", filename.c_str());
+            }
         }
 
         if (path_.GetExtension() == "lz4")

@@ -24,7 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#if defined(IS_TARGET_IOS) && !defined(SDL)
+#if defined(IS_TARGET_IOS)
 #include "Types.h"
 #include "Window.h"
 #include <string>
@@ -40,6 +40,7 @@ namespace NSG
         void SwapWindowBuffers() override;
         void Destroy() override;
         void HandleEvents() override;
+        static int RunApplication();
     private:
         void SetContext() override;
         void Show() override;

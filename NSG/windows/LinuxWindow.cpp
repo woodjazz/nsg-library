@@ -23,7 +23,7 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#if defined(IS_TARGET_LINUX) && !defined(SDL)
+#if defined(IS_TARGET_LINUX)
 #include "LinuxWindow.h"
 #include "Engine.h"
 #include "Tick.h"
@@ -157,10 +157,9 @@ namespace NSG
 
         windowHwndMap[hwnd_] = this;
         if (flags & (int)WindowFlag::SHOWN)
-            XMapWindow(LinuxWindow::display_, hwnd_);
-
-        if (flags & (int)WindowFlag::HIDDEN)
-            XUnmapWindow(LinuxWindow::display_, hwnd_);
+            Show();
+        else if (flags & (int)WindowFlag::HIDDEN)
+            Hide();
 
         XStoreName(LinuxWindow::display_, hwnd_, name_.c_str());
 

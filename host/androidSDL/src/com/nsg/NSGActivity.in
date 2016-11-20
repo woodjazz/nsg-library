@@ -1,6 +1,0 @@
-package com.nsg.${PROJECT_NAME};
-import org.libsdl.app.SDLActivity;
-import android.content.Intent;
-
-public class ${PROJECT_NAME}Activity extends SDLActivity {
-}

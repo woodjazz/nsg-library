@@ -21,7 +21,6 @@ FEATURES
 - HTTP requests.
 - Image loading.
 - IMGUI.
-- Audio.
 - Exporter for blender files.
 
 ---------------------------
@@ -72,7 +71,19 @@ apt-get install xorg-dev
 
 apt-get install libglu1-mesa-dev
 
-apt-get install libasound2-dev
+You can add installed compiler as selectable alternatives with:
+
+sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-3.5 100
+
+sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-3.5 100
+
+If you have g++ and clang++ installed you can switch between them with:
+
+sudo update-alternatives --config c++
+
+For clang you probably will need:
+
+apt-get install libc++-dev
 
 -------------------------
 BUILDING: Emscripten

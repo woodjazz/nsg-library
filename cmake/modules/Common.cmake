@@ -94,6 +94,10 @@ macro (setup_common)
         ENDIF(MSVC)
     endif(WIN32)
 
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        set(CMAKE_COMPILER_IS_CLANGXX 1)
+    endif ()
+
     if (CMAKE_CXX_COMPILER MATCHES ".*clang[++]")
         set(CMAKE_COMPILER_IS_CLANGXX 1)
     endif ()
@@ -110,7 +114,8 @@ macro (setup_common)
             set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-deprecated-register -D_DEBUG")
             set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
         else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -stdlib=libc++")
+            #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -stdlib=libc++")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libstdc++ -pthread")
             set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
             set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
         endif()
@@ -161,7 +166,7 @@ macro (setup_common_ios_properties)
     if(APPLE)
         if(IOS)
             # Maybe you want to change these
-            set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "5.1")
+            set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "6.0")
             set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_VALID_ARCHS "armv7;armv7s")
             set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
             set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "iPhone Developer")
@@ -204,13 +209,8 @@ macro (setup_executable isQTProject)
     endif()
 
     if(ANDROID)
-
         
-        if(USE_SDL)
-            set(android_host_dir ${CMAKE_SOURCE_DIR}/host/androidSDL)
-        else()
-            set(android_host_dir ${CMAKE_SOURCE_DIR}/host/android)
-        endif()
+        set(android_host_dir ${CMAKE_SOURCE_DIR}/host/android)
 
         add_library(${PROJECT_NAME} SHARED ${src} ${hdr})
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
@@ -356,7 +356,7 @@ macro (setup_executable isQTProject)
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     COMMENT "Copying data directory" VERBATIM)
 
-        elseif(APPLE AND IS_EXECUTABLE_A_BUNDLE)
+        elseif(APPLE)# AND IS_EXECUTABLE_A_BUNDLE)
 
             add_custom_target(${DATA_TARGET} 
                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/data

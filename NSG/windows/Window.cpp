@@ -32,11 +32,9 @@ misrepresented as being the original software.
 #include "TextMesh.h"
 #include "Scene.h"
 #include "RenderingContext.h"
-#include "Music.h"
 #include "FrameBuffer.h"
 #include "Program.h"
 #include "Material.h"
-#include "SDLWindow.h"
 #include "WinWindow.h"
 #include "LinuxWindow.h"
 #include "OSXWindow.h"
@@ -114,9 +112,7 @@ namespace NSG
     {
         if (Window::AllowWindowCreation())
         {
-            #if defined(SDL)
-            auto window = std::make_shared<SDLWindow>(name, flags);
-            #elif defined(EMSCRIPTEN)
+            #if defined(EMSCRIPTEN)
             auto window = std::make_shared<EmscriptenWindow>(name, flags);
             #elif defined(IS_TARGET_WINDOWS)
             auto window = std::make_shared<WinWindow>(name, flags);
@@ -141,9 +137,7 @@ namespace NSG
     {
         if (Window::AllowWindowCreation())
         {
-            #if defined(SDL)
-            auto window = std::make_shared<SDLWindow>(name, x, y, width, height, flags);
-            #elif defined(EMSCRIPTEN)
+            #if defined(EMSCRIPTEN)
             auto window = std::make_shared<EmscriptenWindow>(name, flags);
             #elif defined(IS_TARGET_WINDOWS)
             auto window = std::make_shared<WinWindow>(name, x, y, width, height, flags);
@@ -302,21 +296,10 @@ namespace NSG
     void Window::EnterBackground()
     {
         minimized_ = true;
-        if (Window::mainWindow_ == this)
-        {
-            if (Music::GetPtr() && Engine::GetAppConfiguration().pauseMusicOnBackground_)
-                Music::GetPtr()->Pause();
-        }
     }
 
     void Window::EnterForeground()
     {
-        if (Window::mainWindow_ == this)
-        {
-            if (Music::GetPtr() && Engine::GetAppConfiguration().pauseMusicOnBackground_)
-                Music::GetPtr()->Resume();
-        }
-
         minimized_ = false;
     }
 

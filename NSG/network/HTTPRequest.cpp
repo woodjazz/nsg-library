@@ -29,7 +29,7 @@ misrepresented as being the original software.
 #include "StringConverter.h"
 
 #if !defined(EMSCRIPTEN)
-#include "civetweb.h"
+#include "Socket.h"
 #else
 #include "emscripten.h"
 #endif
@@ -186,57 +186,32 @@ namespace NSG
                     requestType = "GET";
                 }
 
-                int use_ssl = 0;
-                static const unsigned ERROR_BUFFER_SIZE = 256;
-                char errorBuffer[ERROR_BUFFER_SIZE];
-                memset(errorBuffer, 0, sizeof(errorBuffer));
-                auto connection = mg_download(host_.c_str(),
-                                              port_,
-                                              use_ssl,
-                                              errorBuffer,
-                                              sizeof(errorBuffer),
-                                              "%s %s HTTP/1.0\r\n"
-                                              "Host: %s\r\n"
-                                              "%s\r\n",
-                                              requestType.c_str(),
-                                              path_.c_str(),
-                                              host_.c_str(),
-                                              headersStr.c_str());
-                if (!connection)
+                try
                 {
-                    onError_(-1, errorBuffer);
-                }
-                else
-                {
+                    Socket client(port_, host_.c_str());
+                    client.Connect();
+                    std::string msg = requestType + " " + path_;
+                    msg += " HTTP/1.0\r\nHost: " + host_ + "\r\n";
+                    msg += headersStr + "\n\r";
+                    client.Send(msg);
                     std::string response;
-                    static const unsigned BUFFER_SIZE = 1024;
-                    char buffer[BUFFER_SIZE];
-                    int bytesRead = 0;
-                    do
-                    {
-                        bytesRead = mg_read(connection, buffer, BUFFER_SIZE);
-                        if (bytesRead > 0)
-                        {
-                            auto idx = response.size();
-                            response.resize(idx + bytesRead);
-                            memcpy(&response[idx], &buffer[0], bytesRead);
-                        }
-                    }
-                    while (bytesRead > 0);
-
-                    auto ri = mg_get_request_info(connection);
-                    if (bytesRead < 0 || mg_strncasecmp(ri->uri, "200", 3) != 0)
-                    {
-						auto httpError = ToInt(ri->uri);
-						mg_close_connection(connection);
-						onError_(httpError, response);
-                    }
+                    client.Recv(response, 8192);
+                    auto pos = response.find("\r\n");
+                    auto uri = response.substr(0, pos);
+                    if(std::string::npos != uri.find("200 OK"))
+                        onLoad_(response);
                     else
                     {
-                        mg_close_connection(connection);
-                        onLoad_(response);
+                        auto pos = response.find(" ");
+                        auto errorStr = response.substr(pos);
+                        onError_(ToInt(errorStr), response);
                     }
                 }
+                catch(std::runtime_error& e)
+                {
+                    onError_(-1, e.what());
+                }
+
 			}, isPost_, requestData);
         }
         #endif
@@ -271,6 +246,5 @@ namespace NSG
             progress *= bytesLoaded / totalSize;
         requestData->obj_->onProgress_(progress);
     }
-
     #endif
 }

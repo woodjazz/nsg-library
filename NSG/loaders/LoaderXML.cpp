@@ -26,7 +26,6 @@ misrepresented as being the original software.
 #include "LoaderXML.h"
 #include "Check.h"
 #include "ResourceFile.h"
-#include "Sound.h"
 #include "ModelMesh.h"
 #include "Material.h"
 #include "Shape.h"
@@ -111,8 +110,6 @@ namespace NSG
             {
                 resources_ = Object::LoadAll<Resource, ResourceFile>(this, "Resources");
                 objects_.insert(resources_.begin(), resources_.end());
-                sounds_ = Object::LoadAll<Sound, Sound>(this, "Sounds");
-                objects_.insert(sounds_.begin(), sounds_.end());
                 meshes_ = Object::LoadAll<Mesh, ModelMesh>(this, "Meshes");
                 objects_.insert(meshes_.begin(), meshes_.end());
                 materials_ = Object::LoadAll<Material, Material>(this, "Materials");
