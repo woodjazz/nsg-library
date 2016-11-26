@@ -284,7 +284,7 @@ namespace NSG
             NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
             NSBundle* bundle = [NSBundle mainBundle];
             const char* base = nullptr;
-            base = [[bundle bundlePath] fileSystemRepresentation];
+            base = [[bundle bundlePath] fileSystemRepresentation];            
             //base = [[[bundle bundlePath] stringByDeletingLastPathComponent] fileSystemRepresentation];
             //base = [[bundle resourcePath] fileSystemRepresentation];
             CHECK_ASSERT(base);

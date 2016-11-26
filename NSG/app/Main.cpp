@@ -43,6 +43,8 @@ void android_main(struct android_app* app)
 
 #elif defined(IS_TARGET_OSX)
 #import <Cocoa/Cocoa.h>
+#include "FileSystem.h"
+#include "Path.h"
 extern int NSG_main(int argc, char* argv[]);
 int main(int argc, char* argv[])
 {	
@@ -82,6 +84,13 @@ int main(int argc, char* argv[])
     id menubar = [[NSMenu new] autorelease];
     [menubar addItem:appMenuItem];
     [NSApp setMainMenu:menubar];
+
+    NSBundle* bundle = [NSBundle mainBundle];
+
+    NSWorkspace *sharedWorkspace = [NSWorkspace sharedWorkspace];
+    BOOL isPackage = [sharedWorkspace isFilePackageAtPath: [bundle bundlePath]];
+    if(!isPackage)
+        NSG::FileSystem::SetCurrentDir(NSG::Path::GetCurrentDir());
 
     NSG_main(argc, argv);
 }
