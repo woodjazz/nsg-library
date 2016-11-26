@@ -1,7 +1,5 @@
 setup_sample()
-EXPORT_BLEND_TOOL(art/duck.blend data)	
-#CONVERT_TOOL(art/duck.blend data)	
-
+export_blend_tool(art/duck.blend data)	
 
 
 

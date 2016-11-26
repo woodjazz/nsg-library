@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Log.h"
 #include "StringConverter.h"
+#include "Engine.h"
 
 #if !defined(EMSCRIPTEN)
 #include "Socket.h"
@@ -71,6 +72,9 @@ namespace NSG
         : url_(url),
           #if EMSCRIPTEN
           requestHandle_(-1),
+          #else
+          httpError_(0),
+          httpHasResult_(false),
           #endif
           onLoad_(onLoad),
           onError_(onError),
@@ -168,6 +172,22 @@ namespace NSG
         }
         #else
         {
+            httpHasResult_ = false;
+            httpError_ = 0;
+            response_.clear();
+            slotBeginFrame_ = Engine::SigBeginFrame()->Connect([this]()
+            {
+                // Call callbacks from engine's thread
+                if(httpHasResult_)
+                {
+                    if(httpError_)
+                        onError_(httpError_, response_);
+                    else
+                        onLoad_(response_);
+                    httpHasResult_ = false;
+                }
+            });
+
             result_ = std::async(std::launch::async, [this](bool post, HTTPRequestData * p)
             {
                 std::unique_ptr<HTTPRequestData> requestData(p);
@@ -194,24 +214,27 @@ namespace NSG
                     msg += " HTTP/1.0\r\nHost: " + host_ + "\r\n";
                     msg += headersStr + "\n\r";
                     client.Send(msg);
-                    std::string response;
-                    client.Recv(response, 8192);
-                    auto pos = response.find("\r\n");
-                    auto uri = response.substr(0, pos);
-                    if(std::string::npos != uri.find("200 OK"))
-                        onLoad_(response);
-                    else
+                    client.Recv(response_, 8192);
+                    auto pos = response_.find("\r\n");
+                    auto uri = response_.substr(0, pos);
+                    if(std::string::npos == uri.find("200 OK"))
                     {
-                        auto pos = response.find(" ");
-                        auto errorStr = response.substr(pos);
-                        onError_(ToInt(errorStr), response);
+                        auto pos = response_.find(" ");
+                        auto errorStr = response_.substr(pos);
+                        httpError_ = ToInt(errorStr);
                     }
                 }
                 catch(std::runtime_error& e)
                 {
-                    onError_(-1, e.what());
+                    httpError_ = -1;
+                    response_ = e.what();
                 }
-
+                catch(...)
+                {
+                    httpError_ = -1;
+                    response_ = "Unknown exception";
+                }
+                httpHasResult_ = true;
 			}, isPost_, requestData);
         }
         #endif

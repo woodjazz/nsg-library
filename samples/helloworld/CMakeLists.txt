@@ -1,5 +1,5 @@
 setup_sample()
-CONVERT_TOOL(art/AnonymousPro.ttf data -f 32 -x 256 -y 256 -s 32 -e 126)
+convert_tool(art/AnonymousPro.ttf data -f 32 -x 256 -y 256 -s 32 -e 126)
 
 
 

@@ -28,6 +28,8 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+	typedef std::chrono::steady_clock Clock;
+
 	Tick::Tick(size_t fps) 
 	: ticks_(0), 
 	fixed_(0), 

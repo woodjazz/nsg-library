@@ -24,8 +24,8 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-
+#include <cstddef>
+#include <chrono>
 namespace NSG 
 {
 	class Tick
@@ -41,6 +41,8 @@ namespace NSG
 		virtual void DoTick(float delta) = 0;
 		virtual void EndTicks() = 0;
 	private:
+	    typedef std::chrono::steady_clock::time_point TimePoint;
+	    typedef std::chrono::milliseconds Milliseconds;
         TimePoint current_;
         TimePoint next_;
         Milliseconds ticks_;

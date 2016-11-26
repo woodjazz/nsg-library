@@ -1,5 +1,5 @@
 setup_sample()
-EXPORT_BLEND_TOOL(art/scene.blend data)
+export_blend_tool(art/scene.blend data)
 
 
 

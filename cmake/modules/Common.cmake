@@ -1,28 +1,41 @@
+#-------------------------------------------------------------------------------
+#This file is part of nsg-library.
+#http://github.com/woodjazz/nsg-library
 
-##################################################################################
-##################################################################################
-##################################################################################
+#Copyright (c) 2014-2016 Néstor Silveira Gorski
+
+#-------------------------------------------------------------------------------
+#This software is provided 'as-is', without any express or implied
+#warranty. In no event will the authors be held liable for any damages
+#arising from the use of this software.
+
+#Permission is granted to anyone to use this software for any purpose,
+#including commercial applications, and to alter it and redistribute it
+#freely, subject to the following restrictions:
+
+#1. The origin of this software must not be misrepresented; you must not
+#claim that you wrote the original software. If you use this software
+#in a product, an acknowledgment in the product documentation would be
+#appreciated but is not required.
+#2. Altered source versions must be plainly marked as such, and must not be
+#misrepresented as being the original software.
+#3. This notice may not be removed or altered from any source distribution.
+#-------------------------------------------------------------------------------
 macro (setup_common)
     message(STATUS "SYSTEM_NAME = ${CMAKE_SYSTEM_NAME} SYSTEM_VERSION = ${CMAKE_SYSTEM_VERSION}")
-         
     if (CMAKE_GENERATOR STREQUAL Xcode)
        set (XCODE TRUE)
     endif ()
-
     if(ANDROID OR EMSCRIPTEN)
         if (NOT CMAKE_BUILD_TYPE)
             message("Unknown build type. Building Release version by default")
             set (CMAKE_BUILD_TYPE Release)
         endif ()
     endif()
-
     message(STATUS "Building ${CMAKE_BUILD_TYPE} version")
-
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE})
     #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE})
     #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})    
-
-
     if(ANDROID)
         message(STATUS "detected ANDROID")
         set(IS_TARGET_MOBILE 1)
@@ -55,25 +68,22 @@ macro (setup_common)
         set(IS_TARGET_LINUX 1)
         add_definitions(-DIS_TARGET_LINUX)
     endif()
-
     if(IS_TARGET_MOBILE OR IS_TARGET_WEB)
         set(GLES2 1)
         add_definitions(-DGLES2)
     endif()
-
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
     if(WIN32)  
         if (MSVC)
             add_definitions("/Zi /wd4519")
             add_definitions("/EHa")
-            add_definitions( "/MP" )
-            add_definitions (-D_CRT_SECURE_NO_WARNINGS)
-            add_definitions( -D_CRT_SECURE_NO_DEPRECATE )
-            add_definitions( -DNOMINMAX)
+            add_definitions("/MP")
+            add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+            add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+            add_definitions(-DNOMINMAX)
 
             #We statically link to reduce dependancies
-            FOREACH(flag_var    CMAKE_CXX_FLAGS 
+            foreach(flag_var    CMAKE_CXX_FLAGS 
                                 CMAKE_CXX_FLAGS_DEBUG 
                                 CMAKE_CXX_FLAGS_RELEASE 
                                 CMAKE_CXX_FLAGS_MINSIZEREL 
@@ -83,25 +93,22 @@ macro (setup_common)
                                 CMAKE_C_FLAGS_MINSIZEREL 
                                 CMAKE_C_FLAGS_RELWITHDEBINFO)
 
-                IF(${flag_var} MATCHES "/MD")
-                    STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-                ENDIF(${flag_var} MATCHES "/MD")
-                IF(${flag_var} MATCHES "/MDd")
-                    STRING(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
-                ENDIF(${flag_var} MATCHES "/MDd")
+                if(${flag_var} MATCHES "/MD")
+                    string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+                endif(${flag_var} MATCHES "/MD")
+                if(${flag_var} MATCHES "/MDd")
+                    string(REGEX REPLACE "/MDd" "/MTd" ${flag_var} "${${flag_var}}")
+                endif(${flag_var} MATCHES "/MDd")
 
-            ENDFOREACH(flag_var)
-        ENDIF(MSVC)
+            endforeach(flag_var)
+        endif(MSVC)
     endif(WIN32)
-
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(CMAKE_COMPILER_IS_CLANGXX 1)
     endif ()
-
     if (CMAKE_CXX_COMPILER MATCHES ".*clang[++]")
         set(CMAKE_COMPILER_IS_CLANGXX 1)
     endif ()
-
     if(CMAKE_COMPILER_IS_CLANGXX)
         message(STATUS "detected clang compiler")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
@@ -114,7 +121,6 @@ macro (setup_common)
             set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-deprecated-register -D_DEBUG")
             set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
         else()
-            #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -stdlib=libc++")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libstdc++ -pthread")
             set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
             set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
@@ -136,7 +142,6 @@ macro (setup_common)
         set( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g${EMS_DEBUG_LEVEL} -Wno-logical-op-parentheses -D_DEBUG")
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --bind -std=c++11 -stdlib=libc++")
     endif()
-
     message(STATUS "CMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
     if(${CMAKE_BUILD_TYPE} MATCHES "Release")
         message(STATUS "CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}")
@@ -147,7 +152,6 @@ macro (setup_common)
         message(STATUS "CMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}")
         message(STATUS "CMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}")
     endif()
-
     if(APPLE)
         if(IOS)
             set (CMAKE_XCODE_EFFECTIVE_PLATFORMS -iphoneos -iphonesimulator)
@@ -159,10 +163,9 @@ macro (setup_common)
             set (CMAKE_OSX_SYSROOT "macosx")  #Set Base SDK to "Latest OS X"
         endif()
     endif()
+endmacro ()
 
-endmacro (setup_common)
-
-macro (setup_common_ios_properties)
+macro(setup_common_ios_properties)
     if(APPLE)
         if(IOS)
             # Maybe you want to change these
@@ -174,21 +177,15 @@ macro (setup_common_ios_properties)
             set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET "10.8")
         endif()
     endif(APPLE)
-endmacro (setup_common_ios_properties)
+endmacro()
 
-##################################################################################
-##################################################################################
-##################################################################################
-macro (setup_executable isQTProject)
-
+macro(setup_executable isQTProject)
     get_filename_component(PROJECT_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-    PROJECT(${PROJECT_NAME})
-
+    project(${PROJECT_NAME})
     file(GLOB src "*.cpp")
     file(GLOB hdr "*.h")
     set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/data)
     set(art_dir ${CMAKE_CURRENT_SOURCE_DIR}/art)
-
     if(${isQTProject})
         file(GLOB qrc_files "*.qrc")
         qt5_add_resources(qt_resources ${qrc_files})
@@ -207,78 +204,56 @@ macro (setup_executable isQTProject)
         list(APPEND LIBRARIES_2_LINK ${Qt5Widgets_LIBRARIES} ${Qt5Quick_LIBRARIES})
         #message("${Qt5Widgets_LIBRARIES} ${Qt5Quick_LIBRARIES} ${qt_resources} ${src} ${Qt5Widgets_INCLUDES} ${Qt5Quick_INCLUDES}")
     endif()
-
     if(ANDROID)
-        
         set(android_host_dir ${CMAKE_SOURCE_DIR}/host/android)
-
         add_library(${PROJECT_NAME} SHARED ${src} ${hdr})
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
         target_link_libraries(${PROJECT_NAME} dl GLESv2 log android EGL)
         # Use: $ANDROID_NDK/ndk-depends lib${PROJECT_NAME}.so to see dependencies
         #target_link_libraries(${PROJECT_NAME} log m dl c android EGL GLESv2)
-
         if(EXISTS "${android_host_dir}")
             add_custom_command(
                 TARGET ${PROJECT_NAME} POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${android_host_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-            # if (NOT CMAKE_BUILD_TYPE STREQUAL Release)
-            #     include(AndroidNdkGdb)
-            #     android_ndk_gdb_enable(${CMAKE_CURRENT_BINARY_DIR}/AndroidHost)
-            #     android_ndk_gdb_debuggable(${PROJECT_NAME})    
-            # endif()
-
             configure_file(${android_host_dir}/src/com/nsg/NSGActivity.in ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/src/com/nsg/${PROJECT_NAME}/${PROJECT_NAME}Activity.java)
             configure_file(${android_host_dir}/AndroidManifest.in ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/AndroidManifest.xml)
             configure_file(${android_host_dir}/build.in ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/build.xml @ONLY)
-
             macro ( generate_local_properties_for_ant)
                 set (LOCAL_PROPERTIES_FILE ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/local.properties)
                 file(WRITE ${LOCAL_PROPERTIES_FILE} "# Autogenerated by cmake\n")
                 file(APPEND ${LOCAL_PROPERTIES_FILE} "# Location of the SDK. This is only used by Ant\n")
                 file(APPEND ${LOCAL_PROPERTIES_FILE} "sdk.dir=$ENV{ANDROID_SDK}\n")
             endmacro( generate_local_properties_for_ant)
-
             generate_local_properties_for_ant()
-
             add_custom_command(
                 TARGET ${PROJECT_NAME} POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${LIBRARY_OUTPUT_PATH_ROOT}/libs ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/libs
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     COMMENT "Copying libraries to AndroidHost" VERBATIM)
-
             add_custom_command(
                 TARGET ${PROJECT_NAME} POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E remove ${LIBRARY_OUTPUT_PATH_ROOT}/libs/${ANDROID_NDK_ABI_NAME}/${CMAKE_SHARED_LIBRARY_PREFIX}${PROJECT_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX}
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     COMMENT "Removing generated library from libs (just to not have a copy of it in the next project)" VERBATIM)
-
             add_custom_command(
                 TARGET ${PROJECT_NAME} POST_BUILD
                     COMMAND $ENV{ANT_HOME}/bin/ant debug
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost
                     COMMENT "Generating APK (${PROJECT_NAME})" VERBATIM)
-
             add_custom_command(
                 TARGET ${PROJECT_NAME} POST_BUILD
                     COMMAND $ENV{ANDROID_SDK}/platform-tools/adb -d install -r "bin/${PROJECT_NAME}-debug.apk"
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost
                     COMMENT "Installing APK (${PROJECT_NAME}) on device" VERBATIM)
-
         endif()
-
     elseif(APPLE)
-
         if(IOS)
             set(IS_EXECUTABLE_A_BUNDLE 1)
         endif()
-
         if(IS_EXECUTABLE_A_BUNDLE)
             set (EXECUTABLE_TYPE MACOSX_BUNDLE)
         endif()
-
         if(EXISTS "${data_dir}")
             if(IS_EXECUTABLE_A_BUNDLE)
                 add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr} ${data_dir} ${qt_resources})
@@ -289,150 +264,80 @@ macro (setup_executable isQTProject)
         else()
             add_executable(${PROJECT_NAME} ${EXECUTABLE_TYPE} ${src} ${hdr} ${qt_resources})
         endif()
-
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
-
         setup_common_ios_properties()
-
         if(IOS)
             set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework AudioToolbox -framework CoreAudio -framework CoreGraphics -framework Foundation -framework OpenGLES -framework QuartzCore -framework UIKit")
         else()
             set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-framework AudioUnit -framework Carbon -framework Cocoa -framework CoreAudio -framework ForceFeedback -framework IOKit -framework OpenGL -framework CoreServices")
         endif()
-
     elseif(EMSCRIPTEN)
-
         set(CMAKE_EXECUTABLE_SUFFIX ".bc")
         add_executable(${PROJECT_NAME} ${src} ${hdr})
         set_target_properties(${PROJECT_NAME} PROPERTIES ENABLE_EXPORTS "1")
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
-
         add_custom_command(
             TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s DEMANGLE_SUPPORT=1 -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --embed-file data 
                 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 COMMENT "Generating HTML with Emscripten" VERBATIM)
-
-        #add_custom_command(
-        #    TARGET ${PROJECT_NAME} POST_BUILD
-        #        COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s ALLOW_MEMORY_GROWTH=1 -o ${PROJECT_NAME}.html --preload-file data 
-        #        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        #        COMMENT "Generating HTML with Emscripten" VERBATIM)
-
-        #add_custom_command(
-        #    TARGET ${PROJECT_NAME} POST_BUILD
-        #        COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s TOTAL_MEMORY=999999999 -o ${PROJECT_NAME}.html --preload-file data --pre-js ${EMSCRIPTEN_DIR}/disable_decoding.js
-        #        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        #        COMMENT "Generating HTML with Emscripten" VERBATIM)
-
-        #add_custom_command(
-        #    TARGET ${PROJECT_NAME} POST_BUILD
-        #        COMMAND $ENV{EMSCRIPTEN}/emcc ${PROJECT_NAME}.bc  --bind -s TOTAL_MEMORY=99999999 -o ${PROJECT_NAME}.html --pre-js ${EMSCRIPTEN_DIR}/disable_decoding.js
-        #        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        #        COMMENT "Generating HTML with Emscripten" VERBATIM)
-
-
     else()
-
         add_executable(${PROJECT_NAME} ${src} ${hdr} ${qt_resources} )
-
-        if(IS_TARGET_LINUX)
+        if(IS_TARGET_LINUX AND NEEDS_X11)
             find_package(X11 REQUIRED)
             set(LIBRARIES_2_LINK ${LIBRARIES_2_LINK} ${CMAKE_DL_LIBS} ${X11_X11_LIB} ${X11_Xxf86vm_LIB} ${X11_Xrandr_LIB} ${X11_Xinput_LIB} ${X11_Xcursor_LIB} )
         endif()
-
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES_2_LINK})
-
     endif()
-
     if(EXISTS "${data_dir}" OR EXISTS "${art_dir}")
-        
         set(DATA_TARGET ${PROJECT_NAME}dataDir)
-
         if(ANDROID AND EXISTS "${android_host_dir}")
-
             add_custom_target(${DATA_TARGET} 
                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/AndroidHost/assets/data
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     COMMENT "Copying data directory" VERBATIM)
-
         elseif(APPLE)# AND IS_EXECUTABLE_A_BUNDLE)
-
             add_custom_target(${DATA_TARGET} 
                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/data
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     COMMENT "Copying data directory" VERBATIM)
         else()                                    
-
             add_custom_target(${DATA_TARGET} 
                     COMMAND ${CMAKE_COMMAND} -E copy_directory ${data_dir} ${CMAKE_CURRENT_BINARY_DIR}/data
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     COMMENT "Copying data directory" VERBATIM)
-
         endif()
-
         set_property(TARGET ${DATA_TARGET} PROPERTY FOLDER "DATA_COPIES")
-
         add_dependencies(${PROJECT_NAME} ${DATA_TARGET})
-
     endif()
-
 endmacro (setup_executable)
 
-##################################################################################
-##################################################################################
-##################################################################################
 macro (setup_tool)
     setup_executable(FALSE)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
-endmacro (setup_tool)
+endmacro ()
 
 macro (setup_app_tool)
     set(IS_EXECUTABLE_A_BUNDLE 1)   
     setup_executable(FALSE)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
-endmacro (setup_app_tool)
+endmacro ()
 
-##################################################################################
-##################################################################################
-##################################################################################
-macro (setup_viewer)
-    set(IS_EXECUTABLE_A_BUNDLE 1)
-    setup_executable()
-    set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tools")
-    if(APPLE)
-        if(NOT IOS)
-            set_target_properties(${PROJECT_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_MODULE_PATH}/EditorInfo.plist")
-        endif()
-    endif(APPLE)
-
-endmacro (setup_viewer)
-
-##################################################################################
-##################################################################################
-##################################################################################
 macro (setup_library)
     add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES} ${src} ${hdr} ${assets} ${shaders})
-    if(IS_TARGET_LINUX)
+    if(IS_TARGET_LINUX AND NEEDS_X11)
         find_package(X11 REQUIRED)
         list(APPEND LIBRARIES_2_LINK ${CMAKE_DL_LIBS}) #needed to fix cycle dependencies
     endif()
-
     setup_common_ios_properties()
-endmacro (setup_library)
+endmacro ()
 
-##################################################################################
-##################################################################################
-##################################################################################
 macro (setup_sample)
     set(IS_EXECUTABLE_A_BUNDLE 1)
     setup_executable(FALSE)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "samples")
-endmacro (setup_sample)
+endmacro ()
 
-##################################################################################
-##################################################################################
-##################################################################################
 macro (setup_qt_sample)
     if (NOT CMAKE_GENERATOR STREQUAL Xcode)
         find_package(Qt5Widgets)
@@ -449,80 +354,22 @@ macro (setup_qt_sample)
             set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "samples")
         endif()
     endif()
-endmacro (setup_qt_sample)
+endmacro ()
 
-
-##################################################################################
-##################################################################################
-##################################################################################
 macro (setup_test)
     #set(IS_EXECUTABLE_A_BUNDLE 1)
     setup_executable(FALSE)
     set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "tests")
     add_test(${PROJECT_NAME} ${PROJECT_NAME})
-endmacro (setup_test)
+endmacro ()
 
-##################################################################################
-##################################################################################
-##################################################################################
-macro ( mark_as_disable_and_internal _var )
-    set ( ${_var} OFF CACHE INTERNAL "disable and hide this!" FORCE )
-endmacro( mark_as_disable_and_internal _var )
-
-##################################################################################
-##################################################################################
-##################################################################################
-macro ( mark_as_enable _var )
-    set ( ${_var} ON CACHE BOOL "enable this!" FORCE )
-endmacro( mark_as_enable _var )
-
-##################################################################################
-##################################################################################
-##################################################################################
-MACRO(SUBDIRLIST result curdir)
-  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-  SET(dirlist "")
-  FOREACH(child ${children})
-    IF(IS_DIRECTORY ${curdir}/${child})
-        SET(dirlist ${dirlist} ${child})
-    ENDIF()
-  ENDFOREACH()
-  SET(${result} ${dirlist})
-ENDMACRO()
-
-MACRO(ADDSOURCESLIST result curdir)
-    INCLUDE_DIRECTORIES(${curdir})
-    SET(src "")
-    FILE(GLOB src "${curdir}/*.c" "${curdir}/*.h")
-    SET(${result} ${${result}} ${src})
-ENDMACRO()
-
-
-###################################################################
-# Generate shader header file
-####################################################################
-MACRO(GENERATE_SHADER_HEADER_FILE input_file input_template_file output_file)
-    file(STRINGS ${input_file} shader_file_lines)
-    unset(shader_string_file)
-    set(shader_string_file \\\n)
-    foreach(shader_file_line ${shader_file_lines})
-        set(shader_string_file ${shader_string_file}"${shader_file_line}\\n"\\\n)
-    endforeach()
-    configure_file(${input_template_file} ${output_file})
-ENDMACRO()
-####################################################################
-
-FUNCTION(CLEAN_DATA_TOOL dir)
-  SUBDIRLIST(SUBDIRS ${CMAKE_SOURCE_DIR}/${dir})
-  FOREACH(subdir ${SUBDIRS})
-    get_filename_component(INPUTDIR "${dir}/${subdir}" ABSOLUTE)
-    set(ARTDATA "${INPUTDIR}/art")
-    #message("${ARTDATA}")
-    if(EXISTS ${ARTDATA})
-      set(FILEDATA "${INPUTDIR}/data")
-      file(REMOVE_RECURSE ${FILEDATA})
-      file(MAKE_DIRECTORY ${FILEDATA})
+macro(subdirlist result curdir)
+  file(GLOB children RELATIVE ${curdir} ${curdir}/*)
+  set(dirlist "")
+  foreach(child ${children})
+    if(IS_DIRECTORY ${curdir}/${child})
+        set(dirlist ${dirlist} ${child})
     endif()
-  ENDFOREACH()
-ENDFUNCTION(CLEAN_DATA_TOOL)
-
+  endforeach()
+  set(${result} ${dirlist})
+endmacro()

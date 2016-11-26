@@ -821,14 +821,16 @@ namespace NSG
 		int StartX, StartY;
 
 		int ModulationVals[8][16];
+        memset(&ModulationVals[0][0], 0, sizeof(ModulationVals));
 		int ModulationModes[8][16];
+        memset(&ModulationModes[0][0], 0, sizeof(ModulationModes));
 
 		int Mod, DoPT;
 
 		unsigned uPosition;
 
 		// Local neighbourhood of blocks
-		AMTC_BLOCK_STRUCT *pBlocks[2][2];
+        AMTC_BLOCK_STRUCT *pBlocks[2][2] = { { NULL, NULL }, { NULL, NULL } };
 
 		AMTC_BLOCK_STRUCT *pPrevious[2][2] = { { NULL, NULL }, { NULL, NULL } };
 

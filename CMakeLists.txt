@@ -6,10 +6,6 @@ endif(COMMAND cmake_policy)
 
 PROJECT(nsg-library)
 
-if(NOT BUILD_PROJECT)
-	set(BUILD_PROJECT "all")
-endif()	
-
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(ROOT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -27,7 +23,9 @@ set(EXTERNALS_BYNARY_DIR ${ROOT_BINARY_DIR}/externals)
 set(LIBRARIES_FOLDER_NAME "LIBRARIES")
 
 set (CMAKE_MODULE_PATH ${ROOT_SOURCE_DIR}/cmake/modules) # Set CMake modules search path
-include (Common) # Include NSG cmake common module
+include (Common)
+include (Utils) 
+set(NEEDS_X11 1)
 setup_common() #has to be called before anything
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -73,14 +71,6 @@ set_property(TARGET LZ4 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 #add_definitions(-DBT_USE_DOUBLE_PRECISION)
 include_directories(${EXTERNALS_DIR}/bullet/src)
 add_subdirectory(${EXTERNALS_DIR})
-#mark_as_disable_and_internal(USE_GRAPHICAL_BENCHMARK)
-#mark_as_disable_and_internal(BUILD_BULLET3)
-#mark_as_disable_and_internal(BUILD_BULLET2_DEMOS)
-#mark_as_disable_and_internal(BUILD_EXTRAS)
-#mark_as_disable_and_internal(BUILD_UNIT_TESTS)
-#mark_as_disable_and_internal(BUILD_CPU_DEMOS)
-#mark_as_disable_and_internal(USE_GLUT)
-#add_subdirectory(${EXTERNALS_DIR}/bullet)
 list(APPEND LIBRARIES_2_LINK bulletCollision)
 list(APPEND LIBRARIES_2_LINK bulletDynamics)
 list(APPEND LIBRARIES_2_LINK bulletSoftBody)
@@ -138,7 +128,6 @@ add_subdirectory(${DEPENDENCIES_DIR}/libb64)
 list(APPEND LIBRARIES_2_LINK libb64)
 set_property(TARGET libb64 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
-
 ##################################
 # StanHull
 ##################################
@@ -160,11 +149,8 @@ include_directories(${DEPENDENCIES_DIR}/tclap/include)
 ###########################
 # NSG
 ###########################
-if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
-	include (TemplateCompiler) # tcl tool
-endif()
 include_directories(${ROOT_SOURCE_DIR}/NSG)
-SUBDIRLIST(SUBDIRS ${ROOT_SOURCE_DIR}/NSG)
+subdirlist(SUBDIRS ${ROOT_SOURCE_DIR}/NSG)
 FOREACH(subdir ${SUBDIRS})
    include_directories(${ROOT_SOURCE_DIR}/NSG/${subdir})
 ENDFOREACH()
@@ -174,9 +160,7 @@ set(LIBRARIES_2_LINK NSG) #reset libraries to link: NSG will have all the depend
 ###########################
 # tools
 ###########################
-
 if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE)
-
 	##################################
 	# common
 	##################################
@@ -200,12 +184,10 @@ include (ConvertTool)
 include (ExportBlendTool)
 include (CopyTool)
 set(SAMPLES_DIR ${ROOT_SOURCE_DIR}/samples)
-SUBDIRLIST(SUBDIRS ${SAMPLES_DIR})
-FOREACH(subdir ${SUBDIRS})
-	IF(${BUILD_PROJECT} STREQUAL "all"  OR ${BUILD_PROJECT} STREQUAL "samples/${subdir}")
-    	ADD_SUBDIRECTORY(${SAMPLES_DIR}/${subdir})
-	ENDIF()
-ENDFOREACH()
+subdirlist(SUBDIRS ${SAMPLES_DIR})
+foreach(subdir ${SUBDIRS})
+	add_subdirectory(${SAMPLES_DIR}/${subdir})
+endforeach()
 
 ###########################
 # tests
@@ -214,11 +196,9 @@ if(NOT IS_TARGET_MOBILE AND NOT IS_TARGET_WEB)
 	enable_testing()
 	#include( CTest )
 	set(TEST_DIR ${ROOT_SOURCE_DIR}/tests)
-	SUBDIRLIST(SUBDIRS ${TEST_DIR})
-	FOREACH(subdir ${SUBDIRS})
-		IF(${BUILD_PROJECT} STREQUAL "all"  OR ${BUILD_PROJECT} STREQUAL "tests/${subdir}")
-	   		ADD_SUBDIRECTORY(${TEST_DIR}/${subdir})
-	   	ENDIF()
-	ENDFOREACH()
+	subdirlist(SUBDIRS ${TEST_DIR})
+	foreach(subdir ${SUBDIRS})
+		add_subdirectory(${TEST_DIR}/${subdir})
+	endforeach()
 endif()
 

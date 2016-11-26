@@ -103,7 +103,7 @@ namespace NSG
             //GLX_ALPHA_SIZE, 8,
             GLX_DEPTH_SIZE, 24,
             GLX_STENCIL_SIZE, 8,
-            0,
+            None,
         };
 
         GLXFBConfig bestConfig = nullptr;
@@ -115,7 +115,8 @@ namespace NSG
             if (visualInfo_)
             {
                 bool valid = true;
-                for (uint32_t attr = 6; attr < sizeof(attrsGlx) - 1 && attrsGlx[attr] != None; attr += 2)
+                auto n = sizeof(attrsGlx) / sizeof(int) - 1;
+                for (uint32_t attr = 6; attr < n; attr += 2)
                 {
                     int value = 0;
                     glXGetFBConfigAttrib(LinuxWindow::display_, configs[i], attrsGlx[attr], &value);
