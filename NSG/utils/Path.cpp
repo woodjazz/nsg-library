@@ -314,7 +314,7 @@ namespace NSG
 
     std::ostream& operator << (std::ostream& s , const Path& obj)
     {
-        s << "IsRelativePath=" << std::boolalpha << obj.IsPathRelative();
+        s << "IsRelativePath=" << obj.IsPathRelative();
         s << std::resetiosflags(std::ios_base::basefield) << "\n";
         s << "FilePath=" << obj.GetFilePath() << "\n";
         s << "FullAbsoluteFilePath=" << obj.GetFullAbsoluteFilePath() << "\n";

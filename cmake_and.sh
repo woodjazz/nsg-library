@@ -46,10 +46,10 @@ cd $1
 echo "*** CONFIGURING PROJECTS ***"
 if [ $2 = "debug" ]; then
 	echo "Building DEBUG version..."
-	cmake $SOURCE_FOLDER -G "Unix Makefiles" -DANDROID_STL=gnustl_shared -DBUILD_PROJECT="all" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/android.toolchain.cmake" -DANDROID_TOOLCHAIN_NAME=arm-linux-androideabi-4.9 -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD 
+	cmake $SOURCE_FOLDER -G "Unix Makefiles" -DANDROID_STL=gnustl_shared -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/android.toolchain.cmake" -DANDROID_TOOLCHAIN_NAME=arm-linux-androideabi-4.9 -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD 
 else	
 	echo "Building RELEASE version..."
-	cmake $SOURCE_FOLDER -G "Unix Makefiles" -DANDROID_STL=gnustl_shared -DBUILD_PROJECT="all" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/android.toolchain.cmake" -DANDROID_TOOLCHAIN_NAME=arm-linux-androideabi-4.9 -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD
+	cmake $SOURCE_FOLDER -G "Unix Makefiles" -DANDROID_STL=gnustl_shared -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/android.toolchain.cmake" -DANDROID_TOOLCHAIN_NAME=arm-linux-androideabi-4.9 -DANDROID_NATIVE_API_LEVEL=android-19 -DLIBRARY_OUTPUT_PATH_ROOT=$PWD
 fi
 
 echo "*** BUILDING $2 ***"

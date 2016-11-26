@@ -119,7 +119,8 @@ namespace NSG
     void Socket::Bind()
     {
         int activate = 1;
-        setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, (char*)&activate, static_cast<int>(sizeof(activate)));
+        if (-1 == setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, (char*)&activate, static_cast<int>(sizeof(activate))))
+            throw std::runtime_error(GetStringError());
         if (-1 == ::bind(sockfd_, (sockaddr*)&addr_, sizeof(sockaddr)))
             throw std::runtime_error(GetStringError());
     }

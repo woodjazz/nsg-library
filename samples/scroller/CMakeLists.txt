@@ -1,4 +1,3 @@
 setup_sample()
-#CONVERT_TOOL(art/scroller.blend data -b)
-EXPORT_BLEND_TOOL(art/scroller.blend data -b)
+export_blend_tool(art/scroller.blend data -b)
 

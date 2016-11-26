@@ -23,36 +23,28 @@
 # 3. This notice may not be removed or altered from any source distribution.
 # -------------------------------------------------------------------------------
 # */
-
 include(${CMAKE_SOURCE_DIR}/cmake/modules/Common.cmake)
-
 if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-  set(BLENDER_EXECUTABLE "/Applications/Blender275/blender.app/Contents/MacOS/blender")
+  set(BLENDER_EXECUTABLE "$ENV{BLENDER_BIN}/blender.app/Contents/MacOS/blender")
 elseif(WIN32)
-  set(BLENDER_EXECUTABLE "D:/tmp/Blender-2.75-windows64/blender.exe")
-elseif(UNIX AND NOT APPLE) 
-  message(WARNING, "Unknown blender executable")
+  set(BLENDER_EXECUTABLE "$ENV{BLENDER_BIN}/blender.exe")
 else()
-  message(WARNING, "Unknown OS. Cannot set blender executable")
+      set(BLENDER_EXECUTABLE "$ENV{BLENDER_BIN}/blender")
 endif() 
-
 set(EXPORT_SCRIPT ${ROOT_SOURCE_DIR}/tools/blenderexport/Export.py)
-
-
-FUNCTION(BUILD_DATA_TOOL dir)
-  SUBDIRLIST(SUBDIRS ${CMAKE_SOURCE_DIR}/${dir})
-  FOREACH(subdir ${SUBDIRS})
+function(build_data_tool dir)
+  subdirlist(SUBDIRS ${CMAKE_SOURCE_DIR}/${dir})
+  foreach(subdir ${SUBDIRS})
     get_filename_component(INPUTDIR "${dir}/${subdir}" ABSOLUTE)
     set(ARTDATA "${INPUTDIR}/art")
     if(EXISTS ${ARTDATA})
       set(FILEDATA "${INPUTDIR}/data")
       file(GLOB BLEND_FILES "${ARTDATA}/*.blend")
-      FOREACH(blendfile ${BLEND_FILES})
+      foreach(blendfile ${BLEND_FILES})
         execute_process(COMMAND ${BLENDER_EXECUTABLE} ${blendfile} --background --python ${EXPORT_SCRIPT})
-      ENDFOREACH()
+      endforeach()
     endif()
-  ENDFOREACH()
-ENDFUNCTION(BUILD_DATA_TOOL)
-
-BUILD_DATA_TOOL(samples)
-BUILD_DATA_TOOL(tests)
+  endforeach()
+endfunction()
+build_data_tool(samples)
+build_data_tool(tests)

@@ -23,6 +23,5 @@
 # 3. This notice may not be removed or altered from any source distribution.
 # -------------------------------------------------------------------------------
 # */
-
-include(${CMAKE_SOURCE_DIR}/cmake/modules/Common.cmake)
-CLEAN_DATA_TOOL(tests)
+include(${CMAKE_SOURCE_DIR}/cmake/modules/Utils.cmake)
+clean_data_tool(tests)

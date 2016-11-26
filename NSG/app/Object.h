@@ -24,10 +24,8 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "LoaderXMLNode.h"
 #include <string>
-#include <functional>
 namespace NSG
 {
     class App;

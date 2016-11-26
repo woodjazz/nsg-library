@@ -39,11 +39,10 @@ static int Test01()
         LOGI("HTTP OnLoad0: %s", data.c_str());
     };
 
-    bool closeWindow = false;
     auto onLoad1 = [&](const std::string & data)
     {
         LOGI("HTTP OnLoad1: %u %s", (unsigned)data.size(), data.c_str());
-        closeWindow = true;
+        window = nullptr;
     };
 
     auto onError = [&](int httpError, const std::string & description)
@@ -62,11 +61,6 @@ static int Test01()
     postRequest.StartRequest();
     getRequest.StartRequest();
     auto engine = Engine::Create();
-    auto slotUpdate = engine->SigUpdate()->Connect([&](float dt)
-    {
-        if (closeWindow)
-            window = nullptr;
-    });
     return engine->Run();
 }
 
@@ -81,18 +75,16 @@ static int Test02()
         CHECK_CONDITION(false);
     };
 
-    bool closeWindow0 = false;
     auto onError0 = [&](int httpError, const std::string & description)
     {
         LOGI("HTTP Error: %d. %s", httpError, description.c_str());
-        closeWindow0 = true;
+        window0 = nullptr;
     };
 
-    bool closeWindow1 = false;
     auto onError1 = [&](int httpError, const std::string & description)
     {
         LOGI("HTTP Error: %d. %s", httpError, description.c_str());
-        closeWindow1 = true;
+        window1 = nullptr;
     };
 
     auto onProgress = [&](unsigned percentage)
@@ -105,14 +97,6 @@ static int Test02()
     request0.StartRequest();
     request1.StartRequest();
     auto engine = Engine::Create();
-    auto slotUpdate = engine->SigUpdate()->Connect([&](float dt)
-    {
-        if (closeWindow0)
-            window0 = nullptr;
-        if (closeWindow1)
-            window1 = nullptr;
-
-    });
     return engine->Run();
 }
 

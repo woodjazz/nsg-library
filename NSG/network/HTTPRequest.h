@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include <string>
 #include <map>
 #include <future>
+#include <atomic>
 
 namespace NSG
 {
@@ -57,7 +58,11 @@ namespace NSG
         #if EMSCRIPTEN
         int requestHandle_;
         #else
+        int httpError_;
+        std::atomic<bool> httpHasResult_;
+        std::string response_;
         std::future<void> result_;
+        SignalEmpty::PSlot slotBeginFrame_;
         #endif
         OnLoadFunction onLoad_;
         OnErrorFunction onError_;
