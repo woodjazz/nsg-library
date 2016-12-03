@@ -169,7 +169,9 @@ namespace NSG
         : Window(name),
           flags_(0),
           style_(0),
-          window_(nullptr)
+          window_(nullptr),
+          keyModifier_(0),
+          flagStates_(0)          
     {
         const AppConfiguration& conf = Engine::GetPtr()->GetAppConfiguration();
         Initialize(conf.x_, conf.y_, conf.width_, conf.height_, flags);
@@ -180,7 +182,9 @@ namespace NSG
         : Window(name),
           flags_(0),
           style_(0),
-          window_(nullptr)
+          window_(nullptr),
+          keyModifier_(0),
+          flagStates_(0)
     {
         Initialize(x, y, width, height, flags);
         LOGI("Window %s created.", name_.c_str());
@@ -223,7 +227,7 @@ namespace NSG
         [window_ setTitle:appName];
         [window_ setAcceptsMouseMovedEvents:YES];
         [window_ setBackgroundColor:[NSColor blackColor]];
-        
+
         [[::Window sharedInstance] windowCreated:window_ osxWindow:this];
         windowFrame_ = [window_ frame];
 
@@ -240,7 +244,7 @@ namespace NSG
         }
 
         SetSize(width, height);
-        
+
         if (flags & (int)WindowFlag::SHOWN)
             Show();
         else if (flags & (int)WindowFlag::HIDDEN)
@@ -341,7 +345,39 @@ namespace NSG
                ];
     }
 
-    static bool DispatchEvent(NSEvent* event)
+    static int MapKeyCode(int keyCode)
+    {
+        switch (keyCode)
+        {
+            case NSRightArrowFunctionKey:
+                keyCode = NSG_KEY_RIGHT;
+                break;
+            case NSLeftArrowFunctionKey:
+                keyCode = NSG_KEY_LEFT;
+                break;
+            case NSUpArrowFunctionKey:
+                keyCode = NSG_KEY_UP;
+                break;
+            case NSDownArrowFunctionKey:
+                keyCode = NSG_KEY_DOWN;
+                break;
+            case NSHomeFunctionKey:
+                keyCode = NSG_KEY_HOME;
+                break;
+            case NSEndFunctionKey:
+                keyCode = NSG_KEY_END;
+                break;
+            case NSPageUpFunctionKey:
+                keyCode = NSG_KEY_PAGEUP;
+                break;
+            case NSPageDownFunctionKey:
+                keyCode = NSG_KEY_PAGEDOWN;
+                break;
+        }
+        return keyCode;
+    }
+
+    bool OSXWindow::DispatchEvent(NSEvent* event)
     {
         if (event)
         {
@@ -364,7 +400,7 @@ namespace NSG
                 case NSLeftMouseDown:
                     {
                         int x, y;
-                        window->GetMousePos(x, y);                        
+                        window->GetMousePos(x, y);
                         auto button = ([event modifierFlags] & NSCommandKeyMask) ? NSG_BUTTON_MIDDLE : NSG_BUTTON_LEFT;
                         window->OnMouseDown(button, x, y);
                         break;
@@ -373,7 +409,7 @@ namespace NSG
                 case NSLeftMouseUp:
                     {
                         int x, y;
-                        window->GetMousePos(x, y);                        
+                        window->GetMousePos(x, y);
                         auto button = ([event modifierFlags] & NSCommandKeyMask) ? NSG_BUTTON_MIDDLE : NSG_BUTTON_LEFT;
                         window->OnMouseUp(button, x, y);
                         break;
@@ -382,7 +418,7 @@ namespace NSG
                 case NSRightMouseDown:
                     {
                         int x, y;
-                        window->GetMousePos(x, y);                        
+                        window->GetMousePos(x, y);
                         window->OnMouseDown(NSG_BUTTON_RIGHT, x, y);
                         break;
                     }
@@ -390,7 +426,7 @@ namespace NSG
                 case NSRightMouseUp:
                     {
                         int x, y;
-                        window->GetMousePos(x, y);                        
+                        window->GetMousePos(x, y);
                         window->OnMouseUp(NSG_BUTTON_RIGHT, x, y);
                         break;
                     }
@@ -398,7 +434,7 @@ namespace NSG
                 case NSOtherMouseDown:
                     {
                         int x, y;
-                        window->GetMousePos(x, y);                        
+                        window->GetMousePos(x, y);
                         window->OnMouseDown(NSG_BUTTON_MIDDLE, x, y);
                         break;
                     }
@@ -406,7 +442,7 @@ namespace NSG
                 case NSOtherMouseUp:
                     {
                         int x, y;
-                        window->GetMousePos(x, y);                        
+                        window->GetMousePos(x, y);
                         window->OnMouseUp(NSG_BUTTON_MIDDLE, x, y);
                         break;
                     }
@@ -417,13 +453,61 @@ namespace NSG
                         break;
                     }
 
+                case NSFlagsChanged:
+                    {
+                        int flags = [event modifierFlags];
+                        
+                        if(flags & NSShiftKeyMask)
+                            window->OnKey(NSG_KEY_LSHIFT, NSG_KEY_PRESS, 0);
+                        else if(flagStates_ & NSShiftKeyMask)
+                            window->OnKey(NSG_KEY_LSHIFT, NSG_KEY_RELEASE, 0);
+
+                        if(flags & NSAlternateKeyMask)
+                            window->OnKey(NSG_KEY_LALT, NSG_KEY_PRESS, 0);
+                        else if(flagStates_ & NSAlternateKeyMask)
+                            window->OnKey(NSG_KEY_LALT, NSG_KEY_RELEASE, 0);
+
+                        flagStates_ = flags;
+                        break;
+                    }
+
                 case NSKeyDown:
                     {
+                        NSString* key = [event charactersIgnoringModifiers];
+                        if ([key length] != 0)
+                        {
+                            std::string text = [key UTF8String];
+                            window->OnText(text);
+                            UTF8String utf8(text.c_str());
+                            unsigned unicode = utf8.AtUTF8(0);
+                            if (unicode)
+                                window->OnChar(unicode);
+                            int action = NSG_KEY_PRESS;
+                            int keyCode = MapKeyCode([key characterAtIndex:0]);
+                            int flags = [event modifierFlags];
+                            window->keyModifier_ |= flags & NSShiftKeyMask ? NSG_KEY_MOD_SHIFT : 0;
+                            window->keyModifier_ |= flags & NSControlKeyMask ? NSG_KEY_MOD_CONTROL : 0;
+                            window->keyModifier_ |= flags & NSAlternateKeyMask ? NSG_KEY_MOD_ALT : 0;
+                            window->OnKey(keyCode, action, window->keyModifier_);
+                            break;
+                        }
                         break;
                     }
 
                 case NSKeyUp:
                     {
+                        NSString* key = [event charactersIgnoringModifiers];
+                        if ([key length] != 0)
+                        {
+                            int action = NSG_KEY_RELEASE;
+                            int keyCode = MapKeyCode([key characterAtIndex:0]);
+                            int flags = [event modifierFlags];
+                            window->keyModifier_ &= flags & NSShiftKeyMask ? ~NSG_KEY_MOD_SHIFT : 0;
+                            window->keyModifier_ &= flags & NSControlKeyMask ? ~NSG_KEY_MOD_CONTROL : 0;
+                            window->keyModifier_ &= flags & NSAlternateKeyMask ? ~NSG_KEY_MOD_ALT : 0;
+                            window->OnKey(keyCode, action, window->keyModifier_);
+                            break;
+                        }
                         break;
                     }
             }
@@ -440,7 +524,7 @@ namespace NSG
 
     void OSXWindow::HandleEvents()
     {
-        while (DispatchEvent(PeekEvent()))
+        while (OSXWindow::DispatchEvent(PeekEvent()))
         {
         }
 

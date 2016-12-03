@@ -53,10 +53,13 @@ namespace NSG
         void SetupImgui() override;
         void BeginImguiRender() override;
         void Initialize(int x, int y, int width, int height, WindowFlags flags);
+        bool DispatchEvent(NSEvent* event);
         int flags_;
         int32_t style_;
         NSWindow* window_;
         NSRect windowFrame_;
+        int keyModifier_;
+        int flagStates_;
         static NSOpenGLView* view_;
         static NSOpenGLContext* context_;        
     };

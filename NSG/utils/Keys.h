@@ -177,26 +177,38 @@ misrepresented as being the original software.
 
 #elif defined(IS_TARGET_OSX)
 
+#undef 		NSG_KEY_ESC   	
+#undef 		NSG_KEY_SPACE   
+#undef 		NSG_KEY_TAB        
+#undef 		NSG_KEY_BACKSPACE  
+#undef 		NSG_KEY_ENTER      
+
+#define 	NSG_KEY_ESC   		27
+#define 	NSG_KEY_SPACE   	uint8_t(' ')
+#define 	NSG_KEY_TAB         uint8_t('\t')
+#define 	NSG_KEY_BACKSPACE   127
+#define 	NSG_KEY_ENTER       uint8_t('\r')
+
 #define     NSG_KEY_MOD_SHIFT       1
 #define     NSG_KEY_MOD_CONTROL     2
 #define     NSG_KEY_MOD_ALT         3
 
-#define     NSG_KEY_A         uint8_t('A')
-#define     NSG_KEY_C         uint8_t('C')
-#define     NSG_KEY_D         uint8_t('D')
-#define     NSG_KEY_E         uint8_t('E')
-#define     NSG_KEY_F         uint8_t('F')
-#define     NSG_KEY_G         uint8_t('G')
-#define     NSG_KEY_M         uint8_t('M')
-#define     NSG_KEY_P         uint8_t('P')
-#define     NSG_KEY_Q         uint8_t('Q')
-#define     NSG_KEY_R         uint8_t('R')
-#define     NSG_KEY_S         uint8_t('S')
-#define     NSG_KEY_V         uint8_t('V')
-#define     NSG_KEY_W         uint8_t('W')
-#define     NSG_KEY_X         uint8_t('X')
-#define     NSG_KEY_Y         uint8_t('Y')
-#define     NSG_KEY_Z         uint8_t('Z')
+#define     NSG_KEY_A         uint8_t('a')
+#define     NSG_KEY_C         uint8_t('c')
+#define     NSG_KEY_D         uint8_t('d')
+#define     NSG_KEY_E         uint8_t('e')
+#define     NSG_KEY_F         uint8_t('f')
+#define     NSG_KEY_G         uint8_t('g')
+#define     NSG_KEY_M         uint8_t('m')
+#define     NSG_KEY_P         uint8_t('p')
+#define     NSG_KEY_Q         uint8_t('q')
+#define     NSG_KEY_R         uint8_t('r')
+#define     NSG_KEY_S         uint8_t('s')
+#define     NSG_KEY_V         uint8_t('v')
+#define     NSG_KEY_W         uint8_t('w')
+#define     NSG_KEY_X         uint8_t('x')
+#define     NSG_KEY_Y         uint8_t('y')
+#define     NSG_KEY_Z         uint8_t('z')
 
 #define     NSG_KEY_LALT      12
 #define     NSG_KEY_LSHIFT    13
