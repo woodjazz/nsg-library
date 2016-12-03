@@ -19,4 +19,4 @@ after_build:
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
-  - cmake_vs2013.bat build
+  - cmake_vs2015.bat build
