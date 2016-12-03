@@ -549,6 +549,9 @@ namespace NSG
     void OSXWindow::SetupImgui()
     {
         Window::SetupImgui();
+        ImGuiIO& io = ImGui::GetIO();
+        io.KeyRepeatDelay = 1;
+        io.OSXBehaviors = true;
     }
 
     void OSXWindow::BeginImguiRender()
