@@ -326,51 +326,9 @@ namespace NSG
         SwitchToThisWindow(hwnd_, FALSE);
     }
 
-    static const char* ImGuiGetClipboardText()
-    {
-        if (!IsClipboardFormatAvailable(CF_TEXT))
-            return "";
-        auto hwnd = static_cast<WinWindow*>(Window::GetMainWindow())->GetHWND();
-        if (!OpenClipboard(hwnd))
-            return "";
-        auto hglb = GetClipboardData(CF_TEXT);
-        if (hglb)
-        {
-            auto lptstr = GlobalLock(hglb);
-            static std::string data;
-            data = (const char*)lptstr;
-            GlobalUnlock(hglb);
-            return data.c_str();
-        }
-        return "";
-    }
-
-    static void ImGuiSetClipboardText(const char* text)
-    {
-        auto hwnd = static_cast<WinWindow*>(Window::GetMainWindow())->GetHWND();
-        if (OpenClipboard(hwnd))
-        {
-            auto n = strlen(text);
-            EmptyClipboard();
-            auto hglbCopy = GlobalAlloc(GMEM_MOVEABLE, n + 1 * sizeof(char));
-            if (hglbCopy)
-            {
-                LPTSTR lptstrCopy = (LPTSTR)GlobalLock(hglbCopy);
-                memcpy(lptstrCopy, text, n * sizeof(char));
-                lptstrCopy[n] = '\0';
-                GlobalUnlock(hglbCopy);
-                SetClipboardData(CF_TEXT, hglbCopy);
-            }
-            CloseClipboard();
-        }
-    }
-
     void WinWindow::SetupImgui()
     {
         Window::SetupImgui();
-        ImGuiIO& io = ImGui::GetIO();
-        io.SetClipboardTextFn = ImGuiSetClipboardText;
-        io.GetClipboardTextFn = ImGuiGetClipboardText;
     }
 
     void WinWindow::BeginImguiRender()

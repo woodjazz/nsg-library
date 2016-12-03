@@ -373,21 +373,9 @@ namespace NSG
         XMapRaised(LinuxWindow::display_, hwnd_);
     }
 
-    static const char* ImGuiGetClipboardText()
-    {
-        return "";
-    }
-
-    static void ImGuiSetClipboardText(const char* text)
-    {
-    }
-
     void LinuxWindow::SetupImgui()
     {
         Window::SetupImgui();
-        ImGuiIO& io = ImGui::GetIO();
-        io.SetClipboardTextFn = ImGuiSetClipboardText;
-        io.GetClipboardTextFn = ImGuiGetClipboardText;
     }
 
     void LinuxWindow::BeginImguiRender()

@@ -462,21 +462,9 @@ namespace NSG
     {
     }
 
-    static const char* ImGuiGetClipboardText()
-    {
-        return "";
-    }
-
-    static void ImGuiSetClipboardText(const char* text)
-    {
-    }
-
     void OSXWindow::SetupImgui()
     {
         Window::SetupImgui();
-        ImGuiIO& io = ImGui::GetIO();
-        io.SetClipboardTextFn = ImGuiSetClipboardText;
-        io.GetClipboardTextFn = ImGuiGetClipboardText;
     }
 
     void OSXWindow::BeginImguiRender()
