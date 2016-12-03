@@ -25,9 +25,9 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Quaternion.h"
 #include "Object.h"
 #include "ICollision.h"
-#include "Constants.h"
 #include "btBulletDynamicsCommon.h"
 #include <map>
 using namespace std;
@@ -45,7 +45,7 @@ namespace NSG
         void SetKinematic(bool enable);
         bool IsKinematic() const { return kinematic_; }
         void SetMass(float mass);
-        void AddShape(PShape shape, const Vector3& position = VECTOR3_ZERO, const Quaternion& rotation = QUATERNION_IDENTITY);
+        void AddShape(PShape shape, const Vector3& position = Vector3::Zero, const Quaternion& rotation = Quaternion::Identity);
         void HandleCollisions(bool enable) {handleCollision_ = enable; }
         void SetLinearVelocity(const Vector3& lv);
         Vector3 GetLinearVelocity() const;

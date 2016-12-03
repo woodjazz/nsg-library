@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "StringConverter.h"
 #include "BoundingBox.h"
 #include "Util.h"
+#include "Matrix4.h"
 #include "Check.h"
 #ifndef IS_TARGET_WINDOWS
 #include <unistd.h>
@@ -34,11 +35,9 @@ misrepresented as being the original software.
 #include <windows.h>
 #define snprintf _snprintf
 #endif
-
 #include <array>
 #include <cctype>
 #include <cstring>
-
 namespace NSG
 {
 	template<typename T>
@@ -100,6 +99,16 @@ namespace NSG
         return buffer;
     }
 
+    std::string ToString(const Color& obj)
+    {
+        using namespace std;
+        const int MaxBuffer = 100;
+        char buffer[MaxBuffer];
+        snprintf(buffer, MaxBuffer, "[%g,%g,%g,%g]", obj.x, obj.y, obj.z, obj.w);
+        return buffer;
+    }
+
+
     std::string ToString(const BoundingBox& obj)
     {
         using namespace std;
@@ -120,6 +129,13 @@ namespace NSG
     Vertex4 ToVertex4(const std::string& buffer)
     {
         Vertex4 obj;
+        sscanf(buffer.c_str(), "[%g,%g,%g,%g]", &obj.x, &obj.y, &obj.z, &obj.w);
+        return obj;
+    }
+
+    Color ToColor(const std::string& buffer)
+    {
+        Color obj;
         sscanf(buffer.c_str(), "[%g,%g,%g,%g]", &obj.x, &obj.y, &obj.z, &obj.w);
         return obj;
     }

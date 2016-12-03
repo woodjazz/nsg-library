@@ -58,10 +58,10 @@ int NSG_MAIN(int argc, char* argv[])
     material->SetTextMap(font->GetTexture());
 
     auto focusMaterial = material->Clone();
-    focusMaterial->SetDiffuseColor(ColorRGB(0, 0, 1));
+    focusMaterial->SetDiffuseColor(Color(0, 0, 1));
 
     auto activeMaterial = material->Clone();
-    activeMaterial->SetDiffuseColor(ColorRGB(1, 0, 0));
+    activeMaterial->SetDiffuseColor(Color(1, 0, 0));
 
     nodeCenter->SetMaterial(material);
     nodeLeftTop->SetMaterial(material);

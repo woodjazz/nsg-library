@@ -24,10 +24,11 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-
+#include "SharedPointers.h"
 namespace NSG
 {
+    struct Color;
+    struct Vector3;
     class DebugRenderer
     {
     public:

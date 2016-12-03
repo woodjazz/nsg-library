@@ -24,8 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
+#include "Vector4.h"
+#include "Vector3.h"
+#include "Vector2.h"
+#include "Color.h"
 #include <iostream>
+#include <vector>
 
 namespace NSG
 {

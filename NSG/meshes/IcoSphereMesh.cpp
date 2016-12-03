@@ -25,9 +25,9 @@ misrepresented as being the original software.
 */
 #include "IcoSphereMesh.h"
 #include "Types.h"
-#include "Constants.h"
 #include "Check.h"
 #include "Log.h"
+#include "Maths.h"
 
 namespace NSG
 {

@@ -25,7 +25,9 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "SceneNode.h"
-#include "Constants.h"
+#include "Color.h"
+#include "ShadowCamera.h"
+#include "GLIncludes.h"
 
 namespace NSG
 {
@@ -36,8 +38,8 @@ namespace NSG
         ~Light();
         void SetEnergy(float energy);
         float GetEnergy() const;
-        void SetColor(ColorRGB color);
-        const ColorRGB& GetColor() const;
+        void SetColor(const Color& color);
+        const Color& GetColor() const;
         void EnableDiffuseColor(bool enable);
         void EnableSpecularColor(bool enable);
         void SetSpotCutOff(float spotCutOff); // angle in degrees
@@ -49,8 +51,8 @@ namespace NSG
         void FillShaderDefines(std::string& defines, PassType passType, const Material* material) const;
         static SignalLight::PSignal SignalBeingDestroy();
         SignalLight::PSignal SignalSetType() { return signalSetType_; }
-        const ColorRGB& GetDiffuseColor() const { return diffuseColor_; }
-        const ColorRGB& GetSpecularColor() const { return specularColor_; }
+        const Color& GetDiffuseColor() const { return diffuseColor_; }
+        const Color& GetSpecularColor() const { return specularColor_; }
         void SetShadowColor(Color color);
         const Color& GetShadowColor() const { return shadowColor_; }
         void SetDistance(float distance);
@@ -82,23 +84,23 @@ namespace NSG
     private:
         LightType type_;
         float energy_;
-        ColorRGB color_;
+        Color color_;
         bool diffuse_;
         bool specular_;
         float spotCutOff_; // angle in degrees
-        ColorRGB diffuseColor_; // calculated
-        ColorRGB specularColor_; // calculated
+        Color diffuseColor_; // calculated
+        Color specularColor_; // calculated
         Color shadowColor_;
         float distance_;
         bool shadows_;
         float shadowClipStart_;
         float shadowClipEnd_;
         bool onlyShadow_;
-        PFrameBuffer shadowFrameBuffer_[MAX_SPLITS];
+        PFrameBuffer shadowFrameBuffer_[ShadowCamera::MAX_SPLITS];
         // Bias is used to add a slight offset distance between an object and the shadows cast by it.
         float shadowBias_; // final bias is multiplied by material bias (See Material::shadowBias_)
         float slopeScaledBias_;
-        PShadowCamera shadowCamera_[MAX_SPLITS];
+        PShadowCamera shadowCamera_[ShadowCamera::MAX_SPLITS];
         mutable int shadowSplits_; //Calculated in the shadow pass
         float invRange_;
         SignalLight::PSignal signalSetType_;

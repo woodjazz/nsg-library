@@ -37,7 +37,6 @@ misrepresented as being the original software.
 #include "StringConverter.h"
 #include "pugixml.hpp"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
-#include "hull.h"
 #include <algorithm>
 
 namespace NSG
@@ -315,7 +314,7 @@ namespace NSG
                 linearVelocity_ = lv;
                 if (body_)
                 {
-                    if (lv != VECTOR3_ZERO)
+                    if (lv != Vector3::Zero)
                         Activate();
                     body_->setLinearVelocity(ToBtVector3(lv));
                 }
@@ -332,7 +331,7 @@ namespace NSG
                 angularVelocity_ = av;
                 if (body_)
                 {
-                    if (av != VECTOR3_ZERO)
+                    if (av != Vector3::Zero)
                         Activate();
                     body_->setAngularVelocity(ToBtVector3(av));
                 }
@@ -418,11 +417,11 @@ namespace NSG
             {
                 auto shapeName = shapeNode.attribute("name").as_string();
                 auto shape = Shape::GetOrCreate(shapeName);
-                Vertex3 position(VECTOR3_ZERO);
+                Vector3 position;
                 auto posAtt = shapeNode.attribute("position");
                 if (posAtt)
                     position = ToVertex3(posAtt.as_string());
-                Quaternion orientation(QUATERNION_IDENTITY);
+                Quaternion orientation;
                 auto rotAtt = shapeNode.attribute("orientation");
                 if (rotAtt)
                     orientation = ToQuaternion(rotAtt.as_string());
@@ -491,10 +490,10 @@ namespace NSG
     void RigidBody::Reset()
     {
         ResetForces();
-        SetLinearVelocity(VECTOR3_ZERO);
-        SetAngularVelocity(VECTOR3_ZERO);
-        SetLinearFactor(VECTOR3_ONE);
-        SetAngularFactor(VECTOR3_ONE);
+        SetLinearVelocity(Vector3::Zero);
+        SetAngularVelocity(Vector3::Zero);
+        SetLinearFactor(Vector3::One);
+        SetAngularFactor(Vector3::One);
     }
 
     void RigidBody::ReAddToWorld()
@@ -530,8 +529,8 @@ namespace NSG
                 Activate();
             else
             {
-                SetLinearVelocity(VECTOR3_ZERO);
-                SetAngularVelocity(VECTOR3_ZERO);
+                SetLinearVelocity(Vector3::Zero);
+                SetAngularVelocity(Vector3::Zero);
             }
 
             if(kinematic_)
@@ -587,7 +586,7 @@ namespace NSG
 
     void RigidBody::ApplyForce(const Vector3& force)
     {
-        if (body_ && force != VECTOR3_ZERO)
+        if (body_ && force != Vector3::Zero)
         {
             Activate();
             body_->applyCentralForce(ToBtVector3(force));
@@ -596,7 +595,7 @@ namespace NSG
 
     void RigidBody::ApplyImpulse(const Vector3& impulse)
     {
-        if (body_ && impulse != VECTOR3_ZERO)
+        if (body_ && impulse != Vector3::Zero)
         {
             Activate();
             body_->applyCentralImpulse(ToBtVector3(impulse));

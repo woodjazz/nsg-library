@@ -231,8 +231,8 @@ static void Test05()
 
 static void Test06()
 {
-	auto q = Rotation(VECTOR3_UP, -VECTOR3_FORWARD);
-	CHECK_CONDITION(-VECTOR3_FORWARD.Distance(q * VECTOR3_UP) < PRECISION);
+    auto q = Rotation(Vector3::Up, -Vector3::Forward);
+    CHECK_CONDITION(-Vector3::Forward.Distance(q * Vector3::Up) < PRECISION);
 }
 
 void Tests()

@@ -21,8 +21,10 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "Constants.h"
+#include "Vector4.h"
+#include "Color.h"
 #include "Singleton.h"
+#include "GLIncludes.h"
 
 namespace NSG
 {
@@ -84,10 +86,10 @@ namespace NSG
 		static std::string GetExtensions();
         void SetViewport(const Window& window);
 	private:
-        void SetViewport(const Recti& viewport, bool force);
+        void SetViewport(const Vector4& viewport, bool force);
 		RenderingContext();
-		Recti viewport_;
-        Recti windowViewport_;
+        Vector4 viewport_;
+        Vector4 windowViewport_;
 		GLint systemFbo_;
 		FrameBuffer* currentFbo_;
 		TextureTarget currentColorTarget_;

@@ -1,7 +1,6 @@
 #include "Light.h"
 #include "Log.h"
 #include "Check.h"
-#include "Constants.h"
 #include "Resource.h"
 #include "Batch.h"
 #include "Material.h"
@@ -48,7 +47,7 @@ namespace NSG
           signalSetType_(new SignalLight)
     {
         FrameBuffer::Flags flags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::COLOR_CUBE_TEXTURE | FrameBuffer::DEPTH));
-        for (int i = 0; i < MAX_SPLITS; i++)
+        for (int i = 0; i < ShadowCamera::MAX_SPLITS; i++)
         {
             shadowCamera_[i] = PShadowCamera(new ShadowCamera(this));
             shadowFrameBuffer_[i] = PFrameBuffer(new FrameBuffer(GetUniqueName("LightCubeFrameBuffer"), flags));
@@ -80,7 +79,7 @@ namespace NSG
         return energy_;
     }
 
-    void Light::SetColor(ColorRGB color)
+    void Light::SetColor(const Color& color)
     {
         if (color_ != color)
         {
@@ -90,7 +89,7 @@ namespace NSG
         }
     }
 
-    const ColorRGB& Light::GetColor() const
+    const Color& Light::GetColor() const
     {
         return color_;
     }
@@ -137,7 +136,7 @@ namespace NSG
     {
         if (type_ != type)
         {
-            for (int i = 0; i < MAX_SPLITS; i++)
+            for (int i = 0; i < ShadowCamera::MAX_SPLITS; i++)
             {
                 if (type == LightType::POINT)
                 {
@@ -256,8 +255,8 @@ namespace NSG
 
     void Light::CalculateColor()
     {
-        diffuseColor_ = diffuse_ ? color_ * energy_ : ColorRGB(0);
-        specularColor_ = specular_ ? color_ * energy_ : ColorRGB(0);
+        diffuseColor_ = diffuse_ ? color_ * energy_ : Color(0);
+        specularColor_ = specular_ ? color_ * energy_ : Color(0);
     }
 
     bool Light::HasSpecularColor() const
@@ -282,13 +281,13 @@ namespace NSG
 
     FrameBuffer* Light::GetShadowFrameBuffer(int idx) const
     {
-        CHECK_ASSERT(idx < MAX_SPLITS);
+        CHECK_ASSERT(idx < ShadowCamera::MAX_SPLITS);
         return shadowFrameBuffer_[idx].get();
     }
 
     PTexture Light::GetShadowMap(int idx) const
     {
-        CHECK_ASSERT(idx < MAX_SPLITS);
+        CHECK_ASSERT(idx < ShadowCamera::MAX_SPLITS);
         return shadowFrameBuffer_[idx]->GetColorTexture();
     }
 
@@ -322,7 +321,7 @@ namespace NSG
 
     ShadowCamera* Light::GetShadowCamera(int idx) const
     {
-        CHECK_ASSERT(idx < MAX_SPLITS);
+        CHECK_ASSERT(idx < ShadowCamera::MAX_SPLITS);
         return shadowCamera_[idx].get();
     }
 }

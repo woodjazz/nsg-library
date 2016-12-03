@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include "DebugRenderer.h"
 #include "Check.h"
 #include "SharedFromPointer.h"
+#include "Color.h"
 
 namespace NSG
 {
@@ -48,16 +49,16 @@ namespace NSG
             if (debugRendererEnabled_)
             {
                 auto splits = light_->GetShadowSplits();
-                light_->GetShadowCamera(0)->Debug(renderer, Color(COLOR_RED, 1.0));
+                light_->GetShadowCamera(0)->Debug(renderer, Color::Red);
                 if (splits > 1)
                 {
-					light_->GetShadowCamera(1)->Debug(renderer, Color(COLOR_GREEN, 1.0));
+                    light_->GetShadowCamera(1)->Debug(renderer, Color::Green);
                     if (splits > 2)
                     {
-						light_->GetShadowCamera(2)->Debug(renderer, Color(COLOR_BLUE, 1.0));
+                        light_->GetShadowCamera(2)->Debug(renderer, Color::Blue);
                         if (splits > 3)
                         {
-							light_->GetShadowCamera(3)->Debug(renderer, Color(COLOR_YELLOW, 1.0));
+                            light_->GetShadowCamera(3)->Debug(renderer, Color::Yellow);
                         }
                     }
                 }

@@ -563,7 +563,7 @@ void Editor::ShowGUIProperties(Material* material)
 
 		auto diffuseColor = material->GetDiffuseColor();
 		ImGui::ColorEdit4("Diffuse", &diffuseColor[0]);
-		material->SetDiffuseColor(ColorRGB(diffuseColor));
+        material->SetDiffuseColor(Color(diffuseColor));
 		material->SetAlpha(diffuseColor.a);
 
 		auto diffuseIntensity = material->GetDiffuseIntensity();
@@ -572,7 +572,7 @@ void Editor::ShowGUIProperties(Material* material)
 
 		auto specularColor = material->GetSpecularColor();
 		ImGui::ColorEdit4("Specular", &specularColor[0]);
-		material->SetSpecularColor(ColorRGB(specularColor));
+        material->SetSpecularColor(specularColor);
 		material->SetAlphaForSpecular(specularColor.a);
 
 		auto specularIntensity = material->GetSpecularIntensity();
@@ -624,7 +624,7 @@ void Editor::ShowGUIProperties(Light* light)
 		if (type != LightType::DIRECTIONAL)
 		{
 			auto distance = light->GetDistance();
-			ImGui::DragFloat("##distance", &distance, 1.f, 0.f, MAX_WORLD_SIZE, "Size %.1f");
+            ImGui::DragFloat("##distance", &distance, 1.f, 0.f, Scene::MAX_WORLD_SIZE, "Size %.1f");
 			light->SetDistance(distance);
 		}
 
@@ -679,13 +679,13 @@ void Editor::ShowGUIProperties(Camera* camera)
 		if (!isOrtho)
 		{
 			auto fov = camera->GetFOVRadians();
-			ImGui::SliderAngle("FOV", &fov, 0.f, CAMERA_MAX_FOV_DEGREES);
+            ImGui::SliderAngle("FOV", &fov, 0.f, Camera::MaxFOVDegrees);
 			camera->SetFOVRadians(fov);
 		}
 		else
 		{
 			auto orthoScale = camera->GetOrthoScale();
-			ImGui::DragFloat("##orthoScale", &orthoScale, 1.f, 0.f, MAX_WORLD_SIZE, "Size %.1f");
+            ImGui::DragFloat("##orthoScale", &orthoScale, 1.f, 0.f, Scene::MAX_WORLD_SIZE, "Size %.1f");
 			camera->SetOrthoScale(orthoScale);
 		}
 		ImGui::TreePop();

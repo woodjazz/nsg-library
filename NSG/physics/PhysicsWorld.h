@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-
+#include "Vector3.h"
 class btDynamicsWorld;
 class btDefaultCollisionConfiguration;
 struct btDbvtBroadphase;

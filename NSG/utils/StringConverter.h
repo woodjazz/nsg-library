@@ -23,19 +23,27 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "Types.h"
+#include "Vector2.h"
+#include "Vector3.h"
+#include "Vector4.h"
+#include "Quaternion.h"
+#include "BoundingBox.h"
+#include "Color.h"
 #include <string>
 
 namespace NSG
 {
-	std::string ToString(const Vertex2& obj);
+    std::string ToString(const Vector2& obj);
 	Vertex2 ToVertex2(const std::string& buffer);
 
-	std::string ToString(const Vertex3& obj);
+    std::string ToString(const Vector3& obj);
 	Vertex3 ToVertex3(const std::string& buffer);
 
-	std::string ToString(const Vertex4& obj);
+    std::string ToString(const Vector4& obj);
 	Vertex4 ToVertex4(const std::string& buffer);
+
+    std::string ToString(const Color& obj);
+    Color ToColor(const std::string& buffer);
 
 	std::string ToString(const Quaternion& obj);
 	Quaternion ToQuaternion(const std::string& buffer);

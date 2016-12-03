@@ -308,9 +308,9 @@ namespace NSG
         signalDropFile_->Run(filePath);
     }
 
-    Recti Window::GetViewport() const
+    Vector4 Window::GetViewport() const
     {
-        return Recti(0, 0, width_, height_);
+        return Vector4(0, 0, width_, height_);
     }
 
     bool Window::AllowWindowCreation()

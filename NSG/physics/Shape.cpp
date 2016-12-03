@@ -30,7 +30,7 @@ misrepresented as being the original software.
 #include "BoundingBox.h"
 #include "StringConverter.h"
 #include "BulletCollision/CollisionShapes/btCollisionShape.h"
-#include "hull.h"
+#include "LinearMath/btConvexHull.h"
 #include "pugixml.hpp"
 #include <algorithm>
 
@@ -273,22 +273,18 @@ namespace NSG
         if (vertexData.size())
         {
             // Build the convex hull from the raw geometry
-            StanHull::HullDesc desc;
-            desc.SetHullFlag(StanHull::QF_TRIANGLES);
+            HullDesc desc;
+            desc.SetHullFlag(HullFlag::QF_TRIANGLES);
             //desc.SetHullFlag(StanHull::QF_SKIN_WIDTH);
             //desc.SetHullFlag(StanHull::QF_REVERSE_ORDER);
             desc.mVcount = (unsigned int)vertexData.size();
-            desc.mVertices = &(vertexData[0].position_[0]);
+            desc.mVertices = (const btVector3*)&(vertexData[0].position_);
             desc.mVertexStride = sizeof(VertexData);
-            desc.mSkinWidth = 0.0f;
-
-            StanHull::HullLibrary lib;
-            StanHull::HullResult result;
+            HullLibrary lib;
+            HullResult result;
             lib.CreateConvexHull(desc, result);
-
             CHECK_ASSERT(result.mNumIndices % 3 == 0);
-
-            auto shape = std::make_shared<btConvexHullShape>((btScalar*)result.mOutputVertices, (int)result.mNumOutputVertices, (int)sizeof(Vector3));
+            auto shape = std::make_shared<btConvexHullShape>(&result.m_OutputVertices[0][0], result.mNumOutputVertices);
             lib.ReleaseResult(result);
             return shape;
         }

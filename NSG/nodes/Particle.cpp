@@ -52,8 +52,8 @@ namespace NSG
     void Particle::Reset()
     {
         age_ = 0;
-        SetPosition(VECTOR3_ZERO);
-        SetOrientation(QUATERNION_IDENTITY);
+        SetPosition(Vector3::Zero);
+        SetOrientation(Quaternion::Identity);
         auto rb = GetRigidBody();
         rb->Reset();
         rb->SyncWithNode();

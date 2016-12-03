@@ -32,6 +32,7 @@ misrepresented as being the original software.
 #include <cmath>
 namespace NSG
 {
+    const Quaternion Quaternion::Identity = Quaternion();
     Quaternion::Quaternion()
         : x(0), y(0), z(0), w(1)
     {

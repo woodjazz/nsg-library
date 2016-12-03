@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "ICollision.h"
 #include "Scene.h"
 #include "Camera.h"
+#include "Color.h"
 #include "Ray.h"
 #include "Log.h"
 #include "Maths.h"
@@ -123,7 +124,7 @@ namespace NSG
     #endif
     void PhysicsWorld::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
     {
-        debugRenderer_->AddLine(ToVector3(from), ToVector3(to), Color(ToVector3(color), 1));
+        debugRenderer_->AddLine(ToVector3(from), ToVector3(to), Color(ToVector3(color)));
     }
 
     void PhysicsWorld::drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color)
@@ -168,7 +169,7 @@ namespace NSG
 
     PhysicsRaycastResult PhysicsWorld::SphereCast(const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask)
     {
-        PhysicsRaycastResult result {VECTOR3_ZERO, VECTOR3_ZERO, 0.f, nullptr};
+        PhysicsRaycastResult result {Vector3::Zero, Vector3::Zero, 0.f, nullptr};
         btSphereShape shape(radius);
         btCollisionWorld::ClosestConvexResultCallback convexCallback(ToBtVector3(origin), ToBtVector3(origin +
                 maxDistance * direction));
@@ -188,7 +189,7 @@ namespace NSG
 
     PhysicsRaycastResult PhysicsWorld::SphereCastBut(const ICollision* collider, const Vector3& origin, const Vector3& direction, float radius, float maxDistance, int collisionMask)
     {
-        PhysicsRaycastResult result {VECTOR3_ZERO, VECTOR3_ZERO, 0.f, nullptr};
+        PhysicsRaycastResult result {Vector3::Zero, Vector3::Zero, 0.f, nullptr};
         btSphereShape shape(radius);
 
         struct CallBackBut : btCollisionWorld::ClosestConvexResultCallback
@@ -228,7 +229,7 @@ namespace NSG
 
     PhysicsRaycastResult PhysicsWorld::RayCast(const Vector3& origin, const Vector3& direction, float maxDistance, int collisionMask)
     {
-        PhysicsRaycastResult result {VECTOR3_ZERO, VECTOR3_ZERO, 0.f, nullptr};
+        PhysicsRaycastResult result {Vector3::Zero, Vector3::Zero, 0.f, nullptr};
         btCollisionWorld::ClosestRayResultCallback rayCallback(ToBtVector3(origin), ToBtVector3(origin +
                 maxDistance * direction));
         rayCallback.m_collisionFilterGroup = (short)0xffff;

@@ -24,12 +24,14 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "Constants.h"
 #include "Util.h"
 #include "UniformsUpdate.h"
 #include "NonCopyable.h"
 #include "BoundingBox.h"
+#include "Vector3.h"
+#include "Quaternion.h"
+#include "Matrix4.h"
+#include "Matrix3.h"
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -43,7 +45,6 @@ namespace NSG
     public:
         Node(const std::string& name = "");
         virtual ~Node();
-        IdType GetId() const { return id_;  }
         void Translate(const Vector3& delta, TransformSpace space = TS_LOCAL);
         void Rotate(const Quaternion& delta, TransformSpace space = TS_LOCAL);
         void SetPosition(const Vertex3& position);
@@ -71,10 +72,10 @@ namespace NSG
         const Matrix3& GetGlobalModelInvTranspMatrix() const;
         const Matrix4& GetGlobalModelInvMatrix() const;
 		void SetGlobalLookAtDirection(const Vertex3& direction);
-        void SetGlobalLookAtPosition(const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
-        void SetLocalLookAtPosition(const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
+        void SetGlobalLookAtPosition(const Vertex3& lookAtPosition, const Vertex3& up = Vertex3::Up);
+        void SetLocalLookAtPosition(const Vertex3& lookAtPosition, const Vertex3& up = Vertex3::Up);
         Quaternion GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up);
-        void SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up = VECTOR3_UP);
+        void SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up = Vertex3::Up);
         const Vertex3& GetLookAtDirection() const;
         const Vertex3& GetUpDirection() const;
 		const Vertex3& GetRightDirection() const;
@@ -162,7 +163,6 @@ namespace NSG
 		void AddChild(PNode node);
         void RemoveChild(Node* node);
         std::weak_ptr<Node> parent_;
-        IdType id_;
         mutable Matrix4 globalModel_;
         mutable Matrix4 globalModelInv_;
         mutable Matrix3 globalModelInvTransp_;

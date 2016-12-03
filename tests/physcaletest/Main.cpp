@@ -28,14 +28,14 @@ misrepresented as being the original software.
 using namespace NSG;
 PScene scene;
 
-PSceneNode CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos, const Vector3& scale, FillMode mode = FillMode::SOLID)
+PSceneNode CreateObject(PMesh mesh, Color color, const Vector3& pos, const Vector3& scale, FillMode mode = FillMode::SOLID)
 {
 	auto obj = scene->CreateChild<SceneNode>();
 	obj->SetGlobalPosition(pos);
 	obj->SetGlobalScale(scale);
 	auto material = Material::Create();
 	material->SetDiffuseColor(color);
-	material->SetSpecularColor(ColorRGB(0));
+    material->SetSpecularColor(Color(0));
 	material->SetRenderPass(RenderPass::LIT);
 	material->SetFillMode(mode);
 	obj->SetMesh(mesh);
@@ -60,7 +60,7 @@ int NSG_MAIN(int argc, char* argv[])
 	{
 		auto mesh = Mesh::Create<BoxMesh>();
 		mesh->Set(5, 0.1f, 5);
-		floor = CreateObject(mesh, COLOR_WHITE, Vector3(0), Vector3(2), FillMode::WIREFRAME);
+        floor = CreateObject(mesh, Color::White, Vector3(0), Vector3(2), FillMode::WIREFRAME);
 	}
 
 	PSceneNode sphere;
@@ -68,7 +68,7 @@ int NSG_MAIN(int argc, char* argv[])
 	{
 		auto mesh = Mesh::Create<SphereMesh>();
 		mesh->Set(2);
-		sphere = CreateObject(mesh, COLOR_WHITE, spherePos, Vector3(1), FillMode::WIREFRAME);
+        sphere = CreateObject(mesh, Color::White, spherePos, Vector3(1), FillMode::WIREFRAME);
 		auto rb = sphere->GetRigidBody();
 		rb->SetMass(1);
 		rb->HandleCollisions(true);

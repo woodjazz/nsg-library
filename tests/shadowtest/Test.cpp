@@ -30,7 +30,7 @@ static PLight SetupScene(PScene scene)
 {
 	auto materialFloor = Material::Create();
 	materialFloor->SetRenderPass(RenderPass::LIT);
-	materialFloor->SetDiffuseColor(COLOR_BLUE);
+    materialFloor->SetDiffuseColor(Color::Blue);
 	materialFloor->CastShadow(false);
 	auto boxMesh(Mesh::Create<BoxMesh>());
 	auto sphereMesh(Mesh::Create<SphereMesh>());
@@ -42,7 +42,7 @@ static PLight SetupScene(PScene scene)
 
 	auto materialBox = Material::Create();
 	materialBox->SetRenderPass(RenderPass::LIT);
-	materialBox->SetDiffuseColor(COLOR_RED);
+    materialBox->SetDiffuseColor(Color::Red);
 
 	auto nodeBox = scene->CreateChild<SceneNode>("Box");
 	nodeBox->SetMesh(sphereMesh);

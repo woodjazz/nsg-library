@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Object.h"
+#include "GLIncludes.h"
 namespace NSG 
 {
     class Buffer : public Object

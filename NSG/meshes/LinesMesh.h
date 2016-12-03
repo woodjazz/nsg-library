@@ -25,7 +25,7 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "ProceduralMesh.h"
-#include "Constants.h"
+#include "Color.h"
 #include <vector>
 
 namespace NSG
@@ -35,7 +35,7 @@ namespace NSG
 	public:
 		LinesMesh(const std::string& name);
 		~LinesMesh();
-		void Add(const Vector3& start, const Vector3& end, const Color& color = Color(1));
+        void Add(const Vector3& start, const Vector3& end, const Color& color = Color::White);
 		void Clear();
 		GLenum GetWireFrameDrawMode() const override;
 		GLenum GetSolidDrawMode() const override;

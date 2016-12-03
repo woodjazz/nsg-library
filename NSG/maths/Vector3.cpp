@@ -24,12 +24,20 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Vector3.h"
+#include "Vector4.h"
 #include "Util.h"
 #include "Check.h"
 #include "Maths.h"
 #include <cmath>
 namespace NSG
 {
+    const Vector3 Vector3::Right = Vector3(1, 0, 0);
+    const Vector3 Vector3::Up = Vector3(0, 1, 0);
+    const Vector3 Vector3::Forward = Vector3(0, 0, 1);
+    const Vector3 Vector3::LookAt = Vector3(0, 0, -1);
+    const Vector3 Vector3::Zero = Vector3(0);
+    const Vector3 Vector3::One = Vector3(1);
+
     Vector3::Vector3()
         : x(0), y(0), z(0)
     {
@@ -245,4 +253,5 @@ namespace NSG
 	{
 		return a.Distance(b);
 	}
+
 }

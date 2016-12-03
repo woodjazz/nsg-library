@@ -33,7 +33,6 @@ misrepresented as being the original software.
 #include "Log.h"
 #include "Util.h"
 #include "Maths.h"
-#include "Constants.h"
 #include "StringConverter.h"
 #include "Scene.h"
 #include "Keys.h"
@@ -100,4 +99,5 @@ misrepresented as being the original software.
 #include "ShadowMapDebug.h"
 #include "SharedFromPointer.h"
 #include "Batch.h"
+#include "Color.h"
 

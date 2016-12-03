@@ -41,7 +41,7 @@ EditorLight::EditorLight(const std::string& name)
     SetMesh(Mesh::GetOrCreate<QuadMesh>("NSGEditorCamera"));
     SetMaterial(Material::GetOrCreate("NSGEditorLight"));
     material_->SetRenderPass(RenderPass::UNLIT);
-    material_->SetDiffuseColor(COLOR_YELLOW);
+    material_->SetDiffuseColor(Color::Yellow);
     material_->EnableTransparent(true);
 	material_->SetAlpha(0.9f);
     material_->SetBillboardType(BillboardType::SPHERICAL);

@@ -69,4 +69,23 @@ namespace NSG
         return clone;
     }
 
+    size_t Bone::GetMaxPlatformBones(size_t nBones)
+    {
+        // set a maximum value per platform to avoid shader variations
+        //LOGI("Number of bones=%d", nBones);
+
+        const size_t MAX_BONES0 = Bone::MaxBones;
+        const size_t MAX_BONES1 = 48;
+        static_assert(Bone::MaxBones > MAX_BONES1, "MaxBones has to be greater than MAX_BONES1");
+        const size_t MAX_BONES2 = 32;
+
+        if (nBones <= MAX_BONES2)
+            return MAX_BONES1;
+        else if (nBones <= MAX_BONES1)
+            return MAX_BONES1;
+        else if (nBones <= MAX_BONES0)
+            return MAX_BONES0;
+        return nBones;
+    }
+
 }

@@ -24,10 +24,10 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "PointOnSphere.h"
-#include "Constants.h"
 #include "Check.h"
 #include "Util.h"
 #include "Maths.h"
+#include <cmath>
 
 namespace NSG
 {
@@ -36,7 +36,7 @@ namespace NSG
           radius_(0),
           theta_(0),
           phi_(0),
-          up_(VECTOR3_UP)
+          up_(Vector3::Up)
     {
     }
 
@@ -45,7 +45,7 @@ namespace NSG
           radius_(radius),
           theta_(0),
           phi_(0),
-          up_(VECTOR3_UP)
+          up_(Vector3::Up)
     {
         initialPoint_ = point_ = CalculatePoint();
         CalculateUpVector();

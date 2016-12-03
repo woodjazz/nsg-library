@@ -63,7 +63,7 @@ Player::Player(PScene scene, PWindow window)
     child_->SetMesh(mesh);
     auto material(Material::Create());
     //material->SetFillMode(FillMode::WIREFRAME);
-    material->SetDiffuseColor(COLOR_DODGER_BLUE);
+    material->SetDiffuseColor(Color::DodgerBlue);
     material->SetRenderPass(RenderPass::UNLIT);
     child_->SetMaterial(material);
 
@@ -73,7 +73,7 @@ Player::Player(PScene scene, PWindow window)
         {
             auto dt = Engine::GetPtr()->GetDeltaTime();
             child_->Roll(-x * dt);
-            auto dir = y * dt * (child_->GetOrientation() * VECTOR3_UP);
+            auto dir = y * dt * (child_->GetOrientation() * Vector3::Up);
             node_->Pitch(-dir.y);
             node_->Yaw(dir.x);
         }
@@ -83,12 +83,12 @@ Player::Player(PScene scene, PWindow window)
     {
         if (!child_->IsHidden() && (x || y))
         {
-            auto angle = VECTOR3_UP.Angle(Vector3(x, y, 0).Normalize());
+            auto angle = Vector3::Up.Angle(Vector3(x, y, 0).Normalize());
             if (x > 0)
                 angle *= -1;
-            child_->SetOrientation(Quaternion(angle, VECTOR3_FORWARD));
+            child_->SetOrientation(Quaternion(angle, Vector3::Forward));
             auto dt = Engine::GetPtr()->GetDeltaTime();
-            auto dir = dt * (child_->GetOrientation() * VECTOR3_UP);
+            auto dir = dt * (child_->GetOrientation() * Vector3::Up);
             node_->Pitch(-dir.y);
             node_->Yaw(dir.x);
         }
@@ -98,10 +98,10 @@ Player::Player(PScene scene, PWindow window)
     {
         if (!child_->IsHidden() && (x || y))
         {
-            auto angle = VECTOR3_UP.Angle(Vector3(x, y, 0).Normalize());
+            auto angle = Vector3::Up.Angle(Vector3(x, y, 0).Normalize());
             if (x > 0)
                 angle *= -1;
-            lastShotOrientation_ = Quaternion(angle, VECTOR3_FORWARD);
+            lastShotOrientation_ = Quaternion(angle, Vector3::Forward);
             shot_ = true;
         }
         else
@@ -150,7 +150,7 @@ Player::Player(PScene scene, PWindow window)
 
     body_->SetKinematic(true);
     body_->SetCollisionMask(collisionGroup_, collisionMask_);
-    auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, VECTOR3_ONE));
+    auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, Vector3::One));
     body_->AddShape(shape);
     shape->SetBB(child_->GetWorldBoundingBox());
 

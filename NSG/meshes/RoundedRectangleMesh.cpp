@@ -25,8 +25,8 @@ misrepresented as being the original software.
 */
 #include "RoundedRectangleMesh.h"
 #include "Types.h"
-#include "Constants.h"
 #include "Check.h"
+#include "Maths.h"
 #include <algorithm>
 
 namespace NSG

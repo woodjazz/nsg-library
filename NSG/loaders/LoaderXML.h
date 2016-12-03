@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "StrongFactory.h"
 #include "pugixml.hpp"
 #include <string>
+#include <set>
 
 namespace NSG
 {

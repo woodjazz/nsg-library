@@ -31,7 +31,6 @@ misrepresented as being the original software.
 #include "Material.h"
 #include "Mesh.h"
 #include "Scene.h"
-#include "Constants.h"
 #include "Pass.h"
 #include "Util.h"
 #include "SceneNode.h"
@@ -117,7 +116,7 @@ namespace NSG
         depthFunc_ = DepthFunc::LESS;
         slopeScaledDepthBias_ = 0;
 
-        windowViewport_ = viewport_ = Recti();
+        windowViewport_ = viewport_ = Vector4::Zero;
 
         glGetIntegerv(GL_FRAMEBUFFER_BINDING, &systemFbo_); // On IOS default FBO is not zero
 
@@ -179,7 +178,7 @@ namespace NSG
                 currentColorTarget_ = buffer->GetDefaultTextureTarget();
                 glBindFramebuffer(GL_FRAMEBUFFER, buffer->GetId());
                 buffer->AttachTarget(currentColorTarget_);
-                SetViewport(Recti(0, 0, buffer->GetWidth(), buffer->GetHeight()), false);
+                SetViewport(Vector4(0, 0, buffer->GetWidth(), buffer->GetHeight()), false);
             }
         }
         return old;
@@ -199,7 +198,7 @@ namespace NSG
             {
                 glBindFramebuffer(GL_FRAMEBUFFER, buffer->GetId());
                 buffer->AttachTarget(colorTarget);
-                SetViewport(Recti(0, 0, buffer->GetWidth(), buffer->GetHeight()), false);
+                SetViewport(Vector4(0, 0, buffer->GetWidth(), buffer->GetHeight()), false);
             }
         }
         return old;
@@ -609,21 +608,21 @@ namespace NSG
         }
     }
 
-    void RenderingContext::SetViewport(const Recti& viewport, bool force)
+    void RenderingContext::SetViewport(const Vector4& viewport, bool force)
     {
         if (force || !(viewport_ == viewport))
         {
-            glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+            glViewport((GLint)viewport.x, (GLint)viewport.y, (GLint)viewport.z, (GLint)viewport.w);
             viewport_ = viewport;
         }
     }
 
     void RenderingContext::SetViewport(const Window& window)
     {
-        auto viewport = Recti(0, 0, window.GetWidth(), window.GetHeight());
+        auto viewport = Vector4(0, 0, window.GetWidth(), window.GetHeight());
         if (!(viewport_ == viewport))
         {
-            glViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+            glViewport((GLint)viewport.x, (GLint)viewport.y, (GLint)viewport.z, (GLint)viewport.w);
             viewport_ = viewport;
             windowViewport_ = viewport;
         }

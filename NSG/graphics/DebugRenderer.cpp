@@ -25,6 +25,8 @@ misrepresented as being the original software.
 */
 #include "DebugRenderer.h"
 #include "LinesMesh.h"
+#include "Maths.h"
+#include "Vector3.h"
 
 namespace NSG
 {

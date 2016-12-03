@@ -48,9 +48,9 @@ namespace NSG
 		float Length() const;
 		float Distance(const Vector4& v) const;
 		Vector4 Fract() const;
+        static const Vector4 Zero;
 	};
 	typedef Vector4 Vertex4;
-    typedef Vector4 Color;
 	typedef Vector4 Rect;
 
 	bool operator!=(const Vector4& v1, const Vector4& v2);

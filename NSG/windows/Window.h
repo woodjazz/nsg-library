@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Util.h"
 #include "Object.h"
+#include "Vector4.h"
 #include <string>
 #include <vector>
 namespace NSG
@@ -69,7 +70,7 @@ namespace NSG
         bool IsMinimized() const { return minimized_; }
         static bool AreAllWindowsMinimized();
         virtual void Destroy() {}
-        Recti GetViewport() const;
+        Vector4 GetViewport() const;
         const std::string& GetName() const { return name_; }
         void SetScene(PScene scene);
         PWeakScene GetScene() const { return scene_; }

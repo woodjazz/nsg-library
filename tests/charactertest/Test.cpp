@@ -28,10 +28,10 @@ using namespace NSG;
 
 static PCharacter SetupScene(PScene scene)
 {
-    scene->SetAmbientColor(ColorRGB(0.f));
+    scene->SetAmbientColor(Color(0.f));
     auto materialFloor = Material::Create();
 	materialFloor->SetRenderPass(RenderPass::LIT);
-    materialFloor->SetDiffuseColor(ColorRGB(0.1f));
+    materialFloor->SetDiffuseColor(Color(0.1f));
     materialFloor->CastShadow(false);
     auto boxMesh(Mesh::Create<BoxMesh>());
     auto sphereMesh(Mesh::Create<SphereMesh>());
@@ -47,7 +47,7 @@ static PCharacter SetupScene(PScene scene)
 
     auto materialBox = Material::Create();
 	materialBox->SetRenderPass(RenderPass::LIT);
-    materialBox->SetDiffuseColor(COLOR_RED);
+    materialBox->SetDiffuseColor(Color::Red);
 
     auto nodeBox = scene->CreateChild<SceneNode>("Player");
     nodeBox->SetMesh(sphereMesh);
@@ -60,11 +60,11 @@ static PCharacter SetupScene(PScene scene)
     auto controllerShape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_BOX, characterScale));
     controllerShape->SetBB(BoundingBox(-1, 1));
     auto q = Quaternion(Radians(90.f), Vertex3(1, 0, 0));
-    controller->AddShape(controllerShape, VECTOR3_ZERO, q);
+    controller->AddShape(controllerShape, Vector3::Zero, q);
 
     auto materialObstacle = Material::Create();
 	materialObstacle->SetRenderPass(RenderPass::LIT);
-    materialObstacle->SetDiffuseColor(COLOR_RED);
+    materialObstacle->SetDiffuseColor(Color::Red);
 
     {
         auto node = scene->CreateChild<SceneNode>("Obstacle0");

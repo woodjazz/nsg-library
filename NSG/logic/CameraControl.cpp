@@ -86,7 +86,7 @@ namespace NSG
 
     bool CameraControl::TransformCoords(float& x, float& y)
     {
-        if (viewRect_ != VECTOR4_ZERO)
+        if (viewRect_ != Vector4::Zero)
         {
 			auto window = window_.lock().get();
 			if (!window)
@@ -461,7 +461,7 @@ namespace NSG
             distance = 1 + camera_->GetZNear();
         Vertex3 position = camera_->GetGlobalPosition();
         if (bb.IsInside(position))
-            position = center + VECTOR3_FORWARD * distance;
+            position = center + Vector3::Forward * distance;
         else
         {
             auto lookAtDir = (position - center).Normalize();
@@ -477,7 +477,7 @@ namespace NSG
         enabled_ = enable;
     }
 
-    void CameraControl::SetViewRect(Vector4 viewRect)
+    void CameraControl::SetViewRect(const Vector4& viewRect)
     {
         viewRect_ = viewRect;
     }

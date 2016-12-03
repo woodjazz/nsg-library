@@ -25,6 +25,9 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Vector4.h"
+#include "Vector3.h"
+#include "Quaternion.h"
 #include "SharedPointers.h"
 
 namespace NSG
@@ -42,7 +45,7 @@ namespace NSG
 		void OnKey(int key, int action, int modifier);
 		void Enable(bool enable);
 		PSceneNode SelectObject(float x, float y);
-		void SetViewRect(Vector4 viewRect);
+        void SetViewRect(const Vector4& viewRect);
 		void SetSelectionContext(RendererContext context) { selectionContext_ = context; }
 	private:
 		bool TransformCoords(float& x, float& y);

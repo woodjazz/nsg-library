@@ -26,6 +26,7 @@ misrepresented as being the original software.
 #include "SceneNode.h"
 #include "Check.h"
 #include "Skeleton.h"
+#include "Bone.h"
 #include "RenderingContext.h"
 #include "Material.h"
 #include "ModelMesh.h"
@@ -378,19 +379,6 @@ namespace NSG
         }
     }
 
-    size_t SceneNode::GetMaxPlatformBones(size_t nBones) const
-    {
-        // set a maximum value per platform to avoid shader variations
-        //LOGI("Number of bones=%d", nBones);
-        if (nBones <= MAX_BONES2)
-            return MAX_BONES1;
-        else if (nBones <= MAX_BONES1)
-            return MAX_BONES1;
-        else if (nBones <= MAX_BONES0)
-            return MAX_BONES0;
-        return nBones;
-    }
-
     void SceneNode::FillShaderDefines(std::string& defines) const
     {
         auto armature = GetArmature();
@@ -402,7 +390,7 @@ namespace NSG
             auto nBones = skeleton->GetNumberOfBones();
             if (nBones)
             {
-                defines += "MAX_BONES " + ToString(GetMaxPlatformBones(nBones)) + "\n";
+                defines += "MAX_BONES " + ToString(Bone::GetMaxPlatformBones(nBones)) + "\n";
                 defines += "SKINNED\n";
             }
         }

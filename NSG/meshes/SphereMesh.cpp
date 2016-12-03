@@ -25,9 +25,9 @@ misrepresented as being the original software.
 */
 #include "SphereMesh.h"
 #include "Types.h"
-#include "Constants.h"
 #include "Check.h"
 #include "Log.h"
+#include "Maths.h"
 
 namespace NSG
 {

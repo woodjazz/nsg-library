@@ -37,7 +37,7 @@ namespace NSG
     ShadowCamera::ShadowCamera(Light* light)
         : Camera(light->GetName() + "ShadowCamera"),
           light_(light),
-          farSplit_(MAX_WORLD_SIZE),
+          farSplit_(Scene::MAX_WORLD_SIZE),
           disabled_(false)
     {
         dirPositiveX_.SetLocalLookAtPosition(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
@@ -92,7 +92,7 @@ namespace NSG
         DisableUserOrthoProjection();
 
         // Calculate initial position & rotation
-        auto pos = camera->GetGlobalPosition() - MAX_WORLD_SIZE * light_->GetLookAtDirection();
+        auto pos = camera->GetGlobalPosition() - Scene::MAX_WORLD_SIZE * light_->GetLookAtDirection();
         SetPosition(pos);
         SetOrientation(light_->GetGlobalOrientation());
         {

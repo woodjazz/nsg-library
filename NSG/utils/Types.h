@@ -24,22 +24,11 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Vector3.h"
-#include "Vector4.h"
-#include "Vector2.h"
-#include "Quaternion.h"
-#include "Matrix4.h"
-#include "Matrix3.h"
 #include "SharedPointers.h"
-#include "GLIncludes.h"
 #include "FlagSet.h"
 #include "SignalSlots.h"
 #include <string>
 #include <chrono>
-#include <set>
-#include <map>
-
-#define STRINGIFY(S) #S
 
 namespace pugi
 {
@@ -55,15 +44,6 @@ namespace NSG
     {
         int code;
         GLException(int e) : code(e) {}
-    };
-
-
-    struct Recti
-    {
-        int x, y, z, w;
-        Recti();
-        Recti(int a, int b, int c, int d);
-        bool operator==(const Recti& obj) const;
     };
 
     enum class LightType
@@ -128,46 +108,6 @@ namespace NSG
     typedef enum {LEFT_ALIGNMENT, CENTER_ALIGNMENT, RIGHT_ALIGNMENT} HorizontalAlignment;
     typedef enum {TOP_ALIGNMENT, MIDDLE_ALIGNMENT, BOTTOM_ALIGNMENT} VerticalAlignment;
 
-    typedef GLushort IdType;
-
-    namespace IMGUI
-    {
-        enum class LayoutType
-        {
-            WINDOW,
-            VERTICAL,
-            HORIZONTAL,
-            CONTROL,
-            SPACER,
-            LINE
-        };
-
-        enum class IdsTypes : IdType
-        {
-            IMGUI_UNKNOWN_ID,
-            IMGUI_MAIN_WINDOW_ID,
-            IMGUI_VERTICAL_SLIDER_ID,
-            IMGUI_HORIZONTAL_SLIDER_ID,
-            IMGUI_FIRST_VALID_ID
-        } ;
-
-        enum class SizerType
-        {
-            LEFT_TOP_SIZER,
-            TOP_SIZER,
-            RIGHT_TOP_SIZER,
-            LEFT_SIZER,
-            RIGHT_SIZER,
-            LEFT_BOTTOM_SIZER,
-            BOTTOM_SIZER,
-            RIGHT_BOTTOM_SIZER
-        } ;
-    }
-
-    typedef std::pair<PNode, PMesh> MeshNode;
-
-    typedef std::chrono::nanoseconds Nanoseconds;
-    typedef std::chrono::microseconds Microseconds;
     typedef std::chrono::milliseconds Milliseconds;
     typedef std::chrono::seconds Seconds;
     typedef std::chrono::steady_clock Clock;
@@ -178,7 +118,7 @@ namespace NSG
         OUTSIDE, INTERSECTS, INSIDE
     };
 
-    typedef GLushort IndexType;
+    typedef unsigned short IndexType;
 
     enum class AttributesLoc
     {
@@ -201,9 +141,6 @@ namespace NSG
 
     typedef std::vector<IndexType> Indexes;
 
-    struct UniformsUpdate;
-    typedef std::set<UniformsUpdate*> UniformObjs;
-
     enum class CullFaceMode
     {
         DEFAULT,
@@ -212,13 +149,6 @@ namespace NSG
         FRONT_AND_BACK,
         DISABLED,
         MAX_INDEX
-    };
-
-    enum class FrontFaceMode
-    {
-        DEFAULT = GL_CCW,
-        CCW = GL_CCW,
-        CW = GL_CW
     };
 
     enum class DrawMode
@@ -336,51 +266,11 @@ namespace NSG
 
     typedef FlagSet<WindowFlag> WindowFlags;
 
-    struct ContactPoint
-    {
-        SceneNode* collider_;
-        Vector3 normalB_;
-    };
-
     enum class BlendFilterMode
     {
         ADDITIVE,   // strong result, high overexposure
         SCREEN,     //mild result, medium overexposure
         SOFTLIGHT   //light result, no overexposure
-    };
-
-    struct BlurFilter
-    {
-        Vector2 blurDir_;
-        /// This should usually be equal to 1.0f / texture_pixel_width for a horizontal blur, and
-        /// 1.0f / texture_pixel_height for a vertical blur.
-        Vector2 blurRadius_; //calculated in Material::IsValid()
-        float sigma_;
-        BlurFilter();
-        bool operator != (const BlurFilter& obj) const;
-    };
-
-    struct WaveFilter
-    {
-        float factor_;
-        float offset_;
-        WaveFilter();
-        bool operator != (const WaveFilter& obj) const;
-    };
-
-    struct ShockWaveFilter
-    {
-        Vector2 center_;
-        float time_;
-        Vector3 params_;
-        ShockWaveFilter();
-        bool operator != (const ShockWaveFilter& obj) const;
-    };
-
-    enum class ResourceType
-    {
-        File,
-        Memory
     };
 
     enum class JoystickAxis
@@ -443,7 +333,6 @@ namespace NSG
     struct SignalText : Signal<std::string> {};
     struct SignalMultiGesture : Signal<int, float, float, float, float, int> {};
     struct SignalUpdate : Signal<float> {};
-    struct SignalCollision : Signal<const ContactPoint&> {};
     struct SignalDropFile : Signal<const std::string&> {};
     struct SignalNodeMouseMoved : Signal<SceneNode*, float, float> {};
     struct SignalNodeMouseButton : Signal<SceneNode*, int, float, float> {};
@@ -508,34 +397,6 @@ namespace NSG
         NOTEQUAL,
         GEQUAL,
         ALWAYS
-    };
-
-    enum class CameraSensorFit //the same as in Blender
-    {
-        AUTOMATIC,
-        HORIZONTAL,
-        VERTICAL
-    };
-
-    struct OrthoProjection
-    {
-        float left_;
-        float right_;
-        float bottom_;
-        float top_;
-        float near_;
-        float far_;
-
-        OrthoProjection();
-		OrthoProjection(float left, float right, float bottom, float top, float near, float far);
-    };
-
-    enum class HTTPRequestStatus
-    {
-        NONE,
-        SUCCESSFUL,
-        FAILED,
-        IN_PROGRESS
     };
 
     enum class TextureFormat
@@ -603,18 +464,6 @@ namespace NSG
         MAX_CUBEMAP_FACES
     };
 
-    enum class TextureTarget
-    {
-        UNKNOWN = -1,
-        TEXTURE_2D = GL_TEXTURE_2D,
-        TEXTURE_CUBE_MAP_POSITIVE_X = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-        TEXTURE_CUBE_MAP_NEGATIVE_X = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-        TEXTURE_CUBE_MAP_POSITIVE_Y = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-        TEXTURE_CUBE_MAP_NEGATIVE_Y = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-        TEXTURE_CUBE_MAP_POSITIVE_Z = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-        TEXTURE_CUBE_MAP_NEGATIVE_Z = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
-    };
-
     enum class PixelFormat
     {
         RGB888,
@@ -629,11 +478,5 @@ namespace NSG
     {
         DEFAULT,
         EDITOR
-    };
-
-    enum class WireShape
-    {
-        QUAD,
-        TRIANGLE
     };
 }

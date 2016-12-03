@@ -28,14 +28,14 @@ misrepresented as being the original software.
 using namespace NSG;
 PScene scene;
 
-PSceneNode CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
+PSceneNode CreateObject(PMesh mesh, Color color, const Vector3& pos)
 {
     auto obj = scene->CreateChild<SceneNode>();
     obj->SetGlobalPosition(pos);
     auto material = Material::GetOrCreate(mesh->GetName());
     material->SetDiffuseColor(color);
     //material->SetBias(.9f);
-    //material->SetSpecularColor(ColorRGB(0));
+    //material->SetSpecularColor(Color(0));
     material->SetRenderPass(RenderPass::LIT);
     //material->SetRenderPass(RenderPass::UNLIT);
     obj->SetMesh(mesh);
@@ -45,7 +45,7 @@ PSceneNode CreateObject(PMesh mesh, ColorRGB color, const Vector3& pos)
 
 static void SetFog(PScene scene)
 {
-    scene->SetHorizonColor(ColorRGB(0, 1, 0));
+    scene->SetHorizonColor(Color(0, 1, 0));
     scene->EnableFog(true);
     scene->SetFogDepth(150);
     scene->SetFogStart(15);
@@ -70,7 +70,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto light = scene->CreateChild<Light>("Light");
     ShadowMapDebug shadowMapDebug(window, light);
     light->SetType(LightType::DIRECTIONAL);
-    light->SetShadowColor(Vector4(COLOR_BLACK, 1.f));
+    light->SetShadowColor(Color::Black);
     //light->SetBias(0.1000f);
     auto camera = scene->CreateChild<Camera>();
     camera->SetWindow(window);
@@ -89,7 +89,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto control = std::make_shared<CameraControl>(camera);
     auto plane = Mesh::Create<BoxMesh>();
     plane->Set(60, 0.1f, 500);
-    auto floor = CreateObject(plane, ColorRGB(0.058f, 0.58f, 0.98f), Vector3(0));
+    auto floor = CreateObject(plane, Color(0.058f, 0.58f, 0.98f), Vector3(0));
     floor->GetMaterial()->CastShadow(false);
     //floor->GetMaterial()->SetAlphaForSpecular(0);
     #ifdef TEST1
@@ -97,7 +97,7 @@ int NSG_MAIN(int argc, char* argv[])
     for (int i = 0; i < MAX_OBJS / 2; i++)
     {
         float z = -i * 2.5f;
-        CreateObject(Mesh::GetOrCreate<SphereMesh>("Sphere"), COLOR_RED, Vector3(-1, 1, z));
+        CreateObject(Mesh::GetOrCreate<SphereMesh>("Sphere"), Color::Red, Vector3(-1, 1, z));
         //CreateObject(Mesh::GetOrCreate<BoxMesh>("Box"), COLOR_BLUE, Vector3(1, 1, z));
     }
 
@@ -106,7 +106,7 @@ int NSG_MAIN(int argc, char* argv[])
         float z = -i * 2.5f;
         //auto sphere = CreateObject(Mesh::GetOrCreate<SphereMesh>("Sphere"), COLOR_RED, Vector3(-1, 1, z));
         //sphere->GetMaterial()->SetSpecularColor(COLOR_WHITE);
-        CreateObject(Mesh::GetOrCreate<BoxMesh>("Box"), COLOR_BLUE, Vector3(1, 1, z));
+        CreateObject(Mesh::GetOrCreate<BoxMesh>("Box"), Color::Blue, Vector3(1, 1, z));
     }
     #else
     //camera->SetShadowSplits(1);

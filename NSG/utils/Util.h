@@ -25,6 +25,9 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Vector3.h"
+#include "Quaternion.h"
+#include "Color.h"
 #include <string>
 
 class btQuaternion;
@@ -38,8 +41,8 @@ namespace NSG
 	btQuaternion ToBtQuaternion(const Quaternion& q);
 	Quaternion ToQuaternion(const btQuaternion& q);
 	std::string GetUniqueName(const std::string& name = "");
-	GLushort Transform(GLubyte selected[4]);
-	Color Transform(GLushort id);
+    unsigned short Transform(unsigned char selected[4]);
+    Color Transform(unsigned short id);
 	std::string CompressBuffer(const std::string& buf);
 	std::string DecompressBuffer(const std::string& buffer);
 }

@@ -39,6 +39,9 @@ namespace NSG
 		void Load(const pugi::xml_node& node) override;
 		void Save(pugi::xml_node& node) const override;
 		PBone Clone() const;
+        static size_t GetMaxPlatformBones(size_t nBones);
+        static const size_t MaxBones = 64;
+        static const size_t MaxBonesPerVertex = 4;
 	private:
 		Matrix4 pose_;
 	};

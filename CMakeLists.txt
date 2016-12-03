@@ -128,14 +128,6 @@ add_subdirectory(${DEPENDENCIES_DIR}/libb64)
 list(APPEND LIBRARIES_2_LINK libb64)
 set_property(TARGET libb64 PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
 
-##################################
-# StanHull
-##################################
-include_directories(${DEPENDENCIES_DIR}/StanHull)
-add_subdirectory(${DEPENDENCIES_DIR}/StanHull)
-list(APPEND LIBRARIES_2_LINK StanHull) 
-set_property(TARGET StanHull PROPERTY FOLDER ${LIBRARIES_FOLDER_NAME})
-
 ###########################
 # stb
 ###########################

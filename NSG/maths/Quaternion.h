@@ -51,6 +51,7 @@ namespace NSG
 		float Yaw() const;
 		Vertex3 EulerAngles() const;
 		Quaternion Normalize() const;
+        static const Quaternion Identity;
 	};
 	bool operator!=(const Quaternion& q1, const Quaternion& q2);
 	Vector3 operator*(const Quaternion& q,	const Vector3& v);

@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "QuadMesh.h"
 #include "Types.h"
-#include "Constants.h"
 #include "Check.h"
 
 namespace NSG

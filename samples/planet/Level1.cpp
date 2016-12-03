@@ -29,7 +29,7 @@ Level1::Level1(PWindow window)
     : Level(window)
 {
     scene_ = std::make_shared<Scene>("Level1");
-    scene_->SetAmbientColor(ColorRGB(0.1f));
+    scene_->SetAmbientColor(Color(0.1f));
     AddObject(std::make_shared<Planet>(scene_));
     AddObject(std::make_shared<Sun>(scene_));
     player_ = std::make_shared<Player>(scene_, window);
@@ -60,5 +60,5 @@ void Level1::GenerateEnemies()
     }
     Enemy::SetTotal(total);
     auto material(Material::Get("EnemyMaterial"));
-    material->SetDiffuseColor(COLOR_GREEN);
+    material->SetDiffuseColor(Color::Green);
 }

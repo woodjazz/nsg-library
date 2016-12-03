@@ -248,7 +248,7 @@ namespace NSG
             PMesh usedMesh;
             for (auto& obj : material.data_)
             {
-                bool limitReached = batches.size() && batches.back().GetNodes().size() >= MAX_NODES_IN_BATCH;
+                bool limitReached = batches.size() && batches.back().GetNodes().size() >= Batch::MaxNodesInBatch;
                 if (obj.mesh_ != usedMesh || !obj.mesh_ || limitReached)
                 {
                     usedMesh = obj.mesh_;
@@ -291,12 +291,12 @@ namespace NSG
 
     int Renderer::GetShadowFrameBufferSize(int split) const
     {
-        CHECK_ASSERT(split < MAX_SPLITS);
-        static const int SplitMapSize[MAX_SPLITS] = { 1024, 512, 256, 128 };
+        CHECK_ASSERT(split < ShadowCamera::MAX_SPLITS);
+        static const int SplitMapSize[ShadowCamera::MAX_SPLITS] = { 1024, 512, 256, 128 };
         return SplitMapSize[split];
     }
 
-    int Renderer::CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const
+    int Renderer::CalculateSplits(const Camera* camera, float splits[ShadowCamera::MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const
     {
         auto camNear = camera->GetZNear();
         auto camFar  = camera->GetZFar();
@@ -322,7 +322,7 @@ namespace NSG
             nSplits = (int)round(frustumVisibilityFactor * nSplits);
         }
 
-        nSplits = Clamp(nSplits, 1, MAX_SPLITS);
+        nSplits = Clamp(nSplits, 1, ShadowCamera::MAX_SPLITS);
         float zDistance = camFar - camNear;
         for (int i = 0; i < nSplits - 1; i++)
         {
@@ -433,7 +433,7 @@ namespace NSG
                     auto camFrustum = camera->GetFrustum();
                     BoundingBox camFullFrustumViewBox(*camFrustum);
                     auto receiversViewBox = Camera::GetViewBox(camFrustum.get(), light->GetScene().get(), true, false);
-                    float splits[MAX_SPLITS];
+                    float splits[ShadowCamera::MAX_SPLITS];
                     int shadowSplits = CalculateSplits(camera, splits, camFullFrustumViewBox, receiversViewBox);
                     light->SetShadowSplits(shadowSplits);
                     int split = 0;
@@ -706,7 +706,7 @@ namespace NSG
                 RemoveFrom(visibles, filtered);
                 auto transparent = ExtractTransparent(visibles);
                 RemoveFrom(visibles, transparent);
-                context_->SetClearColor(Color(scene->GetHorizonColor(), 1));
+                context_->SetClearColor(scene->GetHorizonColor());
                 context_->ClearAllBuffers();
                 if (!visibles.empty())
                 {

@@ -35,7 +35,7 @@ EditorCamera::EditorCamera(const std::string& name)
     SetMesh(Mesh::GetOrCreate<QuadMesh>("NSGEditorCamera"));
     SetMaterial(Material::GetOrCreate("NSGEditorCamera"));
     material_->SetRenderPass(RenderPass::TEXT);
-	material_->SetDiffuseColor(COLOR_DODGER_BLUE);
+    material_->SetDiffuseColor(Color::DodgerBlue);
     material_->EnableTransparent(true);
 	material_->SetAlpha(0.9f);
     material_->SetBillboardType(BillboardType::SPHERICAL);

@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "Character.h"
 #include "Shape.h"
+#include "Color.h"
 #include "SceneNode.h"
 #include "Scene.h"
 #include "BoundingBox.h"
@@ -63,8 +64,8 @@ namespace NSG
           shapeHeight_(0),
           shapeHalfHeight_(0),
           shapeSphereRadius_(0),
-          forwardAxis_(-VECTOR3_FORWARD),
-          upAxis_(VECTOR3_UP),
+          forwardAxis_(-Vector3::Forward),
+          upAxis_(Vector3::Up),
           flying_(false)
     {
         ghost_->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
@@ -81,13 +82,13 @@ namespace NSG
 
     float Character::GetGroundHeightFrom(const Vector3& pos) const
     {
-        auto targetPos = pos - VECTOR3_UP * MAX_WORLD_SIZE;
+        auto targetPos = pos - Vector3::Up * Scene::MAX_WORLD_SIZE;
         auto direction = targetPos - pos;
         auto distance = direction.Length();
         PhysicsRaycastResult result = world_.lock()->SphereCastBut(this, pos, direction.Normalize(), shapeHalfWidth_, distance);
         if (result.HasCollided())
             return result.position_.y;
-        return -MAX_WORLD_SIZE;
+        return -Scene::MAX_WORLD_SIZE;
     }
 
     Vector3 Character::GetUnderFeetPoint(Vector3 origin) const
@@ -103,7 +104,7 @@ namespace NSG
         verticalMove_ += jumpSpeed_ * deltaTime - gravity_ * deltaTime * deltaTime;
         auto worldTrans = ghost_->getWorldTransform();
         auto feetPoint = GetUnderFeetPoint(ToVector3(worldTrans.getOrigin()));
-        auto targetPos = feetPoint + verticalMove_ * VECTOR3_UP;
+        auto targetPos = feetPoint + verticalMove_ * Vector3::Up;
         auto result = Obstruction(feetPoint, targetPos, shapeHalfWidth_);
         if (result.HasCollided())
         {
@@ -149,8 +150,8 @@ namespace NSG
         float stepUp = stepHeight_ * shapeHeight_;
         if(flying_)
             stepUp = 0;
-        auto verticalStep = VECTOR3_UP * stepUp;
-		bodyCenter_ = feetPoint + VECTOR3_UP * shapeHalfHeight_;
+        auto verticalStep = Vector3::Up * stepUp;
+        bodyCenter_ = feetPoint + Vector3::Up * shapeHalfHeight_;
 		auto groundHeight = GetGroundHeightFrom(bodyCenter_);
 		stepForwardSourcePos_ = bodyCenter_ + verticalStep;
 		stepForwardFinalPos_ = stepForwardSourcePos_ + stepForward_;
@@ -208,10 +209,10 @@ namespace NSG
     void Character::debugDraw(btIDebugDraw* debugDrawer)
     {
 		auto debugRenderer = Renderer::GetPtr()->GetDebugRenderer();
-		debugRenderer->AddLine(stepForwardSourcePos_, stepForwardTargetPos_, Color(COLOR_RED, 1));
+        debugRenderer->AddLine(stepForwardSourcePos_, stepForwardTargetPos_, Color::Red);
         auto worldTrans =  ghost_->getWorldTransform();
         auto position = ToVector3(worldTrans.getOrigin());
-        debugRenderer->AddLine(position, position + 10.f * slidingDirection_.Normalize(), Color(COLOR_BLUE, 1));
+        debugRenderer->AddLine(position, position + 10.f * slidingDirection_.Normalize(), Color::Blue);
     }
 
     PhysicsRaycastResult Character::Obstruction(const Vector3& origin, const Vector3& targetPos, float radius) const
@@ -337,8 +338,8 @@ namespace NSG
         auto position = sceneNode->GetGlobalPosition();
         auto orientation = sceneNode->GetGlobalOrientation();
         ghost_->setWorldTransform(ToTransform(position, orientation));
-        forwardAxis_ = orientation * -VECTOR3_FORWARD;
-        upAxis_ = orientation * VECTOR3_UP;
+        forwardAxis_ = orientation * -Vector3::Forward;
+        upAxis_ = orientation * Vector3::Up;
         auto bb = GetColliderBoundingBox();
         auto size = bb.Size();
         nodeColliderOffset_ = position - bb.Center();
@@ -425,11 +426,11 @@ namespace NSG
             {
                 auto shapeName = shapeNode.attribute("name").as_string();
                 auto shape = Shape::GetOrCreate(shapeName);
-                Vertex3 position(VECTOR3_ZERO);
+                Vector3 position;
                 auto posAtt = shapeNode.attribute("position");
                 if (posAtt)
                     position = ToVertex3(posAtt.as_string());
-                Quaternion orientation(QUATERNION_IDENTITY);
+                Quaternion orientation;
                 auto rotAtt = shapeNode.attribute("orientation");
                 if (rotAtt)
                     orientation = ToQuaternion(rotAtt.as_string());

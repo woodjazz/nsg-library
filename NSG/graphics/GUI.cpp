@@ -94,7 +94,7 @@ namespace NSG
             io.Fonts->ClearTexData();
         });
 
-        CHECK_CONDITION(fontTexture_->IsReady());
+        //CHECK_CONDITION(fontTexture_->IsReady());
     }
 
     GUI::~GUI()

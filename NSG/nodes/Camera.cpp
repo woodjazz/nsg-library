@@ -25,7 +25,6 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Ray.h"
 #include "Program.h"
-#include "Constants.h"
 #include "Scene.h"
 #include "FrameBuffer.h"
 #include "Window.h"
@@ -39,12 +38,27 @@ misrepresented as being the original software.
 #include "imgui.h"
 #include "SharedFromPointer.h"
 #include "Maths.h"
+#include "ShadowCamera.h"
 #include "pugixml.hpp"
 #include <sstream>
 #include <algorithm>
 
 namespace NSG
 {
+    const float Camera::MaxFOVDegrees = 160.0f;
+    const float Camera::MaxFOVRadians = Camera::MaxFOVDegrees * TWO_PI / 360.f;
+
+    OrthoProjection::OrthoProjection()
+        : left_(0), right_(0), bottom_(0), top_(0), near_(0), far_(0)
+    {
+    }
+
+    OrthoProjection::OrthoProjection(float left, float right, float bottom, float top, float near, float far)
+        : left_(left), right_(right), bottom_(bottom), top_(top), near_(near), far_(far)
+    {
+
+    }
+
     Camera::Camera(const std::string& name)
         : SceneNode(name),
           fovy_(Radians(45.0f)),
@@ -58,7 +72,7 @@ namespace NSG
           sensorFit_(CameraSensorFit::HORIZONTAL),
           isDirty_(true),
           autoAspectRatio_(true),
-          shadowSplits_(MAX_SPLITS),
+          shadowSplits_(ShadowCamera::MAX_SPLITS),
           colorSplits_(false),
           shadowSplitLogFactor_(0.5f),
           automaticSplits_(true),
@@ -163,7 +177,7 @@ namespace NSG
 
     void Camera::SetFOVDegrees(float fovy)
     {
-        fovy = Clamp(fovy, 0.0f, CAMERA_MAX_FOV_DEGREES);
+        fovy = Clamp(fovy, 0.0f, Camera::MaxFOVDegrees);
         fovy = Radians(fovy);
         if (fovy_ != fovy)
         {
@@ -180,7 +194,7 @@ namespace NSG
 
     void Camera::SetFOVRadians(float fovy)
     {
-        fovy = Clamp(fovy, 0.0f, CAMERA_MAX_FOV_RADIANS);
+        fovy = Clamp(fovy, 0.0f, Camera::MaxFOVRadians);
         if (fovy_ != fovy)
         {
             fovy_ = fovy;
@@ -210,7 +224,6 @@ namespace NSG
 
     void Camera::SetNearClip(float zNear)
     {
-        //zNear = std::max(zNear, CAMERA_MIN_NEARCLIP);
         if (zNear_ != zNear)
         {
             zNear_ = zNear;
@@ -221,7 +234,6 @@ namespace NSG
 
     void Camera::SetFarClip(float zFar)
     {
-        //zFar = std::max(zFar, CAMERA_MIN_NEARCLIP);
         if (zFar_ != zFar)
         {
             zFar_ = zFar;
@@ -417,7 +429,7 @@ namespace NSG
 
     Ray Camera::GetRay(float screenX, float screenY)
     {
-        return Ray(Vector3(screenX, screenY, 0), VECTOR3_LOOKAT_DIRECTION);
+        return Ray(Vector3(screenX, screenY, 0), Vector3::LookAt);
     }
 
     bool Camera::IsVisible(const Node& node, Mesh& mesh) const
@@ -504,7 +516,7 @@ namespace NSG
     {
         if (shadowSplits_ != splits)
         {
-            shadowSplits_ = Clamp(splits, 1, MAX_SPLITS);
+            shadowSplits_ = Clamp(splits, 1, ShadowCamera::MAX_SPLITS);
             SetUniformsNeedUpdate();
         }
     }
@@ -563,7 +575,7 @@ namespace NSG
 
     void Camera::Debug(DebugRenderer* debugRenderer, const Color& color)
     {
-        GetFrustum()->Debug(VECTOR3_ZERO, debugRenderer, color);
+        GetFrustum()->Debug(Vector3::Zero, debugRenderer, color);
     }
 
     void Camera::AddFilter(PMaterial filter)

@@ -35,7 +35,7 @@ int NSG_MAIN(int argc, char* argv[])
 	auto slotLoaded = loader.Load(resource)->Connect([&]()
 	{
 		auto scene = loader.GetScene(0);
-		scene->SetAmbientColor(ColorRGB(0.5f));
+        scene->SetAmbientColor(Color(0.5f));
 		scene->GetChild<SceneNode>("Level1", false)->GetMaterial()->SetAmbientIntensity(1);
 		auto camera = scene->GetChild<Camera>("Camera", false);
 		auto frustum = camera->GetFrustum();

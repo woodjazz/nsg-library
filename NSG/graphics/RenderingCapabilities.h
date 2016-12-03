@@ -25,8 +25,8 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include "Constants.h"
 #include "Singleton.h"
+#include "GLIncludes.h"
 
 namespace NSG
 {

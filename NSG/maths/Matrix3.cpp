@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Matrix3.h"
+#include "Matrix4.h"
 #include "Util.h"
 #include "Check.h"
 #include <cmath>

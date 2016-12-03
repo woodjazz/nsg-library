@@ -41,7 +41,7 @@ Laser::Laser(PScene scene)
     auto mesh = Mesh::GetOrCreateClass<CylinderMesh>("LaserMesh");
     child_->SetMesh(mesh);
     auto material(Material::GetOrCreate("LaserMaterial"));
-    material->SetDiffuseColor(COLOR_YELLOW);
+    material->SetDiffuseColor(Color::Yellow);
     material->SetEmitIntensity(10);
     material->SetRenderPass(RenderPass::UNLIT);
     child_->SetMaterial(material);
@@ -69,7 +69,7 @@ Laser::Laser(PScene scene)
             Destroyed();
         else
         {
-            auto dir = 2 * dt * (child_->GetOrientation() * VECTOR3_UP);
+            auto dir = 2 * dt * (child_->GetOrientation() * Vector3::Up);
             node_->Pitch(-dir.y);
             node_->Yaw(dir.x);
         }

@@ -35,8 +35,8 @@ namespace NSG
     #else
       static const int WindowPosX = 0;
       static const int WindowPosY = 0;
-      static const int WindowWidth = 1024;
-      static const int WindowHeight = 768;
+      static const int WindowWidth = 20;//1024;
+      static const int WindowHeight = 20;//768;
     
     #endif
 

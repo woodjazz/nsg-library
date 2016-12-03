@@ -28,8 +28,9 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "ResourceFile.h"
 #include "Object.h"
-#include "Constants.h"
+#include "Color.h"
 #include "StrongFactory.h"
+#include "ShadowCamera.h"
 #include <string>
 
 namespace NSG
@@ -119,9 +120,9 @@ namespace NSG
         GLuint normalMatrixLoc_;
         GLuint viewLoc_;
         GLuint viewProjectionLoc_;
-		GLuint lightViewLoc_[MAX_SPLITS];
-		GLuint lightProjectionLoc_[MAX_SPLITS];
-		GLuint lightViewProjectionLoc_[MAX_SPLITS];
+        GLuint lightViewLoc_[ShadowCamera::MAX_SPLITS];
+        GLuint lightProjectionLoc_[ShadowCamera::MAX_SPLITS];
+        GLuint lightViewProjectionLoc_[ShadowCamera::MAX_SPLITS];
         GLuint projectionLoc_;
         GLuint sceneColorAmbientLoc_;
         GLuint u_sceneHorizonColorLoc_;
@@ -189,7 +190,7 @@ namespace NSG
         Material* activeMaterial_;
         const Light* activeLight_;
         const Camera* activeCamera_;
-        ColorRGB sceneColor_;
+        Color sceneColor_;
         const Skeleton* skeleton_;
         SceneNode* node_;
         Material* material_;

@@ -98,7 +98,7 @@ namespace NSG
 						auto size = worldBB.Size();
 						auto maxDistance = std::max(std::max(size.x, size.y), size.z);
 						auto halfDistance = .5f * maxDistance;
-						auto halfExtend = VECTOR3_ONE * halfDistance;
+                        auto halfExtend = Vector3::One * halfDistance;
 						auto min = worldBB.Center() - halfExtend;
 						auto max = worldBB.Center() + halfExtend;
                         worldBB = BoundingBox(min, max);

@@ -25,6 +25,8 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Vector3.h"
+#include "Quaternion.h"
 
 namespace NSG
 {

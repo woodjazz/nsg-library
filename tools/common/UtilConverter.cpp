@@ -25,8 +25,9 @@ misrepresented as being the original software.
 */
 #include "UtilConverter.h"
 #include "Plane.h"
-#include "Constants.h"
 #include "Util.h"
+#include "Matrix3.h"
+#include <cmath>
 
 namespace BlenderConverter
 {
@@ -53,9 +54,9 @@ namespace BlenderConverter
     Matrix4 GeneratePointTransformMatrix(const Plane& plane, const Vector3& center)
     {
         Vector3 normal = plane.GetNormal();
-        Vector3 sideA = VECTOR3_RIGHT;
+        Vector3 sideA = Vector3::Right;
         if (std::abs(normal.Dot(sideA )) > 0.999f )
-            sideA = VECTOR3_UP;
+            sideA = Vector3::Up;
         Vector3 sideB(normal.Cross(sideA).Normalize());
         sideA = sideB.Cross(normal);
         Matrix3 rot(sideA, sideB, normal);

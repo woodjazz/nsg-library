@@ -46,6 +46,7 @@ namespace NSG
 		bool AllowInstancing() const;
 		void Clear();
 		bool IsEmpty() const { return !material_; }
+        static const size_t MaxNodesInBatch = 10000;
 	private:
         Material* material_;
         Mesh* mesh_;

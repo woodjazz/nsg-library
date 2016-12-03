@@ -25,9 +25,9 @@ misrepresented as being the original software.
 */
 #include "CylinderMesh.h"
 #include "Types.h"
-#include "Constants.h"
 #include "Check.h"
 #include "Log.h"
+#include "Maths.h"
 
 namespace NSG
 {
@@ -93,8 +93,8 @@ namespace NSG
         {
             //insert bottom center point
             VertexData vertexData;
-            vertexData.normal_ = q_ * VECTOR3_UP * (-1);
-            vertexData.position_ = VECTOR3_ZERO;
+            vertexData.normal_ = q_ * Vector3::Up * (-1);
+            vertexData.position_ = Vector3::Zero;
             vertexData.uv_[0] = Vertex2(0.5f, 0.5f);
             data.push_back(vertexData);
 
@@ -141,7 +141,7 @@ namespace NSG
 			//Vertices for top face
             //Insert top center point
             VertexData vertexData;
-            vertexData.normal_ = q_ * VECTOR3_UP;
+            vertexData.normal_ = q_ * Vector3::Up;
             vertexData.position_ = q_ * Vector3(0, height_, 0);
             vertexData.uv_[0] = Vertex2(0.5f, 0.5f);
             data.push_back(vertexData);

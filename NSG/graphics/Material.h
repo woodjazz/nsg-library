@@ -25,13 +25,43 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#include "Types.h"
+#include "Vector2.h"
+#include "Vector3.h"
 #include "Object.h"
 #include "Util.h"
 #include "WeakFactory.h"
 #include "UniformsUpdate.h"
+#include "Color.h"
 namespace NSG
 {
+    struct BlurFilter
+    {
+        Vector2 blurDir_;
+        /// This should usually be equal to 1.0f / texture_pixel_width for a horizontal blur, and
+        /// 1.0f / texture_pixel_height for a vertical blur.
+        Vector2 blurRadius_; //calculated in Material::IsValid()
+        float sigma_;
+        BlurFilter();
+        bool operator != (const BlurFilter& obj) const;
+    };
+
+    struct WaveFilter
+    {
+        float factor_;
+        float offset_;
+        WaveFilter();
+        bool operator != (const WaveFilter& obj) const;
+    };
+
+    struct ShockWaveFilter
+    {
+        Vector2 center_;
+        float time_;
+        Vector3 params_;
+        ShockWaveFilter();
+        bool operator != (const ShockWaveFilter& obj) const;
+    };
+
 	class Material : public Object, public std::enable_shared_from_this<Material>, public WeakFactory<std::string, Material>, UniformsUpdate
     {
     public:
@@ -42,11 +72,11 @@ namespace NSG
         void SetTextMap(PTexture texture);
 		bool SetTexture(MaterialTexture index, PTexture texture);
         PTexture GetTexture(MaterialTexture index) const;
-        void SetDiffuseColor(ColorRGB color);
+        void SetDiffuseColor(Color color);
 		Color GetDiffuseColor() const { return diffuseColor_; }
         void SetDiffuseIntensity(float intensity);
         float GetDiffuseIntensity() const { return diffuseIntensity_; }
-		void SetSpecularColor(ColorRGB color);
+        void SetSpecularColor(Color color);
 		Color GetSpecularColor() const { return specularColor_; }
         void SetSpecularIntensity(float intensity);
         float GetSpecularIntensity() const { return specularIntensity_; }

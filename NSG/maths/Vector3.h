@@ -61,9 +61,14 @@ namespace NSG
 		float Distance(const Vector3& v) const;
 		float Distance2(const Vector3& v) const;
 		static Vector3 CatmullRom(const Vector3& v1, const Vector3& v2, const Vector3& v3, const Vector3& v4, float s);
+        static const Vector3 Right;
+        static const Vector3 Up;
+        static const Vector3 Forward;
+        static const Vector3 LookAt;
+        static const Vector3 Zero;
+        static const Vector3 One;
     };
     typedef Vector3 Vertex3;
-    typedef Vector3 ColorRGB;
 
     bool operator!=(const Vector3& v1, const Vector3& v2);
     bool operator==(const Vector3& v1, const Vector3& v2);

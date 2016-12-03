@@ -25,17 +25,22 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Vector3.h"
 #include <vector>
 
 namespace NSG
 {
-	struct BoundingBox
+    class Node;
+    struct Color;
+    struct Matrix4;
+    class Frustum;
+    struct BoundingBox
 	{
 		Vertex3 min_;
 		Vertex3 max_;
 
 	    BoundingBox();
-		BoundingBox(const Vertex3& min, const Vertex3& max);
+        BoundingBox(const Vector3& min, const Vector3& max);
     	BoundingBox(const Vector3& point);
 		BoundingBox(const Node& node);
 		BoundingBox(const BoundingBox& obj);

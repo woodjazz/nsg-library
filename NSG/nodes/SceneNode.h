@@ -34,6 +34,8 @@ misrepresented as being the original software.
 namespace NSG
 {
     class Octant;
+    struct ContactPoint;
+    struct SignalCollision : Signal<const ContactPoint&> {};
     class SceneNode : public Node
     {
     public:
@@ -75,7 +77,6 @@ namespace NSG
         void SetSkeleton(PSkeleton skeleton);
         PSkeleton GetSkeleton() const { return skeleton_; }
         void FillShaderDefines(std::string& defines) const;
-        size_t GetMaxPlatformBones(size_t nBones) const;
         PSceneNode GetArmature() const;
         void SetArmature(PSceneNode armature);
         bool IsBillboard() const;

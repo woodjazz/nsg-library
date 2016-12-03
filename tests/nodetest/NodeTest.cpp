@@ -26,6 +26,10 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
+static const Vector3 WORLD_X_COORD(1, 0, 0);
+static const Vector3 WORLD_Y_COORD(0, 1, 0);
+static const Vector3 WORLD_Z_COORD(0, 0, 1);
+
 static void Test01()
 {
     PNode pA(new Node("A"));
@@ -84,7 +88,7 @@ static void Test03()
 
     {
         Node node;
-		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION);
+        CHECK_CONDITION(node.GetLookAtDirection() == Vector3::LookAt);
 
         Vector3 lookAt = -WORLD_X_COORD;
         node.SetGlobalLookAtPosition(lookAt);
@@ -102,7 +106,7 @@ static void Test03()
 
     {
         Node node;
-		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION);
+        CHECK_CONDITION(node.GetLookAtDirection() == Vector3::LookAt);
 
         Vector3 lookAt = -WORLD_Z_COORD;
         node.SetGlobalLookAtPosition(lookAt);
@@ -120,7 +124,7 @@ static void Test03()
 
     {
         Node node;
-		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION);
+        CHECK_CONDITION(node.GetLookAtDirection() == Vector3::LookAt);
 
         Vector3 lookAt = -WORLD_Z_COORD;
         node.SetPosition(WORLD_Z_COORD);
@@ -139,7 +143,7 @@ static void Test03()
 
     {
         Node node;
-		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION);
+        CHECK_CONDITION(node.GetLookAtDirection() == Vector3::LookAt);
 
         Vector3 lookAt = WORLD_Z_COORD;
         node.SetPosition(-WORLD_Z_COORD);
@@ -158,7 +162,7 @@ static void Test03()
 
     {
         Node node;
-		CHECK_CONDITION(node.GetLookAtDirection() == VECTOR3_LOOKAT_DIRECTION);
+        CHECK_CONDITION(node.GetLookAtDirection() == Vector3::LookAt);
 
         Vector3 lookAt = WORLD_Z_COORD;
         node.SetPosition(WORLD_X_COORD + WORLD_Y_COORD + WORLD_Z_COORD);
@@ -184,7 +188,7 @@ static void Test03()
     {
         Node node;
         node.SetGlobalPosition(Vector3(0, 5, 5));
-        node.SetGlobalLookAtPosition(VECTOR3_ZERO);
+        node.SetGlobalLookAtPosition(Vector3::Zero);
         Vector3 dir = node.GetLookAtDirection();
         Vector3 expectedDir(Vector3(0, -1, -1).Normalize());
         CHECK_CONDITION(dir.Distance(expectedDir) < 2 * EPSILON);
@@ -193,7 +197,7 @@ static void Test03()
     {
         Node node;
         node.SetGlobalPosition(Vector3(5, 5, 0));
-        node.SetGlobalLookAtPosition(VECTOR3_ZERO);
+        node.SetGlobalLookAtPosition(Vector3::Zero);
         Vector3 dir = node.GetLookAtDirection();
         Vector3 expectedDir(Vector3(-1, -1, 0).Normalize());
         CHECK_CONDITION(dir.Distance(expectedDir) < 2 * EPSILON);
@@ -205,14 +209,14 @@ static void Test03()
         PNode node0 = std::make_shared<Node>("node0");
         node0->SetParent(parent);
         node0->SetGlobalPosition(Vector3(0, 5, 5));
-        node0->SetGlobalLookAtPosition(VECTOR3_ZERO);
+        node0->SetGlobalLookAtPosition(Vector3::Zero);
         Vector3 dir0 = node0->GetLookAtDirection();
         Quaternion q0 = node0->GetOrientation();
 
         PNode node1 = std::make_shared<Node>("node1");
         node1->SetParent(parent);
         node1->SetGlobalPosition(Vector3(5, 5, 0));
-        node1->SetGlobalLookAtPosition(VECTOR3_ZERO);
+        node1->SetGlobalLookAtPosition(Vector3::Zero);
         Vector3 dir1 = node1->GetLookAtDirection();
         Quaternion q1 = node1->GetOrientation();
 
@@ -371,8 +375,8 @@ static void Test08()
         node->SetScale(parent_scale * scale);
 
 		CHECK_CONDITION(node->GetGlobalPosition().Distance(pos) < 0.0001f);
-		Vertex3 a1 = node->GetGlobalOrientation() * VECTOR3_LOOKAT_DIRECTION;
-		Vertex3 a2 = q * VECTOR3_LOOKAT_DIRECTION;
+        Vertex3 a1 = node->GetGlobalOrientation() * Vector3::LookAt;
+        Vertex3 a2 = q * Vector3::LookAt;
 		CHECK_CONDITION(a1.Distance(a2) < 0.01f);
 		CHECK_CONDITION(node->GetGlobalScale().Distance(scale) < 0.0001f);
     }
@@ -388,8 +392,8 @@ static void Test08()
         node->SetScale(scale1);
 
         CHECK_CONDITION(node->GetGlobalPosition() == pos);
-		Vertex3 a1 = node->GetGlobalOrientation() * VECTOR3_LOOKAT_DIRECTION;
-		Vertex3 a2 = q * VECTOR3_LOOKAT_DIRECTION;
+        Vertex3 a1 = node->GetGlobalOrientation() * Vector3::LookAt;
+        Vertex3 a2 = q * Vector3::LookAt;
 		CHECK_CONDITION(a1.Distance(a2) < 0.01f);
         CHECK_CONDITION(node->GetGlobalScale().Distance(scale) < 0.01f);
     }

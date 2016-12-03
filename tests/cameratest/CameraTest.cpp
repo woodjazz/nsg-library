@@ -26,6 +26,10 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
+static const Vector3 WORLD_X_COORD(1, 0, 0);
+static const Vector3 WORLD_Y_COORD(0, 1, 0);
+static const Vector3 WORLD_Z_COORD(0, 0, 1);
+
 static void FrustumTest()
 {
     PScene scene = std::make_shared<Scene>("scene000");
@@ -393,7 +397,7 @@ static void Test04()
 
     {
         Ray ray = camera->GetScreenRay(0, 0);
-		CHECK_CONDITION(Distance(ray.GetDirection(), VECTOR3_LOOKAT_DIRECTION) < EPSILON);
+        CHECK_CONDITION(Distance(ray.GetDirection(), Vector3::LookAt) < EPSILON);
         CHECK_CONDITION(Distance(ray.GetOrigin(), position) < 0.5f);
     }
 
@@ -434,7 +438,7 @@ static void Test04()
         camera->SetGlobalLookAtPosition(position + Vector3(-1, 0, 0));
         Ray ray = camera->GetScreenRay(0, 0);
         CHECK_CONDITION(Distance(ray.GetOrigin(), position) < 1);
-        CHECK_CONDITION(Distance(ray.GetDirection(), -VECTOR3_RIGHT) < 0.05f);
+        CHECK_CONDITION(Distance(ray.GetDirection(), -Vector3::Right) < 0.05f);
     }
     #endif
 }
@@ -451,7 +455,7 @@ static void Test05()
         camera->SetNearClip(0.1f);
         camera->SetFarClip(250);
         camera->SetPosition(Vertex3(0, 0, -4));
-		camera->SetGlobalLookAtPosition(-VECTOR3_LOOKAT_DIRECTION);
+        camera->SetGlobalLookAtPosition(-Vector3::LookAt);
         BoundingBox bb = box->GetBB();
         CHECK_CONDITION(camera->GetFrustum()->IsInside(bb) == Intersection::INSIDE);
         camera->SetPosition(Vertex3(0, 0, -250));

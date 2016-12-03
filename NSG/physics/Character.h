@@ -25,8 +25,9 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
+#include "Vector3.h"
+#include "Quaternion.h"
 #include "Object.h"
-#include "Constants.h"
 #include "ICollision.h"
 #include "PhysicsWorld.h"
 #include "btBulletDynamicsCommon.h"
@@ -40,7 +41,7 @@ namespace NSG
     public:
         Character(PSceneNode sceneNode);
         ~Character();
-        void AddShape(PShape shape, const Vector3& position = VECTOR3_ZERO, const Quaternion& rotation = QUATERNION_IDENTITY);
+        void AddShape(PShape shape, const Vector3& position = Vector3::Zero, const Quaternion& rotation = Quaternion::Identity);
         void HandleCollisions(bool enable) {handleCollision_ = enable; }
         void SetRestitution(float restitution);
         void SetFriction(float friction);

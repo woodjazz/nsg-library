@@ -20,7 +20,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
+#include "Vector4.h"
 #include "Pass.h"
 #include "Util.h"
 #include "StrongFactory.h"

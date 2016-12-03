@@ -62,8 +62,8 @@ Planet::Planet(PScene scene)
         material->SetTexture(colorTexture);
         material->SetTexture(specularTexture);
         material->SetTexture(normalTexture);
-        material->SetDiffuseColor(ColorRGB(0.8f, 0.8f, 0.8f));
-        //material->SetSpecularColor(ColorRGB(1.0f, 0.0f, 0.0f));
+        material->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f));
+        //material->SetSpecularColor(Color(1.0f, 0.0f, 0.0f));
         material->SetAmbientIntensity(3.f);
         material->SetShininess(10);
         planet_->SetMaterial(material);
@@ -75,7 +75,7 @@ Planet::Planet(PScene scene)
         auto material(Material::Create());
         material->SetRenderPass(RenderPass::LIT);
         material->SetTexture(cloudsTexture);
-        material->SetDiffuseColor(COLOR_SKY_BLUE);
+        material->SetDiffuseColor(Color::SkyBlue);
         material->SetSpecularIntensity(0);
         material->EnableTransparent(true);
         material->SetAlpha(0.15f);
@@ -90,7 +90,7 @@ Planet::Planet(PScene scene)
         material->SetFillMode(FillMode::WIREFRAME);
         material->SetRenderPass(RenderPass::LIT);
         material->SetEmitIntensity(25);
-        material->SetDiffuseColor(COLOR_PEACH_PUFF);
+        material->SetDiffuseColor(Color::PeachPuff);
         material->EnableTransparent(true);
         material->SetAlpha(0.03f);
         grid_->SetMaterial(material);

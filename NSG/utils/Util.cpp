@@ -26,7 +26,6 @@ misrepresented as being the original software.
 
 #include "Util.h"
 #include "Check.h"
-#include "Constants.h"
 #include "Plane.h"
 #include "Path.h"
 #include "StringConverter.h"
@@ -97,17 +96,17 @@ namespace NSG
 	}
 
 
-	GLushort Transform(GLubyte selected[4])
+    unsigned short Transform(unsigned char selected[4])
 	{
-		GLushort b3 = (GLushort)selected[3] / 0x10;
-		GLushort b2 = (GLushort)selected[2] / 0x10;
-		GLushort b1 = (GLushort)selected[1] / 0x10;
-		GLushort b0 = (GLushort)selected[0] / 0x10;
-		GLushort index = b3 << 12 | b2 << 8 | b1 << 4 | b0;
+        auto b3 = (unsigned short)selected[3] / 0x10;
+        auto b2 = (unsigned short)selected[2] / 0x10;
+        auto b1 = (unsigned short)selected[1] / 0x10;
+        auto b0 = (unsigned short)selected[0] / 0x10;
+        auto index = b3 << 12 | b2 << 8 | b1 << 4 | b0;
 		return index;
 	}
 
-	Color Transform(GLushort id)
+    Color Transform(unsigned short id)
 	{
 		Color color;
 		color[0] = (id & 0x000F) / 15.0f;

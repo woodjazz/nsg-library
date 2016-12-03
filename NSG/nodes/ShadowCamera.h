@@ -22,6 +22,7 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include "Camera.h"
+#include "GLIncludes.h"
 
 namespace NSG
 {
@@ -38,6 +39,7 @@ namespace NSG
         float GetFarSplit() const { return farSplit_; }
         bool IsDisabled() const { return disabled_; }
         void Disable() { disabled_ = true; }
+        static const int MAX_SPLITS = 4; // shadow splits
     private:
         Light* light_;
         Node dirPositiveX_;

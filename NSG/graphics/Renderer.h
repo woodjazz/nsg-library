@@ -23,7 +23,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Singleton.h"
 #include "Pass.h"
-#include "Constants.h"
+#include "ShadowCamera.h"
 
 namespace NSG
 {
@@ -51,7 +51,7 @@ namespace NSG
         void SortOverlaysBackToFront(std::vector<SceneNode*>& objs);
         void Draw(const Batch* batch, const Pass* pass, const Light* light, const Camera* camera);
         int GetShadowFrameBufferSize(int split) const;
-        int CalculateSplits(const Camera* camera, float splits[MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
+        int CalculateSplits(const Camera* camera, float splits[ShadowCamera::MAX_SPLITS], const BoundingBox& camFrustumViewBox, const BoundingBox& receiversViewBox) const;
         void GenerateShadowMapCubeFace(const Light* light);
         void Generate2DShadowMap(int split, const Light* light);
         void GenerateCubeShadowMap(const Camera* camera, const Light* light);

@@ -29,6 +29,8 @@ misrepresented as being the original software.
 #include <cmath>
 namespace NSG
 {
+    const Vector4 Vector4::Zero = Vector4(0);
+
     Vector4::Vector4()
         : x(0), y(0), z(0), w(0)
     {
@@ -154,6 +156,4 @@ namespace NSG
     {
         return Vector4(v1.x * v2.x, v1.y * v2.y, v1.z * v2.z, v1.w * v2.w);
     }
-
-
 }

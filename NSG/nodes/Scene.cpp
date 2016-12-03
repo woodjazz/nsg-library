@@ -6,7 +6,6 @@
 #include "Octree.h"
 #include "OctreeQuery.h"
 #include "RenderingContext.h"
-#include "Constants.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "Util.h"
@@ -28,8 +27,8 @@ namespace NSG
     Scene::Scene(const std::string& name)
         : SceneNode(name),
           mainCamera_(nullptr),
-          ambient_(0.3f, 0.3f, 0.3f),
-          horizon_(0.f, 0.f, 0.f),
+          ambient_(0.3f, 0.3f, 0.3f, 1.f),
+          horizon_(0.f, 0.f, 0.f, 1.f),
           octree_(std::make_shared<Octree>()),
           signalNodeMouseMoved_(new Signal<SceneNode *, float, float>()),
           signalNodeMouseDown_(new Signal<SceneNode *, int, float, float>()),
@@ -135,7 +134,7 @@ namespace NSG
         }
     }
 
-    void Scene::SetAmbientColor(ColorRGB ambient)
+    void Scene::SetAmbientColor(const Color& ambient)
     {
         if (ambient_ != ambient)
         {
@@ -144,7 +143,7 @@ namespace NSG
         }
     }
 
-    void Scene::SetHorizonColor(ColorRGB horizon)
+    void Scene::SetHorizonColor(const Color& horizon)
     {
         if (horizon_ != horizon)
         {

@@ -99,6 +99,7 @@ namespace NSG
         bool serializable_;
         PSkeleton skeleton_;
         std::set<SceneNode*> sceneNodes_;
+        static const int MAX_UVS = 2;
         std::string uvNames_[MAX_UVS];
         bool hasDeformBones_;
     };

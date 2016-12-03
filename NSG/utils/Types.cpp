@@ -24,65 +24,10 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Types.h"
-#include "Constants.h"
+#include "Maths.h"
 
 namespace NSG
 {
-    Recti::Recti()
-        :x(0),y(0),z(0),w(0)
-    {
-
-    }
-
-    Recti::Recti(int a, int b, int c, int d)
-        :x(a),y(b),z(c),w(d)
-    {
-
-    }
-
-    bool Recti::operator==(const Recti& obj) const
-    {
-        if(this != &obj)
-        {
-            return x == obj.x && y == obj.y && z == obj.z && w == obj.w;
-        }
-        return true;
-    }
-
-    BlurFilter::BlurFilter()
-        : blurDir_(1, 1),
-          sigma_(3.5f)
-    {
-    }
-
-    bool BlurFilter::operator != (const BlurFilter& obj) const
-    {
-        return blurDir_ != obj.blurDir_ || blurRadius_ != obj.blurRadius_ || sigma_ != obj.sigma_;
-    }
-
-    WaveFilter::WaveFilter()
-        : factor_(PI * 8),
-          offset_(0)
-    {
-    }
-
-    bool WaveFilter::operator != (const WaveFilter& obj) const
-    {
-        return factor_ != obj.factor_ || offset_ != obj.offset_;
-    }
-
-    ShockWaveFilter::ShockWaveFilter()
-        : center_(0, 0),
-          time_(0),
-          params_(10, 0.4f, 0.04f)
-    {
-    }
-
-    bool ShockWaveFilter::operator != (const ShockWaveFilter& obj) const
-    {
-        return center_ != obj.center_ || time_ != obj.time_ || params_ != obj.params_;
-    }
-
     RayNodeResult::RayNodeResult()
         : distance_(0),
           node_(nullptr)
@@ -93,16 +38,5 @@ namespace NSG
         : distance_(distance),
           node_(node)
     {
-    }
-
-    OrthoProjection::OrthoProjection()
-        : left_(0), right_(0), bottom_(0), top_(0), near_(0), far_(0)
-    {
-    }
-
-    OrthoProjection::OrthoProjection(float left, float right, float bottom, float top, float near, float far)
-        : left_(left), right_(right), bottom_(bottom), top_(top), near_(near), far_(far)
-    {
-
     }
 }

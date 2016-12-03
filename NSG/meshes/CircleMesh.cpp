@@ -25,8 +25,8 @@ misrepresented as being the original software.
 */
 #include "CircleMesh.h"
 #include "Types.h"
-#include "Constants.h"
 #include "Check.h"
+#include "Maths.h"
 
 namespace NSG
 {

@@ -27,12 +27,10 @@ misrepresented as being the original software.
 #include "Node.h"
 #include "Bone.h"
 #include "Scene.h"
-#include "Constants.h"
 #include "Util.h"
 #include "StringConverter.h"
 #include "pugixml.hpp"
 #include <algorithm>
-#include <sstream>
 
 namespace NSG
 {
@@ -40,7 +38,7 @@ namespace NSG
 
     AnimationKeyFrame::AnimationKeyFrame()
         : time_(0),
-          scale_(VECTOR3_ONE),
+          scale_(Vector3::One),
           mask_((int)AnimationChannel::NONE)
     {
     }
@@ -59,32 +57,32 @@ namespace NSG
         pugi::xml_node child = node.append_child("KeyFrame");
 
         child.append_attribute("time").set_value(time_);
-        if(position_ != VECTOR3_ZERO)
+        if(position_ != Vector3::Zero)
             child.append_attribute("position").set_value(ToString(position_).c_str());
-        if(rotation_ != QUATERNION_IDENTITY)
+        if(rotation_ != Quaternion::Identity)
             child.append_attribute("rotation").set_value(ToString(rotation_).c_str());
-        if(scale_ != VECTOR3_ONE)
+        if(scale_ != Vector3::One)
             child.append_attribute("scale").set_value(ToString(scale_).c_str());
     }
 
     void AnimationKeyFrame::Load(const pugi::xml_node& node)
     {
         time_ = node.attribute("time").as_float();
-        position_ = VECTOR3_ZERO;
+        position_ = Vector3::Zero;
         auto posAtt = node.attribute("position");
         if(posAtt)
         {
             position_ = ToVertex3(posAtt.as_string());
             mask_ |= (int)AnimationChannel::POSITION;
         }
-        rotation_ = QUATERNION_IDENTITY;
+        rotation_ = Quaternion::Identity;
         auto rotAtt = node.attribute("rotation");
         if(rotAtt)
         {
             rotation_ = ToQuaternion(rotAtt.as_string());
             mask_ |= (int)AnimationChannel::ROTATION;
         }
-        scale_ = VECTOR3_ONE;
+        scale_ = Vector3::One;
         auto scaAtt = node.attribute("scale");
         if(scaAtt)
         {

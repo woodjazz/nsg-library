@@ -35,7 +35,7 @@ int NSG_MAIN(int argc, char* argv[])
     auto slotLoaded = loader.Load(resource)->Connect([&]()
     {
         auto scene = loader.GetScene(0);
-        scene->SetAmbientColor(ColorRGB(0.0f));
+        scene->SetAmbientColor(Color(0.0f));
 
         auto armature = scene->GetChild<SceneNode>("Armature", true);
         auto plane = scene->GetChild<SceneNode>("Plane", false);

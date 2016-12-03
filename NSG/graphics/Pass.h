@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "UniformsUpdate.h"
 #include "Object.h"
+#include "GLIncludes.h"
 #include <string>
 
 namespace pugi

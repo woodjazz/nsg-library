@@ -24,13 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Plane.h"
-#include "Constants.h"
 #include "Util.h"
 #include "Check.h"
 
 namespace NSG
 {
-    const Plane Plane::UP(WORLD_Y_COORD, Vector3(0));
+    const Plane Plane::UP(Vector3::Up, Vector3(0));
 
     Plane::Plane()
     {

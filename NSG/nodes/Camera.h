@@ -27,6 +27,26 @@ misrepresented as being the original software.
 
 namespace NSG
 {
+    struct OrthoProjection
+    {
+        float left_;
+        float right_;
+        float bottom_;
+        float top_;
+        float near_;
+        float far_;
+
+        OrthoProjection();
+        OrthoProjection(float left, float right, float bottom, float top, float near, float far);
+    };
+
+    enum class CameraSensorFit //the same as in Blender
+    {
+        AUTOMATIC,
+        HORIZONTAL,
+        VERTICAL
+    };
+
     class Camera : public SceneNode
     {
     public:
@@ -100,6 +120,8 @@ namespace NSG
         void RemoveFilter(PMaterial filter);
         std::vector<Material*> GetFilters();
         bool HasPostProcessing() const;
+        static const float MaxFOVDegrees;
+        static const float MaxFOVRadians;
     private:
         const Matrix4& GetViewProjectionInverse() const;
         OrthoProjection CalculateOrthoProjection(float zNear, float zFar) const;

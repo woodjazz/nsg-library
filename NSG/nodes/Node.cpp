@@ -31,7 +31,6 @@ misrepresented as being the original software.
 #include "Octree.h"
 #include "Log.h"
 #include "BoundingBox.h"
-#include "Constants.h"
 #include "Util.h"
 #include "StringConverter.h"
 #include "Check.h"
@@ -43,12 +42,9 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    static IdType s_node_id = 1;
-
     Node::Node(const std::string& name)
         : name_(name),
           signalUpdated_(new SignalEmpty()),
-          id_(s_node_id++),
           scale_(1, 1, 1),
           globalScale_(1, 1, 1),
           inheritScale_(true),
@@ -205,17 +201,17 @@ namespace NSG
 
     void Node::Yaw(float angle, TransformSpace space)
     {
-        Rotate(Quaternion(angle, VECTOR3_UP), space);
+        Rotate(Quaternion(angle, Vector3::Up), space);
     }
 
     void Node::Pitch(float angle, TransformSpace space)
     {
-        Rotate(Quaternion(angle, VECTOR3_RIGHT), space);
+        Rotate(Quaternion(angle, Vector3::Right), space);
     }
 
     void Node::Roll(float angle, TransformSpace space)
     {
-        Rotate(Quaternion(angle, VECTOR3_FORWARD), space);
+        Rotate(Quaternion(angle, Vector3::Forward), space);
     }
 
 
@@ -429,9 +425,9 @@ namespace NSG
         isScaleUniform_ = globalScale_.IsUniform();
         globalModelInv_ = globalModel_.Inverse();
         globalModelInvTransp_ = Matrix3(globalModel_).Inverse().Transpose();
-        lookAtDirection_ = globalOrientation_ * VECTOR3_LOOKAT_DIRECTION;
-        upDirection_ = globalOrientation_ * VECTOR3_UP;
-		rightDirection_ = globalOrientation_ * VECTOR3_RIGHT;
+        lookAtDirection_ = globalOrientation_ * Vector3::LookAt;
+        upDirection_ = globalOrientation_ * Vector3::Up;
+        rightDirection_ = globalOrientation_ * Vector3::Right;
         signalUpdated_->Run();
     }
 
@@ -528,17 +524,17 @@ namespace NSG
     void Node::Load(const pugi::xml_node& node)
     {
         CHECK_ASSERT(name_ == node.attribute("name").as_string());
-        Vertex3 position(VECTOR3_ZERO);
+        Vertex3 position(Vector3::Zero);
         auto posAtt = node.attribute("position");
         if (posAtt)
             position = ToVertex3(posAtt.as_string());
         SetPosition(position);
-        Quaternion orientation(QUATERNION_IDENTITY);
+        Quaternion orientation(Quaternion::Identity);
         auto rotAtt = node.attribute("orientation");
         if (rotAtt)
             orientation = ToQuaternion(rotAtt.as_string());
         SetOrientation(orientation);
-        Vertex3 scale(VECTOR3_ONE);
+        Vertex3 scale(Vector3::One);
         auto scaAtt = node.attribute("scale");
         if (scaAtt)
             scale = ToVertex3(scaAtt.as_string());
@@ -549,13 +545,13 @@ namespace NSG
     {
         node.append_attribute("name").set_value(GetName().c_str());
         auto position = GetPosition();
-        if (position != VECTOR3_ZERO)
+        if (position != Vector3::Zero)
             node.append_attribute("position").set_value(ToString(position).c_str());
         auto orientation = GetOrientation();
-        if (orientation != QUATERNION_IDENTITY)
+        if (orientation != Quaternion::Identity)
             node.append_attribute("orientation").set_value(ToString(orientation).c_str());
         auto scale = GetScale();
-        if (scale != VECTOR3_ONE)
+        if (scale != Vector3::One)
             node.append_attribute("scale").set_value(ToString(scale).c_str());
     }
 }

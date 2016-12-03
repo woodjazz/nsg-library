@@ -25,7 +25,6 @@ misrepresented as being the original software.
 */
 #include "LinesMesh.h"
 #include "Types.h"
-#include "Constants.h"
 #include "Check.h"
 
 namespace NSG

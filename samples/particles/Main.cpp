@@ -42,7 +42,7 @@ int NSG_MAIN(int argc, char* argv[])
     floorObj->SetMesh(planeMesh);
     floorObj->SetMaterial(Material::Create());
 	floorObj->GetMaterial()->SetRenderPass(RenderPass::UNLIT);
-    floorObj->GetMaterial()->SetDiffuseColor(ColorRGB(1, 0, 0));
+    floorObj->GetMaterial()->SetDiffuseColor(Color(1, 0, 0));
     auto rb = floorObj->GetOrCreateRigidBody();
 	auto shape = Shape::GetOrCreate(ShapeKey(planeMesh, Vector3(1)));
 	rb->AddShape(shape);

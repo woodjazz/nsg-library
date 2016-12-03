@@ -41,10 +41,10 @@ namespace NSG
         Scene(const std::string& name = GetUniqueName("scene"));
         ~Scene();
         void SetWindow(PWindow window);
-        void SetAmbientColor(ColorRGB ambient);
-        void SetHorizonColor(ColorRGB horizon);
-        const ColorRGB& GetAmbientColor() const { return ambient_; }
-        const ColorRGB& GetHorizonColor() const { return horizon_; }
+        void SetAmbientColor(const Color& ambient);
+        void SetHorizonColor(const Color& horizon);
+        const Color& GetAmbientColor() const { return ambient_; }
+        const Color& GetHorizonColor() const { return horizon_; }
         const std::vector<Light*>& GetLights() const;
         std::vector<Camera*> GetCameras() const;
         void UpdateAll(float deltaTime);
@@ -83,6 +83,7 @@ namespace NSG
         POverlay GetOrCreateOverlay(const std::string& name);
         void RemoveOverlay(const std::string& name);
 		PScene GetOverlays() const { return overlays_; }
+        static constexpr float MAX_WORLD_SIZE = 5000.f;
 	protected:
 		void LoadPhysics(const pugi::xml_node& node);
 		void SavePhysics(pugi::xml_node& node) const;
@@ -98,8 +99,8 @@ namespace NSG
         std::vector<Camera*> cameras_;
 		std::vector<Light*> lights_;
 		std::vector<ParticleSystem*> particleSystems_;
-        ColorRGB ambient_;
-        ColorRGB horizon_;
+        Color ambient_;
+        Color horizon_;
 		POctree octree_;
         mutable std::set<SceneNode*> octreeNeedsUpdate_;
         PPhysicsWorld physicsWorld_;

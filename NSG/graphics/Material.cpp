@@ -2,12 +2,14 @@
 #include "SphereMesh.h"
 #include "Check.h"
 #include "Camera.h"
+#include "Color.h"
 #include "Texture2D.h"
 #include "Scene.h"
 #include "RenderingContext.h"
 #include "Pass.h"
 #include "Program.h"
 #include "Util.h"
+#include "Maths.h"
 #include "FrameBuffer.h"
 #include "StringConverter.h"
 #include "SharedFromPointer.h"
@@ -19,6 +21,40 @@
 namespace NSG
 {
     template<> std::map<std::string, PWeakMaterial> WeakFactory<std::string, Material>::objsMap_ = std::map<std::string, PWeakMaterial> {};
+
+    BlurFilter::BlurFilter()
+        : blurDir_(1, 1),
+          sigma_(3.5f)
+    {
+    }
+
+    bool BlurFilter::operator != (const BlurFilter& obj) const
+    {
+        return blurDir_ != obj.blurDir_ || blurRadius_ != obj.blurRadius_ || sigma_ != obj.sigma_;
+    }
+
+    WaveFilter::WaveFilter()
+        : factor_(PI * 8),
+          offset_(0)
+    {
+    }
+
+    bool WaveFilter::operator != (const WaveFilter& obj) const
+    {
+        return factor_ != obj.factor_ || offset_ != obj.offset_;
+    }
+
+    ShockWaveFilter::ShockWaveFilter()
+        : center_(0, 0),
+          time_(0),
+          params_(10, 0.4f, 0.04f)
+    {
+    }
+
+    bool ShockWaveFilter::operator != (const ShockWaveFilter& obj) const
+    {
+        return center_ != obj.center_ || time_ != obj.time_ || params_ != obj.params_;
+    }
 
     Material::Material(const std::string& name)
         : Object(name),
@@ -87,20 +123,22 @@ namespace NSG
         return material;
     }
 
-    void Material::SetDiffuseColor(ColorRGB color)
+    void Material::SetDiffuseColor(Color color)
     {
-        if (diffuseColor_ != Color(color, alpha_))
+        color.a = alpha_;
+        if (diffuseColor_ != color)
         {
-            diffuseColor_ = Color(color, alpha_);
+            diffuseColor_ = color;
             SetUniformsNeedUpdate();
         }
     }
 
-    void Material::SetSpecularColor(ColorRGB color)
+    void Material::SetSpecularColor(Color color)
     {
-        if (specularColor_ != Color(color, alphaForSpecular_))
+        color.a = alphaForSpecular_;
+        if (specularColor_ != color)
         {
-            specularColor_ = Color(color, alphaForSpecular_);
+            specularColor_ = color;
             SetUniformsNeedUpdate();
         }
     }
@@ -291,7 +329,7 @@ namespace NSG
         child.append_attribute("ambientIntensity").set_value(ambientIntensity_);
         child.append_attribute("diffuseIntensity").set_value(diffuseIntensity_);
         child.append_attribute("specularIntensity").set_value(specularIntensity_);
-        child.append_attribute("diffuse").set_value(ToString(ColorRGB(diffuseColor_)).c_str());
+        child.append_attribute("diffuse").set_value(ToString(diffuseColor_).c_str());
         child.append_attribute("specular").set_value(ToString(specularColor_).c_str());
         child.append_attribute("shininess").set_value(shininess_);
         child.append_attribute("emitIntensity").set_value(emitIntensity_);

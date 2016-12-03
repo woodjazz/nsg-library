@@ -25,6 +25,7 @@ misrepresented as being the original software.
 */
 #include "Maths.h"
 #include <cmath>
+#include <algorithm>
 
 namespace NSG
 {

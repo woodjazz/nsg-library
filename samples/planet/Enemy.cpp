@@ -40,7 +40,7 @@ Enemy::Enemy(PScene scene)
     child_->SetPosition(Vector3(0, 0, radius));
     child_->SetMesh(Mesh::GetOrCreate<TriangleMesh>("EnemyMesh"));
     auto material(Material::GetOrCreate("EnemyMaterial"));
-    material->SetDiffuseColor(COLOR_RED);
+    material->SetDiffuseColor(Color::Red);
     //material->SetFillMode(FillMode::WIREFRAME);
     //material->SetDiffuseColor(COLOR_DODGER_BLUE);
     material->SetRenderPass(RenderPass::UNLIT);
@@ -56,7 +56,7 @@ Enemy::Enemy(PScene scene)
 
     body_->SetKinematic(true);
     body_->HandleCollisions(true);
-    auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, VECTOR3_ONE));
+    auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, Vector3::One));
     shape->SetBB(child_->GetWorldBoundingBox());
     body_->AddShape(shape);
     body_->SetCollisionMask(collisionGroup_, collisionMask_);
@@ -74,8 +74,8 @@ Enemy::Enemy(PScene scene)
     {
         wave0_.x += dt;
         wave0_.y = sin(wave0_.x);
-        child_->SetOrientation(Quaternion(wave0_.y, VECTOR3_FORWARD));
-        auto dir = .5f * dt * (child_->GetOrientation() * VECTOR3_UP);
+        child_->SetOrientation(Quaternion(wave0_.y, Vector3::Forward));
+        auto dir = .5f * dt * (child_->GetOrientation() * Vector3::Up);
         node_->Pitch(-dir.y);
         node_->Yaw(dir.x);
     });

@@ -38,11 +38,11 @@ misrepresented as being the original software.
 #include "Skeleton.h"
 #include "Material.h"
 #include "RenderingContext.h"
-#include "Constants.h"
 #include "Util.h"
 #include "Material.h"
 #include "Renderer.h"
 #include "Pass.h"
+#include "Bone.h"
 #include "VertexArrayObj.h"
 #include "StringConverter.h"
 #include "pugixml.hpp"
@@ -258,7 +258,7 @@ namespace NSG
         activeMaterial_ = nullptr;
         activeLight_ = nullptr;
         activeCamera_ = nullptr;
-        sceneColor_ = ColorRGB(-1);
+        sceneColor_ = Color(-1);
 
         bonesBaseLoc_.clear();
     }
@@ -334,7 +334,7 @@ namespace NSG
         materialLoc_.shininess_ = GetUniformLocation("u_material.shininess");
         materialLoc_.emitIntensity_ = GetUniformLocation("u_material.emitIntensity");
 
-        for (size_t i = 0; i < MAX_BONES; i++)
+        for (size_t i = 0; i < Bone::MaxBones; i++)
         {
             GLuint boneLoc = GetUniformLocation("u_bones[" + ToString(i) + "]");
             if (boneLoc != -1)
@@ -346,7 +346,7 @@ namespace NSG
         lightInvRangeLoc_ = GetUniformLocation("u_lightInvRange");
         lightPositionLoc_ = GetUniformLocation("u_lightPosition");
 
-        for (int i = 0; i < MAX_SPLITS; i++)
+        for (int i = 0; i < ShadowCamera::MAX_SPLITS; i++)
         {
             lightViewLoc_[i] = GetUniformLocation("u_lightView[" + ToString(i) + "]");
             lightProjectionLoc_[i] = GetUniformLocation("u_lightProjection[" + ToString(i) + "]");
@@ -444,9 +444,9 @@ namespace NSG
 				if (scene_->UniformsNeedUpdate())
                     glUniform3fv(sceneColorAmbientLoc_, 1, &scene_->GetAmbientColor()[0]);
             }
-            else if (sceneColor_ == ColorRGB(-1))
+            else if (sceneColor_ == Color(-1))
             {
-                sceneColor_ = ColorRGB(0);
+                sceneColor_ = Color(0);
                 glUniform3fv(sceneColorAmbientLoc_, 1, &sceneColor_[0]);
             }
         }
@@ -799,13 +799,13 @@ namespace NSG
             {
                 if (lightDiffuseColorLoc_ != -1)
                 {
-                    Color diffuse = Color(light_->GetDiffuseColor(), 1);
+                    const Color& diffuse = light_->GetDiffuseColor();
                     glUniform4fv(lightDiffuseColorLoc_, 1, &diffuse[0]);
                 }
 
                 if (lightSpecularColorLoc_ != -1)
                 {
-                    Color specular = Color(light_->GetSpecularColor(), 1);
+                    const Color& specular = light_->GetSpecularColor();
                     glUniform4fv(lightSpecularColorLoc_, 1, &specular[0]);
                 }
 
