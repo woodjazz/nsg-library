@@ -55,8 +55,8 @@ namespace NSG
 		SignalMouseButtonInt::PSlot slotMouseUp_;
 		SignalFloatFloat::PSlot slotMouseWheel_;
 		SignalMultiGesture::PSlot slotMultiGesture_;
+		SignalEmpty::PSlot slotTextureBeforeAllocating_;
 		SignalEmpty::PSlot slotTextureAllocated_;
-		SignalEmpty::PSlot slotTextureReleased_;
 		Pass pass_;
 		PProgram program_;
 		PVertexBuffer vBuffer_;

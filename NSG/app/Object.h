@@ -42,6 +42,7 @@ namespace NSG
         virtual void Load(const pugi::xml_node& node) {}
         static void InvalidateAll();
         const std::string& GetName() const { return name_; }
+        SignalEmpty::PSignal SigBeforeAllocating() {return signalBeforeAllocating_; }
         SignalEmpty::PSignal SigAllocated() {return signalAllocated_; }
         SignalEmpty::PSignal SigReleased() {return signalReleased_; }
         void SetLoader(PLoaderXMLNode nodeLoader);
@@ -73,6 +74,7 @@ namespace NSG
         bool isValid_;
         bool resourcesAllocated_;
         SignalEmpty::PSlot slotInvalidateAll_;
+        SignalEmpty::PSignal signalBeforeAllocating_;
         SignalEmpty::PSignal signalAllocated_;
         SignalEmpty::PSignal signalReleased_;
 		bool disableInvalidation_;

@@ -298,7 +298,6 @@ void Editor::ShowScene()
 
 void Editor::ShowGame()
 {
-    auto graphics = RenderingContext::GetPtr();
     auto scene = window_.lock()->GetScene();
     auto camera = scene.lock()->GetMainCamera();
 

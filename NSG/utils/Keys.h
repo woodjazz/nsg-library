@@ -181,7 +181,7 @@ misrepresented as being the original software.
 #undef 		NSG_KEY_SPACE   
 #undef 		NSG_KEY_TAB        
 #undef 		NSG_KEY_BACKSPACE  
-#undef 		NSG_KEY_ENTER      
+#undef 		NSG_KEY_ENTER      		
 
 #define 	NSG_KEY_ESC   		27
 #define 	NSG_KEY_SPACE   	uint8_t(' ')

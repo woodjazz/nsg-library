@@ -62,26 +62,30 @@ namespace NSG
         camera_->EnableOrtho();
         ImGuiIO& io = ImGui::GetIO();
         io.UserData = this;
-        io.RenderDrawListsFn = [](ImDrawData * draw_data) {static_cast<GUI*>(ImGui::GetIO().UserData)->InternalDraw(draw_data); };
-
         unsigned char* pixels;
         int width, height;
         io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-        fontTexture_->SetData(pixels);
         fontTexture_->SetWrapMode(TextureWrapMode::REPEAT);
         fontTexture_->SetSize(width, height);
-
-        slotTextureReleased_ = fontTexture_->SigReleased()->Connect([this]()
+        
+        io.RenderDrawListsFn = [](ImDrawData * draw_data)
         {
+            static_cast<GUI*>(ImGui::GetIO().UserData)->InternalDraw(draw_data);
+        };
+
+        slotTextureBeforeAllocating_ = fontTexture_->SigBeforeAllocating()->Connect([this]()
+        {
+            fontTexture_->DisableInvalidation();
             ImGui::SetCurrentContext(state_);
+            ImGuiIO& io = ImGui::GetIO();
             unsigned char* pixels;
             int width, height;
-            ImGuiIO& io = ImGui::GetIO();
             io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
             fontTexture_->SetData(pixels);
-            fontTexture_->SetWrapMode(TextureWrapMode::REPEAT);
             fontTexture_->SetSize(width, height);
+            fontTexture_->EnableInvalidation();
         });
+
 
         slotTextureAllocated_ = fontTexture_->SigAllocated()->Connect([this]()
         {
@@ -93,8 +97,6 @@ namespace NSG
             io.Fonts->ClearInputData();
             io.Fonts->ClearTexData();
         });
-
-        //CHECK_CONDITION(fontTexture_->IsReady());
     }
 
     GUI::~GUI()
@@ -228,9 +230,9 @@ namespace NSG
 
         slotChar_ = mainWindow->SigUnsigned()->Connect([this](unsigned int character)
         {
-//            ImGui::SetCurrentContext(state_);
-//            ImGuiIO& io = ImGui::GetIO();
-//            io.AddInputCharacter(character);
+            //            ImGui::SetCurrentContext(state_);
+            //            ImGuiIO& io = ImGui::GetIO();
+            //            io.AddInputCharacter(character);
         });
 
 

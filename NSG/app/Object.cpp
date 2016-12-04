@@ -37,6 +37,7 @@ namespace NSG
 		: name_(name),
 		isValid_(false),
 		resourcesAllocated_(false),
+        signalBeforeAllocating_(new SignalEmpty),
 		signalAllocated_(new SignalEmpty),
 		signalReleased_(new SignalEmpty),
 		disableInvalidation_(false)
@@ -103,6 +104,7 @@ namespace NSG
             if (isValid_)
             {
                 CHECK_ASSERT(!resourcesAllocated_);
+                signalBeforeAllocating_->Run();
                 LOGI("Begin: Allocating resources for %s", GetNameType().c_str());
                 AllocateResources();
                 LOGI("End: Allocating resources for %s", GetNameType().c_str());
