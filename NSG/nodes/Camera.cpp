@@ -508,7 +508,10 @@ void Camera::Load(const pugi::xml_node& node)
 SignalCamera::PSignal Camera::SignalBeingDestroy()
 {
     static SignalCamera::PSignal sig(new SignalCamera);
-    return sig;
+    if(sig->alive_.ok)
+        return sig;
+    else
+        return SignalCamera::PSignal(new SignalCamera);
 }
 
 void Camera::SetMaxShadowSplits(int splits)

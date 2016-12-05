@@ -249,7 +249,10 @@ void Light::FillShaderDefines(std::string& defines, PassType passType, const Mat
 SignalLight::PSignal Light::SignalBeingDestroy()
 {
     static SignalLight::PSignal sig(new SignalLight);
-    return sig;
+    if(sig->alive_.ok)
+        return sig;
+    else
+        return SignalLight::PSignal(new SignalLight);
 }
 
 void Light::CalculateColor()

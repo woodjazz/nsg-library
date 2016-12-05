@@ -37,10 +37,10 @@ if [ ! -n "$1" ]; then
 	exit 0
 fi
 
-# cd $HOME_EMSCRIPTEN
-# source $HOME_EMSCRIPTEN/emsdk_env.sh
-# $HOME_EMSCRIPTEN/emsdk activate
-# cd $SOURCE_FOLDER
+cd $HOME_EMSCRIPTEN
+source $HOME_EMSCRIPTEN/emsdk_env.sh
+$HOME_EMSCRIPTEN/emsdk activate
+cd $SOURCE_FOLDER
 
 cd ..
 cmake -E make_directory $1

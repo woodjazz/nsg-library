@@ -278,6 +278,10 @@ void ParticleSystem::SetInitialVelocity(PParticle particle)
 SignalParticleSystem::PSignal ParticleSystem::SignalBeingDestroy()
 {
     static SignalParticleSystem::PSignal sig(new SignalParticleSystem);
+    if(sig->alive_.ok)
+        return sig;
+    else
+        return SignalParticleSystem::PSignal(new SignalParticleSystem);
     return sig;
 }
 
