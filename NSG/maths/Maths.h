@@ -24,6 +24,7 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include <cmath>
 namespace NSG
 {
     static constexpr float DEG2RAD = 0.01745329251994329576923690768489f;

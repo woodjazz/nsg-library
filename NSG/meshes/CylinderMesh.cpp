@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Check.h"
 #include "Log.h"
 #include "Maths.h"
+#include <cmath>
 
 namespace NSG
 {

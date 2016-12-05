@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "LinesMesh.h"
 #include "Maths.h"
 #include "Vector3.h"
+#include <cmath>
 
 namespace NSG
 {

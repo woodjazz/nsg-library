@@ -50,114 +50,112 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-    AppConfiguration Engine::conf_;
+AppConfiguration Engine::conf_;
 
-    Engine::Engine()
-        : Tick(conf_.fps_),
-          deltaTime_(0)
-    {
-        Tick::Initialize();
-    }
+Engine::Engine()
+    : Tick(conf_.fps_),
+      deltaTime_(0)
+{
+    Tick::Initialize();
+}
 
-    Engine::~Engine()
-    {
-    }
+Engine::~Engine()
+{
+}
 
-    void Engine::InitializeTicks()
-    {
-    }
+void Engine::InitializeTicks()
+{
+}
 
-    void Engine::BeginTicks()
-    {
-        auto mainWindow = Window::GetMainWindow();
-        if(mainWindow)
-            mainWindow->HandleEvents();
-    }
+void Engine::BeginTicks()
+{
+    auto mainWindow = Window::GetMainWindow();
+    if(mainWindow)
+        mainWindow->HandleEvents();
+}
 
-    void Engine::DoTick(float delta)
-    {
-        deltaTime_ = delta;
-        Window::UpdateScenes(delta);
-        Engine::SigUpdate()->Run(delta);
-    }
+void Engine::DoTick(float delta)
+{
+    deltaTime_ = delta;
+    Window::UpdateScenes(delta);
+    Engine::SigUpdate()->Run(delta);
+}
 
-    void Engine::EndTicks()
-    {
-        if (!Window::AreAllWindowsMinimized())
-            RenderFrame();
-        ISignal::FreeFirst(10);
-    }
+void Engine::EndTicks()
+{
+    if (!Window::AreAllWindowsMinimized())
+        RenderFrame();
+}
 
-    void Engine::RenderFrame()
-    {
-        Engine::SigBeginFrame()->Run();
-        Window::RenderWindows();
-    }
+void Engine::RenderFrame()
+{
+    Engine::SigBeginFrame()->Run();
+    Window::RenderWindows();
+}
 
-    int Engine::Run()
+int Engine::Run()
+{
+    FileSystem::Initialize();
+    Tick::Initialize();
+#if EMSCRIPTEN
     {
-        FileSystem::Initialize();
-        Tick::Initialize();
-        #if EMSCRIPTEN
+        SDL_StartTextInput();
+        auto saveSlot = FileSystem::SigSaved()->Connect([]
         {
-            SDL_StartTextInput();
-            auto saveSlot = FileSystem::SigSaved()->Connect([]
-            {
-                emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
-            });
-            bool saved = false;
+            emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+        });
+        bool saved = false;
 
-            auto runframe = [](void* arg)
-            {
-                bool& saved = *(bool*)arg;
-                Engine::GetPtr()->PerformTicks();
-                if (!Window::GetMainWindow() && !saved)
-                    saved = FileSystem::Save();
-            };
-            emscripten_set_main_loop_arg(runframe, &saved, 0, 1);
-        }
-        #elif defined(IS_TARGET_IOS)
-            IOSWindow::RunApplication();
-            FileSystem::Save();
-        #else
+        auto runframe = [](void* arg)
         {
-            for (;;)
-            {
-                PerformTicks();
-                if (!Window::GetMainWindow())
-                    break;
-            }
-            FileSystem::Save();
+            bool& saved = *(bool*)arg;
+            Engine::GetPtr()->PerformTicks();
+            if (!Window::GetMainWindow() && !saved)
+                saved = FileSystem::Save();
+        };
+        emscripten_set_main_loop_arg(runframe, &saved, 0, 1);
+    }
+#elif defined(IS_TARGET_IOS)
+    IOSWindow::RunApplication();
+    FileSystem::Save();
+#else
+    {
+        for (;;)
+        {
+            PerformTicks();
+            if (!Window::GetMainWindow())
+                break;
         }
-        #endif
-        return 0;
+        FileSystem::Save();
     }
+#endif
+    return 0;
+}
 
-    SignalUpdate::PSignal Engine::SigUpdate()
-    {
-        static SignalUpdate::PSignal signalUpdate(new SignalUpdate);
-        return signalUpdate;
-    }
+SignalUpdate::PSignal Engine::SigUpdate()
+{
+    static SignalUpdate::PSignal signalUpdate(new SignalUpdate);
+    return signalUpdate;
+}
 
-    SignalEmpty::PSignal Engine::SigBeginFrame()
-    {
-        static SignalEmpty::PSignal signalBeginFrame(new SignalEmpty);
-        return signalBeginFrame;
-    }
+SignalEmpty::PSignal Engine::SigBeginFrame()
+{
+    static SignalEmpty::PSignal signalBeginFrame(new SignalEmpty);
+    return signalBeginFrame;
+}
 
-    void Engine::ReleaseMemory()
-    {
-        Resource::Clear();
-        Mesh::Clear();
-        Material::Clear();
-        Shape::Clear();
-        Skeleton::Clear();
-        Animation::Clear();
-        Program::Clear();
-        LoaderXML::Clear();
-        ISignal::FreeAllDestroyedSlots();
-        auto ctx = RenderingContext::GetPtr();
-        if (ctx)
-            ctx->ResetCachedState();
-    }
+void Engine::ReleaseMemory()
+{
+    Resource::Clear();
+    Mesh::Clear();
+    Material::Clear();
+    Shape::Clear();
+    Skeleton::Clear();
+    Animation::Clear();
+    Program::Clear();
+    LoaderXML::Clear();
+    auto ctx = RenderingContext::GetPtr();
+    if (ctx)
+        ctx->ResetCachedState();
+}
 }

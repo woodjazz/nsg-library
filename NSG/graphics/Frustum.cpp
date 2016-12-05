@@ -27,6 +27,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "SceneNode.h"
 #include "DebugRenderer.h"
+#include <cmath>
 
 namespace NSG
 {

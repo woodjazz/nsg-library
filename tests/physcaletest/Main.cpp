@@ -30,78 +30,73 @@ PScene scene;
 
 PSceneNode CreateObject(PMesh mesh, Color color, const Vector3& pos, const Vector3& scale, FillMode mode = FillMode::SOLID)
 {
-	auto obj = scene->CreateChild<SceneNode>();
-	obj->SetGlobalPosition(pos);
-	obj->SetGlobalScale(scale);
-	auto material = Material::Create();
-	material->SetDiffuseColor(color);
+    auto obj = scene->CreateChild<SceneNode>();
+    obj->SetGlobalPosition(pos);
+    obj->SetGlobalScale(scale);
+    auto material = Material::Create();
+    material->SetDiffuseColor(color);
     material->SetSpecularColor(Color(0));
-	material->SetRenderPass(RenderPass::LIT);
-	material->SetFillMode(mode);
-	obj->SetMesh(mesh);
-	obj->SetMaterial(material);
-	auto rb = obj->GetOrCreateRigidBody();
-	auto shape = Shape::Create(ShapeKey{ mesh, scale });
-	rb->AddShape(shape);
-	return obj;
+    material->SetRenderPass(RenderPass::LIT);
+    material->SetFillMode(mode);
+    obj->SetMesh(mesh);
+    obj->SetMaterial(material);
+    auto rb = obj->GetOrCreateRigidBody();
+    auto shape = Shape::Create(ShapeKey{ mesh, scale });
+    rb->AddShape(shape);
+    return obj;
 }
 
 int NSG_MAIN(int argc, char* argv[])
 {
     using namespace NSG;
-	auto window = Window::Create("0", 0, 0, 10, 10, (int)WindowFlag::HIDDEN);
+    auto window = Window::Create("0", 0, 0, 100, 100, (int)WindowFlag::HIDDEN);
     scene = std::make_shared<Scene>("scene");
     auto camera = scene->CreateChild<Camera>();
-	camera->SetPosition(Vector3(0, 20, 20));
-	camera->SetLocalLookAtPosition(Vector3(0, -2, -1));
-	auto control = std::make_shared<CameraControl>(camera);
+    camera->SetPosition(Vector3(0, 20, 20));
+    camera->SetLocalLookAtPosition(Vector3(0, -2, -1));
+    auto control = std::make_shared<CameraControl>(camera);
 
-	PSceneNode floor;
-	{
-		auto mesh = Mesh::Create<BoxMesh>();
-		mesh->Set(5, 0.1f, 5);
+    PSceneNode floor;
+    {
+        auto mesh = Mesh::Create<BoxMesh>();
+        mesh->Set(5, 0.1f, 5);
         floor = CreateObject(mesh, Color::White, Vector3(0), Vector3(2), FillMode::WIREFRAME);
-	}
+    }
 
-	PSceneNode sphere;
-	Vector3 spherePos(0, 30, 0);
-	{
-		auto mesh = Mesh::Create<SphereMesh>();
-		mesh->Set(2);
+    PSceneNode sphere;
+    Vector3 spherePos(0, 30, 0);
+    {
+        auto mesh = Mesh::Create<SphereMesh>();
+        mesh->Set(2);
         sphere = CreateObject(mesh, Color::White, spherePos, Vector3(1), FillMode::WIREFRAME);
-		auto rb = sphere->GetRigidBody();
-		rb->SetMass(1);
-		rb->HandleCollisions(true);
-	}
+        auto rb = sphere->GetRigidBody();
+        rb->SetMass(1);
+        rb->HandleCollisions(true);
+    }
 
     auto static slotCollision = sphere->SigCollision()->Connect([&](const ContactPoint & contactInfo)
     {
-		static int step = 0;
-        auto pos = sphere->GetGlobalPosition();
-		if (Abs(pos.y - 2.1f) < 0.001f)
-		{
-			CHECK_CONDITION(step == 0);
-			sphere->SetGlobalScale(Vector3(2));
-			sphere->SetGlobalPosition(spherePos);
-			sphere->GetRigidBody()->SyncWithNode();
-			++step;
-		}
-		else if (Abs(pos.y - 4.1f) < 0.001f)
-		{
-			CHECK_CONDITION(step == 1);
-			sphere->SetGlobalScale(Vector3(3));
-			sphere->SetGlobalPosition(spherePos);
-			sphere->GetRigidBody()->SyncWithNode();
-			++step;
-		}
-		else if (Abs(pos.y - 6.1f) < 0.001f)
-		{
-			CHECK_CONDITION(step == 2);
-			window = nullptr; // exit
-		}
+        static int step = 0;
+        if (!step)
+        {
+            sphere->SetGlobalScale(Vector3(2));
+            sphere->SetGlobalPosition(spherePos);
+            sphere->GetRigidBody()->SyncWithNode();
+            ++step;
+        }
+        else if (step == 1)
+        {
+            sphere->SetGlobalScale(Vector3(3));
+            sphere->SetGlobalPosition(spherePos);
+            sphere->GetRigidBody()->SyncWithNode();
+            ++step;
+        }
+        else
+        {
+            window = nullptr; // exit
+        }
     });
 
     window->SetScene(scene);
-	return Engine::Create()->Run();
+    return Engine::Create()->Run();
 }
-
