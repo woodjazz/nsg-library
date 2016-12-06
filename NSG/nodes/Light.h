@@ -49,7 +49,6 @@ namespace NSG
         void Save(pugi::xml_node& node) const override;
         void Load(const pugi::xml_node& node) override;
         void FillShaderDefines(std::string& defines, PassType passType, const Material* material) const;
-        static SignalLight::PSignal SignalBeingDestroy();
         SignalLight::PSignal SignalSetType() { return signalSetType_; }
         const Color& GetDiffuseColor() const { return diffuseColor_; }
         const Color& GetSpecularColor() const { return specularColor_; }

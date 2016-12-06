@@ -60,7 +60,9 @@ Light::Light(const std::string& name)
 
 Light::~Light()
 {
-    SignalBeingDestroy()->Run(this);
+    auto scene = GetScene();
+    if(scene)
+        scene->RemoveLight(this);
 }
 
 void Light::SetEnergy(float energy)
@@ -244,15 +246,6 @@ void Light::FillShaderDefines(std::string& defines, PassType passType, const Mat
         else
             defines += "SHADOW_SPOT_PASS\n";
     }
-}
-
-SignalLight::PSignal Light::SignalBeingDestroy()
-{
-    static SignalLight::PSignal sig(new SignalLight);
-    if(sig->alive_.ok)
-        return sig;
-    else
-        return SignalLight::PSignal(new SignalLight);
 }
 
 void Light::CalculateColor()

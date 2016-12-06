@@ -84,7 +84,9 @@ Camera::Camera(const std::string& name)
 
 Camera::~Camera()
 {
-    SignalBeingDestroy()->Run(this);
+    auto scene = GetScene();
+    if(scene)
+        scene->RemoveCamera(this);
 }
 
 void Camera::UnRegisterWindow()
@@ -503,15 +505,6 @@ void Camera::Load(const pugi::xml_node& node)
 
     isDirty_ = true;
     SetUniformsNeedUpdate();
-}
-
-SignalCamera::PSignal Camera::SignalBeingDestroy()
-{
-    static SignalCamera::PSignal sig(new SignalCamera);
-    if(sig->alive_.ok)
-        return sig;
-    else
-        return SignalCamera::PSignal(new SignalCamera);
 }
 
 void Camera::SetMaxShadowSplits(int splits)

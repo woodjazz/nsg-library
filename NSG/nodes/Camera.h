@@ -111,7 +111,6 @@ namespace NSG
         void SetShadowSplitLogFactor(float factor); // between 0-1
         float GetShadowSplitLogFactor() const;
         static BoundingBox GetViewBox(const Frustum* frustum, const Scene* scene, bool receivers, bool casters);
-        static SignalCamera::PSignal SignalBeingDestroy();
         void SetOrthoProjection(OrthoProjection projection);
         void DisableUserOrthoProjection() { hasUserOrthoProjection_ = false; }
         void Debug(DebugRenderer* debugRenderer, const Color& color);

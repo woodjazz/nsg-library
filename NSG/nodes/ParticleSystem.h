@@ -41,7 +41,6 @@ namespace NSG
         float GetLifeTime() const;
 		void SetParticleMaterial(PMaterial material);
 		PMaterial GetParticleMaterial() { return particleMaterial_; }
-        static SignalParticleSystem::PSignal SignalBeingDestroy();
     private:
 		void Invalidate();
         void Initialize(PParticle particle);

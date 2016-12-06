@@ -83,6 +83,9 @@ namespace NSG
         POverlay GetOrCreateOverlay(const std::string& name);
         void RemoveOverlay(const std::string& name);
 		PScene GetOverlays() const { return overlays_; }
+        void RemoveLight(Light* light);
+        void RemoveCamera(Camera* camera);
+        void RemoveParticleSystem(ParticleSystem* ps);                
         static constexpr float MAX_WORLD_SIZE = 5000.f;
 	protected:
 		void LoadPhysics(const pugi::xml_node& node);
@@ -114,9 +117,6 @@ namespace NSG
 		SignalMouseButton::PSlot slotMouseDown_;
 		SignalMouseButton::PSlot slotMouseUp_;
 		SignalFloatFloat::PSlot slotMouseWheel_;
-        SignalLight::PSlot slotLightBeingDestroy_;
-		SignalCamera::PSlot slotCameraBeingDestroy_;
-		SignalParticleSystem::PSlot slotPSBeingDestroy_;
 		bool enableFog_;
 		float fogMinIntensity_;
 		float fogStart_;

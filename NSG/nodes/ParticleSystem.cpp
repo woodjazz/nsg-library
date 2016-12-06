@@ -86,7 +86,9 @@ ParticleSystem::ParticleSystem(const std::string& name)
 
 ParticleSystem::~ParticleSystem()
 {
-    SignalBeingDestroy()->Run(this);
+    auto scene = GetScene();
+    if(scene)
+        scene->RemoveParticleSystem(this);
 }
 
 void ParticleSystem::SetParticleMaterial(PMaterial material)
@@ -274,16 +276,5 @@ void ParticleSystem::SetInitialVelocity(PParticle particle)
 
     particle->SetVelocity(velocity);
 }
-
-SignalParticleSystem::PSignal ParticleSystem::SignalBeingDestroy()
-{
-    static SignalParticleSystem::PSignal sig(new SignalParticleSystem);
-    if(sig->alive_.ok)
-        return sig;
-    else
-        return SignalParticleSystem::PSignal(new SignalParticleSystem);
-    return sig;
-}
-
 
 }

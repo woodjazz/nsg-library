@@ -31,15 +31,6 @@ misrepresented as being the original software.
 
 namespace NSG
 {
-struct Alive
-{
-    bool ok;
-    Alive() : ok(true) {}
-    ~Alive()
-    {
-        ok = false;
-    }
-};
 template <typename... PARAMS>
 class Signal : public std::enable_shared_from_this<Signal<PARAMS...>>
 {
@@ -50,8 +41,6 @@ public:
     class Slot;
     typedef std::shared_ptr<Slot> PSlot;
     typedef std::weak_ptr<Slot> PWeakSlot;
-
-    static Alive alive_;
 
     Signal()
         : running_(false)
@@ -79,19 +68,16 @@ public:
 
     void Run(PARAMS... arguments)
     {
-        if(alive_.ok)
+        running_ = true;
+        ExecuteRunSlots(arguments...);
+        for (auto& slot : slots_)
         {
-            running_ = true;
-            ExecuteRunSlots(arguments...);
-            for (auto& slot : slots_)
-            {
-                PSlot obj(slot.lock());
-                if (obj)
-                    obj->Execute(arguments...);
-            }
-            FreeSlots(); // release memory removing destroyed slots
-            running_ = false;
+            PSlot obj(slot.lock());
+            if (obj)
+                obj->Execute(arguments...);
         }
+        FreeSlots(); // release memory removing destroyed slots
+        running_ = false;
     }
 
     bool FreeSlots()
@@ -158,6 +144,4 @@ public:
         bool enable_;
     };
 };
-template <typename... PARAMS>
-Alive Signal<PARAMS...>::alive_;
 }
