@@ -1,7 +1,7 @@
-include(../../qmake/common.pro)
+include(../../qmake/common.pri)
 TEMPLATE = app
+CONFIG += testcase
 HEADERS = $$files(*.h, true)
 SOURCES = $$files(*.cpp, true)
-INCLUDEPATH += $$setupIncludes()
 LIBS += $$setupLibs()
 
