@@ -2,8 +2,8 @@ PROJECT_PWD = $$PWD
 include(../qmake/common.pri)
 TEMPLATE = lib
 CONFIG += staticlib
-HEADERS = $$files(*.h, true)
-SOURCES = $$files(*.cpp, true)
+HEADERS += $$files(*.h, true)
+SOURCES += $$files(*.cpp, true)
 SOURCES += $$files(*.c, true)
 INCLUDEPATH += $$files($$ROOT_PWD/NSG/*, false)
 INCLUDEPATH += $$ROOT_PWD/externals/pugixml/src

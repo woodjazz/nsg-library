@@ -34,6 +34,7 @@ misrepresented as being the original software.
 #include <EGL/eglplatform.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+
 extern PFNGLDISCARDFRAMEBUFFEREXTPROC glDiscardFramebufferEXT;
 extern PFNGLGENVERTEXARRAYSOESPROC glGenVertexArraysOES;
 extern PFNGLBINDVERTEXARRAYOESPROC glBindVertexArrayOES;

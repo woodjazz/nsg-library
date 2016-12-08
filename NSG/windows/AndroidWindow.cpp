@@ -42,6 +42,8 @@ misrepresented as being the original software.
 #include <codecvt>
 #endif
 #include <jni.h>
+#include <android/input.h>
+#include <android/keycodes.h>
 
 namespace NSG
 {
@@ -91,7 +93,7 @@ namespace NSG
         if (modifiers & AMETA_ALT_ON)
             translated |= NSG_KEY_MOD_ALT;
 
-        if (modifiers & AMETA_CTRL_ON)
+        if (modifiers & AMETA_SYM_ON)
             translated |= NSG_KEY_MOD_CONTROL;
 
         return translated;

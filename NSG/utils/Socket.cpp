@@ -8,6 +8,7 @@
 #ifdef IS_TARGET_WINDOWS
 #include <Strsafe.h>
 #else
+#include <errno.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -41,7 +42,7 @@ static std::string GetStringError()
 
     LocalFree(lpMsgBuf);
     LocalFree(lpDisplayBuf);
-    return errorMsg;
+    return errorMsg;    
 #else
     return strerror(errno);
 #endif

@@ -1,8 +1,8 @@
 include(common.pri)
 TEMPLATE = app
 CONFIG += testcase
-HEADERS = $$files($$PROJECT_PWD/*.h, true)
-SOURCES = $$files($$PROJECT_PWD/*.cpp, true)
+HEADERS += $$files($$PROJECT_PWD/*.h, true)
+SOURCES += $$files($$PROJECT_PWD/*.cpp, true)
 INCLUDEPATH += $$files($$ROOT_PWD/NSG/*, false)
 INCLUDEPATH += $$ROOT_PWD/externals/pugixml/src
 INCLUDEPATH += $$ROOT_PWD/externals/imgui
