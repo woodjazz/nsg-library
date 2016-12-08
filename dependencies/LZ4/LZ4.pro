@@ -1,4 +1,4 @@
 TEMPLATE = lib
-CONFIG = staticlib
+CONFIG += staticlib
 HEADERS = *.h
 SOURCES = *.c

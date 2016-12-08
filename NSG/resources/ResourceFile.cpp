@@ -112,7 +112,7 @@ namespace NSG
                 AAsset_close(pAsset);
             }
             #else
-            auto filename = path_.GetFilePath();
+            auto filename = path_.GetFullAbsoluteFilePath();//.GetFilePath();
             std::ifstream file(filename.c_str(), std::ios::binary);
             if (file.is_open())
             {

@@ -1,5 +1,5 @@
 TEMPLATE = lib
-CONFIG = staticlib
+CONFIG += staticlib
 HEADERS = imgui/*.h
 SOURCES = $$files(imgui/*.cpp, false)
 HEADERS += pugixml/src/*.hpp
