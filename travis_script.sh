@@ -9,6 +9,6 @@ case "${TRAVIS_OS_NAME}" in
 	#./cmake_ems.sh emsbuild && cd../emsbuild && make
     ;;
   osx)
-	./cmake_osx.sh osxbuild && cd ../osxbuild && xcodebuild -target ALL_BUILD #&& xcodebuild -target RUN_TESTS
+	./cmake_osx.sh osxbuild && cd ../osxbuild && xcodebuild -target ALL_BUILD && xcodebuild -target RUN_TESTS
     ;;
 esac
