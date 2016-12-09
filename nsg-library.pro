@@ -11,6 +11,23 @@ message(Data files: $$[QT_INSTALL_DATA])
 message(Translation files: $$[QT_INSTALL_TRANSLATIONS])
 message(Settings: $$[QT_INSTALL_CONFIGURATION])
 message(Examples: $$[QT_INSTALL_EXAMPLES])
+
+android {
+    message("Detected Android platform")
+}
+
+osx:!android {
+    message("Detected OSX platform")
+}
+
+linux:!android {
+    message("Detected Linux platform")
+}
+
+win32:!android {
+    message("Detected Windows platform")
+}
+
 TEMPLATE = subdirs
 OTHER_FILES = qmake/* *
 SUBDIRS = NSG\
