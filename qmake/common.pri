@@ -52,18 +52,30 @@ defineTest(exportBlend) {
         eval($${name}.commands = $$BLENDER_EXECUTABLE $$PROJECT_PWD/$${file}.blend --background --python $$EXPORT_SCRIPT -- $$PROJECT_PWD/$$2)
         export($${name}.commands)
         QMAKE_EXTRA_TARGETS += $${name}
-        export(QMAKE_EXTRA_TARGETS)
         PRE_TARGETDEPS += $$target
-        export(PRE_TARGETDEPS)
         osx:!android {
             cptarget = $${name}1
-            eval($${cptarget}.commands = cp $$files($$PROJECT_PWD/data/*, true) $$DESTDIR_TARGET/Resources/data)
-            eval($${cptarget}.depends = $${name}
+            eval($${cptarget}.commands = cp -R $$PROJECT_PWD/data $$OUT_PWD/$${TARGET}.app/Contents/Resources)
+            export($${cptarget}.commands)
+            eval($${cptarget}.depends = $${name})
+            export($${cptarget}.depends)
             QMAKE_EXTRA_TARGETS += $${cptarget}
-            export(QMAKE_EXTRA_TARGETS)
+            PRE_TARGETDEPS += $${cptarget}
         }
+        export(QMAKE_EXTRA_TARGETS)
+        export(PRE_TARGETDEPS)
     }
 }
 
+defineTest(copyData) {
+    osx:!android {
+        copyData.commands = cp -R $$PROJECT_PWD/data $$OUT_PWD/$${TARGET}.app/Contents/Resources
+        export(copyData.commands)
+        QMAKE_EXTRA_TARGETS += copyData
+        PRE_TARGETDEPS += copyData
+    }
+    export(QMAKE_EXTRA_TARGETS)
+    export(PRE_TARGETDEPS)
+}
 
 
