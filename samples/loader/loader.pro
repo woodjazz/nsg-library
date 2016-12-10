@@ -1,3 +1,10 @@
 PROJECT_PWD = $$PWD
 include(../../qmake/common.pri)
 setupSample()
+exportBlend(art/shadowdir/scene, data/shadowdir)
+exportBlend(art/shadowpoint/scene, data/shadowpoint)
+exportBlend(art/shadowspot/scene, data/shadowspot)
+exportBlend(art/transparency/scene, data/transparency)
+exportBlend(art/physics/scene, data/physics)
+exportBlend(art/fog/scene, data/fog)
+exportBlend(art/uvs/scene, data/uvs)

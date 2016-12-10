@@ -1,4 +1,3 @@
-TEMPLATE = subdirs
-DIRS = $$files(*)
-DIRS -= samples.pro
-SUBDIRS = $$DIRS
+PROJECT_PWD = $$PWD
+include(../qmake/common.pri)
+addSubdirs()

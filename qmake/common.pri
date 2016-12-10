@@ -44,46 +44,115 @@ QMAKE_LFLAGS_RELEASE += -O3
 QMAKE_LFLAGS_DEBUG += -g
 
 TARGET = $$basename(PROJECT_PWD)
-EXPORT_SCRIPT = $$SOURCE_ROOT_PWD/tools/blenderexport/Export.py
+
+defineTest(createDir) {
+    dir = $$1
+    !exists($$dir) {
+        mkpath($$dir)
+    }
+}
+
+defineTest(addSubdirs) {
+    TEMPLATE = subdirs
+    export(TEMPLATE)
+    subdirs = $$files($$PROJECT_PWD/*, false)
+    currentProj = $$PROJECT_PWD/$${TARGET}.pro
+    for(subdir, subdirs) {
+        !equals(currentProj, $$subdir) {
+            SUBDIRS += $$basename(subdir)
+        }
+    }
+    #message($$SUBDIRS)
+    export (SUBDIRS)
+}
+
+defineTest(copyData) {
+    dir = $$PROJECT_PWD/data
+    createDir($$dir)
+    osx {
+        copyData.commands = cp -R $$dir $$OUT_PWD/$${TARGET}.app/Contents/Resources
+    }
+    win32 {
+        copyData.commands = xcopy $$dir $$OUT_PWD/$${TARGET}
+    }
+    linux {
+        copyData.commands = cp -R $$dir $$OUT_PWD/$${TARGET}
+    }
+    export(copyData.commands)
+    QMAKE_EXTRA_TARGETS += copyData
+    PRE_TARGETDEPS += copyData
+    export(QMAKE_EXTRA_TARGETS)
+    export(PRE_TARGETDEPS)
+}
 
 defineTest(exportBlend) {
     exists($$BLENDER_EXECUTABLE) {
+        exportScript = $$SOURCE_ROOT_PWD/tools/blenderexport/Export.py
         file = $$1
         fileFullPath = $$PROJECT_PWD/$$file
-        name = $$basename(file)
+        name = $$file
         target = $$PROJECT_PWD/$$2/$$basename(fileFullPath).xml
+        outputDir = $$PROJECT_PWD/$$2
+        createDir($$outputDir)
         eval($${name}.target = $$target)
         export($${name}.target)
-        eval($${name}.commands = $$BLENDER_EXECUTABLE $$PROJECT_PWD/$${file}.blend --background --python $$EXPORT_SCRIPT -- $$PROJECT_PWD/$$2)
+        eval($${name}.commands = $$BLENDER_EXECUTABLE $$PROJECT_PWD/$${file}.blend --background --python $$exportScript -- $$outputDir)
         export($${name}.commands)
         QMAKE_EXTRA_TARGETS += $${name}
         PRE_TARGETDEPS += $$target
-        osx:!android {
-            cptarget = $${name}1
+        cptarget = $${name}1
+        osx {
             eval($${cptarget}.commands = cp -R $$PROJECT_PWD/data $$OUT_PWD/$${TARGET}.app/Contents/Resources)
-            export($${cptarget}.commands)
-            eval($${cptarget}.depends = $${name})
-            export($${cptarget}.depends)
-            QMAKE_EXTRA_TARGETS += $${cptarget}
-            PRE_TARGETDEPS += $${cptarget}
+        } else {
+            eval($${cptarget}.commands = cp -R $$PROJECT_PWD/data $$OUT_PWD/$${TARGET})
         }
+        export($${cptarget}.commands)
+        eval($${cptarget}.depends = $${name})
+        export($${cptarget}.depends)
+        QMAKE_EXTRA_TARGETS += $${cptarget}
+        PRE_TARGETDEPS += $${cptarget}
         export(QMAKE_EXTRA_TARGETS)
         export(PRE_TARGETDEPS)
     }
 }
 
-defineTest(copyData) {
-    osx:!android {
-        copyData.commands = cp -R $$PROJECT_PWD/data $$OUT_PWD/$${TARGET}.app/Contents/Resources
-        export(copyData.commands)
-        QMAKE_EXTRA_TARGETS += copyData
-        PRE_TARGETDEPS += copyData
+defineTest(convertTool) {
+    file = $$PROJECT_PWD/$$1
+    outputDir = $$PROJECT_PWD/$$2
+    createDir($$outputDir)
+    args = $$3
+    convertExecutable = $$TARGET_PWD/../../tools/converter/converter.app
+    name = $$file
+    target = $$outputDir/$$basename(name).xml
+    eval($${name}.target = $$target)
+    export($${name}.target)
+    osx {
+        eval($${name}.commands = open $$convertExecutable --args -i $$file -o $$outputDir $$args)
+    } else {
+        eval($${name}.commands = $$convertExecutable -i $$file -o $$outputDir $$args)
     }
+    export($${name}.commands)
+    QMAKE_EXTRA_TARGETS += $${name}
+    PRE_TARGETDEPS += $$target
+    cpname = $${name}1
+    osx {
+        outputTargetDir = $$OUT_PWD/$${TARGET}.app/Contents/Resources
+    } else {
+        outputTargetDir = $$OUT_PWD/$${TARGET}
+    }
+    eval($${cpname}.commands = cp -R $$PROJECT_PWD/data $$outputTargetDir)
+    export($${cpname}.commands)
+    eval($${cpname}.depends = $${name})
+    export($${cpname}.depends)
+    QMAKE_EXTRA_TARGETS += $$cpname
+    PRE_TARGETDEPS += $$cpname
     export(QMAKE_EXTRA_TARGETS)
     export(PRE_TARGETDEPS)
 }
 
+
 defineTest(setupSample) {
+    copyData()
     TEMPLATE = app
     export(TEMPLATE)
     HEADERS += $$files($$PROJECT_PWD/*.h, true)
@@ -104,6 +173,7 @@ defineTest(setupSample) {
 }
 
 defineTest(setupTest) {
+    copyData()
     TEMPLATE = app
     export(TEMPLATE)
     CONFIG += testcase
