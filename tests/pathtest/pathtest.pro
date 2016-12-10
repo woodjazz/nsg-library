@@ -1,3 +1,4 @@
 PROJECT_PWD = $$PWD
-include(../../qmake/setuptest.pri)
+include(../../qmake/common.pri)
+setupTest()
 copyData()

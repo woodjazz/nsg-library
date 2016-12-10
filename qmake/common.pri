@@ -1,4 +1,9 @@
-ROOT_PWD = $$PWD/..
+isEmpty(PROJECT_PWD) {
+    error(PROJECT_PWD has not been set)
+}
+
+SOURCE_ROOT_PWD = $$PWD/..
+TARGET_PWD = $$OUT_PWD
 
 android {
     DEFINES += IS_TARGET_ANDROID ANDROID GLES2
@@ -39,7 +44,7 @@ QMAKE_LFLAGS_RELEASE += -O3
 QMAKE_LFLAGS_DEBUG += -g
 
 TARGET = $$basename(PROJECT_PWD)
-EXPORT_SCRIPT = $$ROOT_PWD/tools/blenderexport/Export.py
+EXPORT_SCRIPT = $$SOURCE_ROOT_PWD/tools/blenderexport/Export.py
 
 defineTest(exportBlend) {
     exists($$BLENDER_EXECUTABLE) {
@@ -76,6 +81,71 @@ defineTest(copyData) {
     }
     export(QMAKE_EXTRA_TARGETS)
     export(PRE_TARGETDEPS)
+}
+
+defineTest(setupSample) {
+    TEMPLATE = app
+    export(TEMPLATE)
+    HEADERS += $$files($$PROJECT_PWD/*.h, true)
+    export(HEADERS)
+    SOURCES += $$files($$PROJECT_PWD/*.cpp, true)
+    export(SOURCES)
+    INCLUDEPATH += $$files($$SOURCE_ROOT_PWD/NSG/*, false)
+    INCLUDEPATH += $$SOURCE_ROOT_PWD/externals/pugixml/src
+    INCLUDEPATH += $$SOURCE_ROOT_PWD/externals/imgui
+    INCLUDEPATH += $$SOURCE_ROOT_PWD/externals/bullet/src
+    export(INCLUDEPATH)
+    LIBS += -L../../NSG -lNSG
+    LIBS += -L../../dependencies/jpeg -ljpeg
+    LIBS += -L../../dependencies/libb64 -llibb64
+    LIBS += -L../../dependencies/LZ4 -lLZ4
+    LIBS += -L../../externals -lexternals
+    export(LIBS)
+}
+
+defineTest(setupTest) {
+    TEMPLATE = app
+    export(TEMPLATE)
+    CONFIG += testcase
+    export(CONFIG)
+    HEADERS += $$files($$PROJECT_PWD/*.h, true)
+    export(HEADERS)
+    SOURCES += $$files($$PROJECT_PWD/*.cpp, true)
+    export(SOURCES)
+    INCLUDEPATH += $$files($$SOURCE_ROOT_PWD/NSG/*, false)
+    INCLUDEPATH += $$SOURCE_ROOT_PWD/externals/pugixml/src
+    INCLUDEPATH += $$SOURCE_ROOT_PWD/externals/imgui
+    INCLUDEPATH += $$SOURCE_ROOT_PWD/externals/bullet/src
+    export(INCLUDEPATH)
+    LIBS += -L../../NSG -lNSG
+    LIBS += -L../../dependencies/jpeg -ljpeg
+    LIBS += -L../../dependencies/libb64 -llibb64
+    LIBS += -L../../dependencies/LZ4 -lLZ4
+    LIBS += -L../../externals -lexternals
+    export(LIBS)
+}
+
+defineTest(setupTool) {
+    TEMPLATE = app
+    export(TEMPLATE)
+    HEADERS += $$files($$PROJECT_PWD/*.h, true)
+    export(HEADERS)
+    SOURCES += $$files($$PROJECT_PWD/*.cpp, true)
+    export(SOURCES)
+    INCLUDEPATH += $$PROJECT_PWD/../common
+    INCLUDEPATH += $$files($$SOURCE_ROOT_PWD/NSG/*, false)
+    INCLUDEPATH += $$SOURCE_ROOT_PWD/externals/pugixml/src
+    INCLUDEPATH += $$SOURCE_ROOT_PWD/externals/imgui
+    INCLUDEPATH += $$SOURCE_ROOT_PWD/externals/bullet/src
+    INCLUDEPATH += $$SOURCE_ROOT_PWD/dependencies/tclap/include
+    export(INCLUDEPATH)
+    LIBS += -L../../NSG -lNSG
+    LIBS += -L../../dependencies/jpeg -ljpeg
+    LIBS += -L../../dependencies/libb64 -llibb64
+    LIBS += -L../../dependencies/LZ4 -lLZ4
+    LIBS += -L../../externals -lexternals
+    LIBS += -L../../tools/common -lcommon
+    export(LIBS)
 }
 
 

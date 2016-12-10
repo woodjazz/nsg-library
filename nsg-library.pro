@@ -29,10 +29,12 @@ win32:!android {
 }
 
 TEMPLATE = subdirs
+CONFIG += ordered
 OTHER_FILES = qmake/* *
 SUBDIRS = NSG\
 externals\
 dependencies\
+tools\
 tests\
 samples\
 

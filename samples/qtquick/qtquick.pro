@@ -1,5 +1,6 @@
 !android {
     PROJECT_PWD = $$PWD
-    include(../../qmake/setupsample.pri)
+    include(../../qmake/common.pri)
+    setupSample()
     QT += qml quick
 }
