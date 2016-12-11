@@ -12,6 +12,10 @@ message(Translation files: $$[QT_INSTALL_TRANSLATIONS])
 message(Settings: $$[QT_INSTALL_CONFIGURATION])
 message(Examples: $$[QT_INSTALL_EXAMPLES])
 
+ios {
+    message("Detected IOS platform")
+}
+
 android {
     message("Detected Android platform")
 }
