@@ -16,3 +16,9 @@ INCLUDEPATH += \
 ../dependencies/jpeg\
 ../dependencies/libb64/include\
 ../dependencies/LZ4\
+
+android {
+    HEADERS += $$(ANDROID_NDK_ROOT)/sources/android/native_app_glue/android_native_app_glue.h
+    SOURCES += $$(ANDROID_NDK_ROOT)/sources/android/native_app_glue/android_native_app_glue.c
+    INCLUDEPATH += $$(ANDROID_NDK_ROOT)/sources/android/native_app_glue
+}

@@ -28,6 +28,7 @@ misrepresented as being the original software.
 #include "Util.h"
 #include "Texture.h"
 #include "ResourceConverter.h"
+#include "StringConverter.h"
 #include "Check.h"
 #include "FileSystem.h"
 #include "pugixml.hpp"
@@ -62,7 +63,7 @@ namespace NSG
         int numChars = eChar_ - sChar_ + 1; // characters to bake
         cdata_.resize(numChars);
         stbtt_BakeFontBitmap(data, 0, (float)fontPixelsHeight_, (unsigned char*)&tempBitmap[0], bitmapWidth_, bitmapHeight_, sChar_, numChars, &cdata_[0]);
-		texture_ = Resource::GetOrCreateClass<ResourceConverter>(path_.GetFilePath() + std::to_string(fontPixelsHeight_));
+        texture_ = Resource::GetOrCreateClass<ResourceConverter>(path_.GetFilePath() + ToString(fontPixelsHeight_));
         texture_->SetData(tempBitmap.c_str(), tempBitmap.size());
         CHECK_CONDITION(texture_->IsReady());
         return true;
@@ -71,7 +72,7 @@ namespace NSG
     bool TrueTypeConverter::Save(const Path& outputDir, bool compress) const
     {
         std::string outName = path_.GetName();
-        outName += std::to_string(fontPixelsHeight_);
+        outName += ToString(fontPixelsHeight_);
         Path outputFile(outputDir);
         outputFile.SetName(outName);
         outputFile.SetExtension("xml");
