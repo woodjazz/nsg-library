@@ -1,8 +1,8 @@
 TEMPLATE = lib
 CONFIG += staticlib
-HEADERS = imgui/*.h
+HEADERS = $$files(imgui/*.h, false)
 SOURCES = $$files(imgui/*.cpp, false)
-HEADERS += pugixml/src/*.hpp
+HEADERS += $$files(pugixml/src/*.hpp, false)
 SOURCES += $$files(pugixml/src/*.cpp, false)
 HEADERS += $$files(bullet/src/LinearMath/*.h, true)
 SOURCES += $$files(bullet/src/LinearMath/*.cpp, true)

@@ -1,5 +1,3 @@
-PROJECT_PWD = $$PWD
-include(../../qmake/common.pri)
 TEMPLATE = lib
 CONFIG += staticlib
 HEADERS += $$files(*.h, true)
