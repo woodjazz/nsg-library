@@ -147,7 +147,7 @@ namespace NSG
     SignalEmpty::PSignal LoaderXML::Load(PResource resource)
     {
         Set(resource);
-        slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
+        slotUpdate_ = Engine::SigUpdate()->Connect([this](float)
         {
             Load();
         });
@@ -156,7 +156,7 @@ namespace NSG
 
     PScene LoaderXML::GetScene(int idx) const
     {
-        CHECK_ASSERT(idx < scenes_.size());
+        CHECK_ASSERT(idx < (int)scenes_.size());
         return scenes_[idx];
     }
 }

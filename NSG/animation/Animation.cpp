@@ -153,7 +153,7 @@ void AnimationTrack::ResolveKeyFrameGaps()
     auto n = keyFrames_.size();
     if(n > 1)
     {
-        for(int i=0; i<n; i++)
+        for(size_t i=0; i<n; i++)
         {
             auto& current = keyFrames_[i];
             if(!(current.mask_ & (int)AnimationChannel::POSITION))
@@ -169,9 +169,9 @@ void AnimationTrack::ResolveKeyFrameGaps()
 void AnimationTrack::ResolvePositionGap(Vector3& position, int frame)
 {
     auto n = keyFrames_.size();
-    if(n > frame)
+    if(n > (size_t)frame)
     {
-        for(int i=frame; i<n; i++)
+        for(size_t i=frame; i<n; i++)
         {
             auto& current = keyFrames_[i];
             if(current.mask_ & (int)AnimationChannel::POSITION)
@@ -186,9 +186,9 @@ void AnimationTrack::ResolvePositionGap(Vector3& position, int frame)
 void AnimationTrack::ResolveRotationGap(Quaternion& rotation, int frame)
 {
     auto n = keyFrames_.size();
-    if(n > frame)
+    if(n > (size_t)frame)
     {
-        for(int i=frame; i<n; i++)
+        for(size_t i=frame; i<n; i++)
         {
             auto& current = keyFrames_[i];
             if(current.mask_ & (int)AnimationChannel::ROTATION)
@@ -203,9 +203,9 @@ void AnimationTrack::ResolveRotationGap(Quaternion& rotation, int frame)
 void AnimationTrack::ResolveScaleGap(Vector3& scale, int frame)
 {
     auto n = keyFrames_.size();
-    if(n > frame)
+    if(n > (size_t)frame)
     {
-        for(int i=frame; i<n; i++)
+        for(size_t i=frame; i<n; i++)
         {
             auto& current = keyFrames_[i];
             if(current.mask_ & (int)AnimationChannel::SCALE)

@@ -228,12 +228,12 @@ namespace NSG
             io.AddInputCharactersUTF8(text.c_str());
         });
 
-        slotChar_ = mainWindow->SigUnsigned()->Connect([this](unsigned int character)
-        {
-            //            ImGui::SetCurrentContext(state_);
-            //            ImGuiIO& io = ImGui::GetIO();
-            //            io.AddInputCharacter(character);
-        });
+//        slotChar_ = mainWindow->SigUnsigned()->Connect([this](unsigned int character)
+//        {
+//            //            ImGui::SetCurrentContext(state_);
+//            //            ImGuiIO& io = ImGui::GetIO();
+//            //            io.AddInputCharacter(character);
+//        });
 
 
         slotMouseMoved_ = mainWindow->SigMouseMoved()->Connect([this](int x, int y)
@@ -270,7 +270,7 @@ namespace NSG
             io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
         });
 
-        slotMouseWheel_ = mainWindow->SigMouseWheel()->Connect([this](float x, float y)
+        slotMouseWheel_ = mainWindow->SigMouseWheel()->Connect([this](float, float y)
         {
             ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
@@ -280,13 +280,13 @@ namespace NSG
                 io.MouseWheel = -1;
         });
 
-        slotMultiGesture_ = mainWindow->SigMultiGesture()->Connect([this](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-        {
-            //ImGui::SetInternalState(state_);
-            //ImGuiIO& io = ImGui::GetIO();
-            //io.MouseDown[0] = numFingers > 0 ? true : false;
-            //io.MousePos = io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
-        });
+//        slotMultiGesture_ = mainWindow->SigMultiGesture()->Connect([this](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
+//        {
+//            //ImGui::SetInternalState(state_);
+//            //ImGuiIO& io = ImGui::GetIO();
+//            //io.MouseDown[0] = numFingers > 0 ? true : false;
+//            //io.MousePos = io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
+//        });
     }
 
     void GUI::SetArea(const Rect& area)

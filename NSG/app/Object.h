@@ -39,7 +39,7 @@ namespace NSG
         void Invalidate();
         bool IsReady();
         void TryReady();
-        virtual void Load(const pugi::xml_node& node) {}
+        virtual void Load(const pugi::xml_node&) { }
         static void InvalidateAll();
         const std::string& GetName() const { return name_; }
         SignalEmpty::PSignal SigBeforeAllocating() {return signalBeforeAllocating_; }

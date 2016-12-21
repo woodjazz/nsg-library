@@ -63,7 +63,7 @@ namespace NSG
         std::vector<SceneNode*> ExtractTransparent(const std::vector<SceneNode*>& objs);
         std::vector<SceneNode*> ExtractFiltered(const std::vector<SceneNode*>& objs);
         void RemoveFrom(std::vector<SceneNode*>& from, const std::vector<SceneNode*>& objs);
-        void GetLightedBatches(const std::vector<SceneNode*>& nodes, const std::vector<Batch>& iBatches, std::vector<const Batch*>& result) const;
+        void GetLightedBatches(const std::vector<Batch>& iBatches, std::vector<const Batch*>& result) const;
         void ShadowGenerationPass();
         void OpaquePasses(std::vector<SceneNode*>& objs);
         void TransparentPasses(std::vector<SceneNode*>& objs);

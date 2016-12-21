@@ -98,7 +98,7 @@ namespace NSG
 		Buffer* indexBuffer_;
 		Program* activeProgram_;
 		std::vector<Texture*> textures_;
-		unsigned activeTexture_;
+        int activeTexture_;
 		unsigned enabledAttributes_; //positions' bits for enabled attributes
 		const Mesh* lastMesh_; // last mesh drawn
 		Program* lastProgram_; // last used program

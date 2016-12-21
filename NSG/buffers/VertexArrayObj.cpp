@@ -90,14 +90,14 @@ namespace NSG
         ctx->SetVertexArrayObj(this);
         ctx->SetVertexBuffer(vBuffer, true);
 
-        GLuint position_loc = program->GetAttPositionLoc();
-        GLuint texcoord_loc0 = program->GetAttTextCoordLoc0();
-        GLuint texcoord_loc1 = program->GetAttTextCoordLoc1();
-        GLuint normal_loc = program->GetAttNormalLoc();
-        GLuint color_loc = program->GetAttColorLoc();
-        GLuint tangent_loc = program->GetAttTangentLoc();
-        GLuint bones_id_loc = program->GetAttBonesIDLoc();
-        GLuint bones_weight = program->GetAttBonesWeightLoc();
+        auto position_loc = program->GetAttPositionLoc();
+        auto texcoord_loc0 = program->GetAttTextCoordLoc0();
+        auto texcoord_loc1 = program->GetAttTextCoordLoc1();
+        auto normal_loc = program->GetAttNormalLoc();
+        auto color_loc = program->GetAttColorLoc();
+        auto tangent_loc = program->GetAttTangentLoc();
+        auto bones_id_loc = program->GetAttBonesIDLoc();
+        auto bones_weight = program->GetAttBonesWeightLoc();
 
         if (position_loc != -1)
             glEnableVertexAttribArray((int)AttributesLoc::POSITION);

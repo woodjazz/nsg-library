@@ -89,7 +89,7 @@ void LinuxWindow::Initialize(int x, int y, int width, int height, WindowFlags fl
     int major, minor;
     bool version = glXQueryVersion(LinuxWindow::display_, &major, &minor);
     CHECK_CONDITION(version && "Failed to query GLX version");
-    CHECK_CONDITION((major == 1 && minor >= 2) || major > 1 && "GLX version is not >=1.2");
+    CHECK_CONDITION(((major == 1 && minor >= 2) || major > 1) && "GLX version is not >=1.2");
     int32_t screen = DefaultScreen(LinuxWindow::display_);
 
     const int attrsGlx[] =
@@ -106,7 +106,7 @@ void LinuxWindow::Initialize(int x, int y, int width, int height, WindowFlags fl
         None,
     };
 
-    GLXFBConfig bestConfig = nullptr;
+    //GLXFBConfig bestConfig = nullptr;
     int numConfigs = 0;
     auto configs = glXChooseFBConfig(LinuxWindow::display_, screen, attrsGlx, &numConfigs);
     for (int i = 0; i < numConfigs; ++i)
@@ -128,7 +128,7 @@ void LinuxWindow::Initialize(int x, int y, int width, int height, WindowFlags fl
             }
             if (valid)
             {
-                bestConfig = configs[i];
+                //bestConfig = configs[i];
                 break;
             }
         }
@@ -366,7 +366,7 @@ void LinuxWindow::HandleEvents()
 
         Status status = 0;
         uint8_t utf8[4];
-        int len = Xutf8LookupString(LinuxWindow::ic_, &xkey, (char*)utf8, sizeof(utf8), &keysym, &status);
+        Xutf8LookupString(LinuxWindow::ic_, &xkey, (char*)utf8, sizeof(utf8), &keysym, &status);
         switch (status)
         {
         case XLookupChars:

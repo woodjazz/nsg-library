@@ -139,7 +139,7 @@ namespace NSG
         {
             size *= 4;
             Indexes newFaces;
-            for (auto i = 0; i < size / 12; i++)
+            for (size_t i = 0; i < size / 12; i++)
             {
                 auto i1 = faces[i * 3];
                 auto i2 = faces[i * 3 + 1];
@@ -177,7 +177,7 @@ namespace NSG
         }
 
         // Step 3 : generate texcoords
-        for (auto i = 0; i < data.size(); i++)
+        for (size_t i = 0; i < data.size(); i++)
         {
             const auto& vec = data[i].position_;
             auto r0 = sqrtf(vec.x * vec.x + vec.z * vec.z);
@@ -192,7 +192,7 @@ namespace NSG
         // Step 4 : fix texcoords
         // find vertices to split
         std::vector<IndexType> indexToSplit;
-        for (auto i = 0; i < faces.size() / 3; i++)
+        for (size_t i = 0; i < faces.size() / 3; i++)
         {
             auto& t0 = data[faces[i * 3 + 0]].uv_[0];
 			auto& t1 = data[faces[i * 3 + 1]].uv_[0];
@@ -222,7 +222,7 @@ namespace NSG
         }
 
         //split vertices
-        for (auto i = 0; i < indexToSplit.size(); i++)
+        for (size_t i = 0; i < indexToSplit.size(); i++)
         {
             auto index = indexToSplit[i];
             //duplicate vertex
@@ -233,7 +233,7 @@ namespace NSG
 			CHECK_ASSERT(std::numeric_limits<IndexType>::max() > data.size());
 			IndexType newIndex = (IndexType)data.size() - 1;
             //reassign indices
-            for (auto j = 0; j < faces.size(); j++)
+            for (size_t j = 0; j < faces.size(); j++)
             {
                 if (faces[j] == index)
                 {
@@ -246,10 +246,10 @@ namespace NSG
         }
 
         // flip triangle winding order
-        for (auto i = 0; i < faces.size(); i += 3)
+        for (size_t i = 0; i < faces.size(); i += 3)
             std::swap(faces[i + 1], faces[i + 2]);
 
-        for (auto i = 0; i < data.size(); i++ )
+        for (size_t i = 0; i < data.size(); i++ )
             data[i].position_ = data[i].position_ * radius_;
 
         CHECK_ASSERT(std::numeric_limits<IndexType>::max() > data.size());

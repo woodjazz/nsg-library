@@ -144,7 +144,7 @@ namespace NSG
     }
 
 
-    void Renderer::GetLightedBatches(const std::vector<SceneNode*>& nodes, const std::vector<Batch>& iBatches, std::vector<const Batch*>& result) const
+    void Renderer::GetLightedBatches(const std::vector<Batch>& iBatches, std::vector<const Batch*>& result) const
     {
         CHECK_ASSERT(result.empty());
         for (auto& batch : iBatches)
@@ -476,7 +476,7 @@ namespace NSG
             if (light->GetOnlyShadow())
                 continue;
             std::vector<const Batch*> litBatches;
-            GetLightedBatches(objs, batches, litBatches);
+            GetLightedBatches(batches, litBatches);
             for (auto batch : litBatches)
                 Draw(batch, &litOpaquePass_, light, camera_);
         }
@@ -494,7 +494,7 @@ namespace NSG
             if (light->GetOnlyShadow())
                 continue;
             std::vector<const Batch*> litBatches;
-            GetLightedBatches(objs, batches, litBatches);
+            GetLightedBatches(batches, litBatches);
             for (auto batch : litBatches)
                 Draw(batch, &litTransparentPass_, light, camera_);
         }

@@ -249,7 +249,7 @@ namespace NSG
         triMesh_ = std::make_shared<btTriangleMesh>();
         auto index_count = indices.size();
         CHECK_ASSERT(index_count % 3 == 0);
-        for (auto i = 0; i < index_count; i += 3)
+        for (size_t i = 0; i < index_count; i += 3)
         {
             auto i0 = indices[i];
             auto i1 = indices[i + 1];

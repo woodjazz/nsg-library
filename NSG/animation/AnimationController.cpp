@@ -29,6 +29,7 @@ misrepresented as being the original software.
 #include "Scene.h"
 #include "Check.h"
 #include "Maths.h"
+#include <algorithm>
 
 namespace NSG
 {

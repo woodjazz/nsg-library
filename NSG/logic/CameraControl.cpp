@@ -197,7 +197,7 @@ namespace NSG
         }
     }
 
-    void CameraControl::OnMouseUp(int button, float x, float y)
+    void CameraControl::OnMouseUp(int button, float, float)
     {
         if (!enabled_)
             return;

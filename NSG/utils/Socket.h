@@ -46,8 +46,8 @@ namespace NSG
         bool Connect();
         void SetRecvTimeout(int timeoutSecs);
         void SetSendTimeout(int timeoutSecs);
-        static const char* const GetHostName();
-        static const char* const GetIP(const char* hostName);
+        static const char* GetHostName();
+        static const char* GetIP(const char* hostName);
         static bool ValidPort (int port);
         static in_addr GetIPAdAddress (const char* szAddress);
         static bool ValidIPAddress (const char* szAddress);

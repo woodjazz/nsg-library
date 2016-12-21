@@ -269,7 +269,7 @@ void WinWindow::Initialize(int x, int y, int width, int height, WindowFlags flag
 {
     HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(nullptr);
 
-    WNDCLASSEX wcx;
+    WNDCLASSEXA wcx;
     wcx.cbSize = sizeof(wcx);
     wcx.style = CS_HREDRAW | CS_VREDRAW;
     wcx.lpfnWndProc = WndProc;
@@ -327,7 +327,7 @@ void WinWindow::Initialize(int x, int y, int width, int height, WindowFlags flag
 void WinWindow::Close()
 {
     Window::Close();
-    UnregisterClass(name_.c_str(), GetModuleHandle(nullptr));
+    UnregisterClassA(name_.c_str(), GetModuleHandle(nullptr));
 }
 
 void WinWindow::SetContext()

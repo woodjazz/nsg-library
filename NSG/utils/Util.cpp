@@ -145,7 +145,7 @@ namespace NSG
 		outputBuffer.resize(bytes);
 		CHECK_ASSERT(bytes < std::numeric_limits<int>::max());
 		int totalBytes = LZ4_decompress_safe(&buffer[0], &outputBuffer[0], (int)buffer.size(), (int)bytes);
-		CHECK_ASSERT(totalBytes == bytes);
+        CHECK_ASSERT(totalBytes == (int)bytes);
 		outputBuffer.erase(outputBuffer.begin(), outputBuffer.begin() + smallBuffer.size());
 		return outputBuffer;
 	}

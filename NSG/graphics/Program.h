@@ -42,18 +42,18 @@ namespace NSG
 		Program(const std::string& defines);
         virtual ~Program();
         bool Initialize();
-        GLuint GetAttributeLocation(const std::string& name);
-        GLuint GetUniformLocation(const std::string& name);
-        GLuint GetAttPositionLoc() const { return att_positionLoc_; }
-        GLuint GetAttTextCoordLoc0() const { return att_texcoordLoc0_; }
-        GLuint GetAttTextCoordLoc1() const { return att_texcoordLoc1_; }
-        GLuint GetAttNormalLoc() const { return att_normalLoc_; }
-        GLuint GetAttColorLoc() const { return att_colorLoc_; }
-        GLuint GetAttTangentLoc() const { return att_tangentLoc_; }
-        GLuint GetAttBonesIDLoc() const { return att_bonesIDLoc_; }
-        GLuint GetAttBonesWeightLoc() const { return att_bonesWeightLoc_; }
-        GLuint GetAttModelMatrixLoc() const { return att_modelMatrixRow0Loc_; }
-        GLuint GetAttNormalMatrixLoc() const { return att_normalMatrixCol0Loc_; }
+        GLint GetAttributeLocation(const std::string& name);
+        GLint GetUniformLocation(const std::string& name);
+        GLint GetAttPositionLoc() const { return att_positionLoc_; }
+        GLint GetAttTextCoordLoc0() const { return att_texcoordLoc0_; }
+        GLint GetAttTextCoordLoc1() const { return att_texcoordLoc1_; }
+        GLint GetAttNormalLoc() const { return att_normalLoc_; }
+        GLint GetAttColorLoc() const { return att_colorLoc_; }
+        GLint GetAttTangentLoc() const { return att_tangentLoc_; }
+        GLint GetAttBonesIDLoc() const { return att_bonesIDLoc_; }
+        GLint GetAttBonesWeightLoc() const { return att_bonesWeightLoc_; }
+        GLint GetAttModelMatrixLoc() const { return att_modelMatrixRow0Loc_; }
+        GLint GetAttNormalMatrixLoc() const { return att_normalMatrixCol0Loc_; }
 		void SetSkeleton(const Skeleton* skeleton);
         void Set(SceneNode* node);
         void Set(Material* material);
@@ -99,16 +99,16 @@ namespace NSG
         /////////////////////////////////////
         // attributes
         /////////////////////////////////////
-        GLuint att_texcoordLoc0_;
-        GLuint att_texcoordLoc1_;
-        GLuint att_positionLoc_;
-        GLuint att_normalLoc_;
-        GLuint att_colorLoc_;
-        GLuint att_tangentLoc_;
-        GLuint att_bonesIDLoc_;
-        GLuint att_bonesWeightLoc_;
-        GLuint att_modelMatrixRow0Loc_;
-        GLuint att_normalMatrixCol0Loc_;
+        GLint att_texcoordLoc0_;
+        GLint att_texcoordLoc1_;
+        GLint att_positionLoc_;
+        GLint att_normalLoc_;
+        GLint att_colorLoc_;
+        GLint att_tangentLoc_;
+        GLint att_bonesIDLoc_;
+        GLint att_bonesWeightLoc_;
+        GLint att_modelMatrixRow0Loc_;
+        GLint att_normalMatrixCol0Loc_;
         /////////////////////////////////////
 
 
@@ -116,71 +116,71 @@ namespace NSG
         // Uniforms
         /////////////////////////////////////
         std::vector<GLuint> bonesBaseLoc_;
-        GLuint modelLoc_;
-        GLuint normalMatrixLoc_;
-        GLuint viewLoc_;
-        GLuint viewProjectionLoc_;
-        GLuint lightViewLoc_[ShadowCamera::MAX_SPLITS];
-        GLuint lightProjectionLoc_[ShadowCamera::MAX_SPLITS];
-        GLuint lightViewProjectionLoc_[ShadowCamera::MAX_SPLITS];
-        GLuint projectionLoc_;
-        GLuint sceneColorAmbientLoc_;
-        GLuint u_sceneHorizonColorLoc_;
-        GLuint eyeWorldPosLoc_;
+        GLint modelLoc_;
+        GLint normalMatrixLoc_;
+        GLint viewLoc_;
+        GLint viewProjectionLoc_;
+        GLint lightViewLoc_[ShadowCamera::MAX_SPLITS];
+        GLint lightProjectionLoc_[ShadowCamera::MAX_SPLITS];
+        GLint lightViewProjectionLoc_[ShadowCamera::MAX_SPLITS];
+        GLint projectionLoc_;
+        GLint sceneColorAmbientLoc_;
+        GLint u_sceneHorizonColorLoc_;
+        GLint eyeWorldPosLoc_;
 
-        GLuint u_fogMinIntensityLoc_;
-        GLuint u_fogStartLoc_;
-        GLuint u_fogEndLoc_;
-        GLuint u_fogHeightLoc_;
+        GLint u_fogMinIntensityLoc_;
+        GLint u_fogStartLoc_;
+        GLint u_fogEndLoc_;
+        GLint u_fogHeightLoc_;
 
-        GLuint textureLoc_[MaterialTexture::MAX_MAPS];
-        GLuint u_uvTransformLoc_[MaterialTexture::MAX_MAPS];
+        GLint textureLoc_[MaterialTexture::MAX_MAPS];
+        GLint u_uvTransformLoc_[MaterialTexture::MAX_MAPS];
         
 
         struct MaterialLoc
         {
-            GLuint diffuseColor_;
-            GLuint diffuseIntensity_;
-            GLuint specularColor_;
-            GLuint specularIntensity_;
-            GLuint ambientIntensity_;
-            GLuint shininess_;
-            GLuint emitIntensity_;
+            GLint diffuseColor_;
+            GLint diffuseIntensity_;
+            GLint specularColor_;
+            GLint specularIntensity_;
+            GLint ambientIntensity_;
+            GLint shininess_;
+            GLint emitIntensity_;
         };
 
         MaterialLoc materialLoc_;
 
-        GLuint lightDiffuseColorLoc_;
-        GLuint lightSpecularColorLoc_;
-        GLuint lightInvRangeLoc_;
-        GLuint lightPositionLoc_;
-        GLuint lightDirectionLoc_;
-        GLuint lightCutOffLoc_;
-        GLuint shadowCameraZFarLoc_;
-        GLuint shadowMapInvSize_;
-        GLuint shadowColor_;
-        GLuint shadowBias_;
+        GLint lightDiffuseColorLoc_;
+        GLint lightSpecularColorLoc_;
+        GLint lightInvRangeLoc_;
+        GLint lightPositionLoc_;
+        GLint lightDirectionLoc_;
+        GLint lightCutOffLoc_;
+        GLint shadowCameraZFarLoc_;
+        GLint shadowMapInvSize_;
+        GLint shadowColor_;
+        GLint shadowBias_;
 
-        GLuint blendMode_loc_;
+        GLint blendMode_loc_;
 
         struct BlurFilterLoc
         {
-            GLuint blurDir_;
-            GLuint blurRadius_;
-            GLuint sigma_;
+            GLint blurDir_;
+            GLint blurRadius_;
+            GLint sigma_;
         } blurFilterLoc_;
 
         struct WavesFilterLoc
         {
-            GLuint factor_;
-            GLuint offset_;
+            GLint factor_;
+            GLint offset_;
         } wavesFilterLoc_;
 
         struct ShockWaveFilterLoc
         {
-            GLuint center_;
-            GLuint time_;
-            GLuint params_;
+            GLint center_;
+            GLint time_;
+            GLint params_;
         } shockWaveFilterLoc_;
 
         /////////////////////////////////////

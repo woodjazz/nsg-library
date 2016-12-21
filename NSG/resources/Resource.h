@@ -38,7 +38,7 @@ namespace NSG
 		Resource(const std::string& name);
 		virtual ~Resource();
 		void SetBuffer(const std::string& buffer) { buffer_ = buffer; }
-		const char* const GetData() const { return buffer_.c_str(); }
+        const char* GetData() const { return buffer_.c_str(); }
 		int GetBytes() const;
         void ReleaseResources() override;
 		const std::string& GetBuffer() const { return buffer_; }

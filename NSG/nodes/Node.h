@@ -138,7 +138,7 @@ namespace NSG
         bool IsHidden() const { return hide_; }
         void Hide(bool hide, bool recursive = true);
         virtual void OnDirty() const {};
-        virtual void OnHide(bool hide) {}
+        virtual void OnHide(bool) {}
         virtual void OnScaleChange() {}
         virtual void OnCreated() {}
         void Update() const;

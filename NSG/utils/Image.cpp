@@ -200,7 +200,7 @@ namespace NSG
 
     void Image::ReadDDS()
     {
-        const unsigned DDS_DATA_START = 4 + sizeof(DDSurfaceDesc2);
+        const int DDS_DATA_START = 4 + sizeof(DDSurfaceDesc2);
         auto data = resource_->GetData();
         auto dataSize = resource_->GetBytes();
         CHECK_ASSERT(dataSize > DDS_DATA_START);
@@ -245,7 +245,7 @@ namespace NSG
         auto data = resource_->GetData();
         auto dataSize = resource_->GetBytes();
         CHECK_ASSERT(memcmp(&data[0], "\253KTX", 4) == 0);
-        const unsigned KTX_DATA_START = 12;
+        const int KTX_DATA_START = 12;
         CHECK_ASSERT(dataSize > KTX_DATA_START);
         unsigned idx = KTX_DATA_START;
         unsigned endianness;
@@ -356,7 +356,7 @@ namespace NSG
         auto data = resource_->GetData();
         auto dataSize = resource_->GetBytes();
         CHECK_ASSERT(memcmp(&data[0], "PVR\3", 4) == 0);
-        const unsigned PVR_DATA_START = 4;
+        const int PVR_DATA_START = 4;
         CHECK_ASSERT(dataSize > PVR_DATA_START);
         unsigned idx = PVR_DATA_START;
         /* unsigned flags = */ idx += sizeof(unsigned);

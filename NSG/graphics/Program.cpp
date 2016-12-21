@@ -336,7 +336,7 @@ namespace NSG
 
         for (size_t i = 0; i < Bone::MaxBones; i++)
         {
-            GLuint boneLoc = GetUniformLocation("u_bones[" + ToString(i) + "]");
+            auto boneLoc = GetUniformLocation("u_bones[" + ToString(i) + "]");
             if (boneLoc != -1)
                 bonesBaseLoc_.push_back(boneLoc);
         }
@@ -425,12 +425,12 @@ namespace NSG
         return true;
     }
 
-    GLuint Program::GetAttributeLocation(const std::string& name)
+    GLint Program::GetAttributeLocation(const std::string& name)
     {
         return glGetAttribLocation(id_, name.c_str());
     }
 
-        GLuint Program::GetUniformLocation(const std::string& name)
+    GLint Program::GetUniformLocation(const std::string& name)
     {
         return glGetUniformLocation(id_, name.c_str());
     }
@@ -678,7 +678,7 @@ namespace NSG
         }
     }
 
-    void Program::SetLightShadowVariables(bool shadowPass)
+    void Program::SetLightShadowVariables(bool)
     {
         if (light_)
         {

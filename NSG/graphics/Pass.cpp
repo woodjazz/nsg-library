@@ -115,7 +115,7 @@ namespace NSG
     void Pass::SetScissor(int x, int y, int width, int height)
     {
         data_.scissorX_ = x;
-        data_.scissorY_ = x;
+        data_.scissorY_ = y;
         data_.scissorWidth_ = width;
         data_.scissorHeight_ = height;
     }

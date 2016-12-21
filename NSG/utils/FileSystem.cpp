@@ -156,7 +156,7 @@ namespace NSG
         {
             #ifdef IS_TARGET_WINDOWS
             {
-                if (::SetCurrentDirectory(path.c_str()) == FALSE)
+                if (::SetCurrentDirectoryA(path.c_str()) == FALSE)
                 {
                     LOGE("Failed to change directory to %s with error = %d", path.c_str(), GetLastError());
                     return false;

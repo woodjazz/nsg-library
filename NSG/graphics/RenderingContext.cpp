@@ -743,7 +743,7 @@ namespace NSG
 
         CHECK_GL_STATUS();
 
-        GLuint modelMatrixLoc = program->GetAttModelMatrixLoc();
+        auto modelMatrixLoc = program->GetAttModelMatrixLoc();
 
         if (modelMatrixLoc != -1)
         {
@@ -767,7 +767,7 @@ namespace NSG
             glDisableVertexAttribArray((int)AttributesLoc::MODEL_MATRIX_ROW2);
         }
 
-        GLuint normalMatrixLoc = program->GetAttNormalMatrixLoc();
+        auto normalMatrixLoc = program->GetAttNormalMatrixLoc();
         if (normalMatrixLoc != -1)
         {
             for (int i = 0; i < 3; i++)
@@ -857,14 +857,14 @@ namespace NSG
     {
         if (lastMesh_ != activeMesh_ || lastProgram_ != activeProgram_)
         {
-            GLuint position_loc = activeProgram_->GetAttPositionLoc();
-            GLuint texcoord_loc0 = activeProgram_->GetAttTextCoordLoc0();
-            GLuint texcoord_loc1 = activeProgram_->GetAttTextCoordLoc1();
-            GLuint normal_loc = activeProgram_->GetAttNormalLoc();
-            GLuint color_loc = activeProgram_->GetAttColorLoc();
-            GLuint tangent_loc = activeProgram_->GetAttTangentLoc();
-            GLuint bones_id_loc = activeProgram_->GetAttBonesIDLoc();
-            GLuint bones_weight = activeProgram_->GetAttBonesWeightLoc();
+            auto position_loc = activeProgram_->GetAttPositionLoc();
+            auto texcoord_loc0 = activeProgram_->GetAttTextCoordLoc0();
+            auto texcoord_loc1 = activeProgram_->GetAttTextCoordLoc1();
+            auto normal_loc = activeProgram_->GetAttNormalLoc();
+            auto color_loc = activeProgram_->GetAttColorLoc();
+            auto tangent_loc = activeProgram_->GetAttTangentLoc();
+            auto bones_id_loc = activeProgram_->GetAttBonesIDLoc();
+            auto bones_weight = activeProgram_->GetAttBonesWeightLoc();
 
             unsigned newAttributes = 0;
 

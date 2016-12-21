@@ -329,7 +329,7 @@ void Socket::Accept::SetSendTimeout(int timeoutSecs)
     Socket::SetSendTimeout(fd_, timeoutSecs);
 }
 
-const char* const Socket::GetHostName()
+const char* Socket::GetHostName()
 {
     const int HOST_NAME1_MAX = 256;
     static char hostName[HOST_NAME1_MAX];
@@ -337,7 +337,7 @@ const char* const Socket::GetHostName()
     return hostName;
 }
 
-const char* const Socket::GetIP(const char* hostName)
+const char* Socket::GetIP(const char* hostName)
 {
     static sockaddr_in iaddr;
     auto hp = gethostbyname(hostName);
