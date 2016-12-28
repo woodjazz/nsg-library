@@ -1,4 +1,7 @@
-cd $HOME/poky
+POKY_FOLDER="$HOME/poky"
+rm -rf $POKY_FOLDER/meta-nsg
+cp -r meta-nsg $POKY_FOLDER
+cd $POKY_FOLDER
 source ./oe-init-build-env
 bitbake nsg-dev
 bitbake nsg-dev -c populate_sdk
