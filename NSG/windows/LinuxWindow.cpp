@@ -177,7 +177,14 @@ void LinuxWindow::Initialize(int x, int y, int width, int height, WindowFlags fl
         CHECK_CONDITION(context_ && "Failed to create GL 2.1 context.");
         glXMakeCurrent(LinuxWindow::display_, hwnd_, context_);
         Window::SetMainWindow(this);
+        LOGI("XSupportsLocale = %d",  XSupportsLocale());
+        LOGI("XSetLocaleModifiers = %s",  XSetLocaleModifiers(""));
         LinuxWindow::im_ = XOpenIM(LinuxWindow::display_, nullptr, nullptr, nullptr);
+        if(!LinuxWindow::im_)
+        {
+            XSetLocaleModifiers("@im=none");
+            LinuxWindow::im_ = XOpenIM(LinuxWindow::display_, nullptr, nullptr, nullptr);
+        }
         CHECK_ASSERT(im_);
         LinuxWindow::ic_ = XCreateIC(im_
                                      , XNInputStyle
