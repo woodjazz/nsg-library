@@ -12,5 +12,5 @@ HEADERS += $$files(bullet/src/BulletDynamics/*.h, true)
 SOURCES += $$files(bullet/src/BulletDynamics/*.cpp, true)
 HEADERS += $$files(bullet/src/BulletSoftBody/*.h, true)
 SOURCES += $$files(bullet/src/BulletSoftBody/*.cpp, true)
-INCLUDEPATH = bullet/src
+INCLUDEPATH += bullet/src
 
