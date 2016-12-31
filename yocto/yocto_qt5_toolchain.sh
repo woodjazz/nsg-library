@@ -10,6 +10,7 @@ bitbake meta-toolchain-qt5
 # for qtCreator
 # configure project as:
 # QMAKE_CXX = i586-poky-linux-g++
+# QMAKE_LINK  = i586-poky-linux-g++
 # INCLUDEPATH += $$(SDKTARGETSYSROOT)/usr/include/c++/6.2.0/i586-poky-linux
 # QMAKE_CXXFLAGS += --sysroot=$$(SDKTARGETSYSROOT)
 # QMAKE_LFLAGS += --sysroot=$$(SDKTARGETSYSROOT)
