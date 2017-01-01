@@ -9,7 +9,7 @@ momoanimations\
 momohome\
 particles\
 planet\
-#qtquick\
+qtquick\
 sceneanimation\
 shadowdirtest
 

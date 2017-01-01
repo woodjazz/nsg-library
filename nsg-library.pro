@@ -34,7 +34,7 @@ win32:!android {
 
 TEMPLATE = subdirs
 CONFIG += ordered
-OTHER_FILES = .qmake.conf qmake/* *
+OTHER_FILES = .qmake.conf *
 SUBDIRS = NSG\
 externals\
 dependencies\
