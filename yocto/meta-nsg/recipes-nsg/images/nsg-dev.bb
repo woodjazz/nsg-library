@@ -14,4 +14,5 @@ IMAGE_INSTALL += "\
 libxcursor \
 packagegroup-qt5-qtcreator-debug \
 packagegroup-qt5-toolchain-target \
+mesa \
 "
