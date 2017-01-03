@@ -82,7 +82,6 @@ fi
 
 source $CONFIG
 
-#MKSPEC="devices/linux-oe-generic-g++"
 MKSPEC=${QMAKESPEC}
 MKSPECPATH=$(find ${OECORE_TARGET_SYSROOT} -name $(basename ${MKSPEC}))
 if [ ! -d "${MKSPECPATH}" ]; then
@@ -97,11 +96,12 @@ RELEASE=$(qmake -query QT_VERSION)
 NAME=${NAME:-"Custom Qt ${RELEASE} ${MACHINE}"}
 BASEID="byos.${RELEASE}.${MACHINE}"
 
-#${SDKTOOL} rmKit --id ${BASEID}.kit 2>/dev/null || true
+${SDKTOOL} rmKit --id ${BASEID}.kit 2>/dev/null || true
 ${SDKTOOL} rmQt --id ${BASEID}.qt || true
-${SDKTOOL} rmTC --id ProjectExplorer.ToolChain.Gcc:${BASEID}1.tc || true
-${SDKTOOL} rmTC --id ProjectExplorer.ToolChain.Gcc:${BASEID}2.tc || true
+${SDKTOOL} rmTC --id ProjectExplorer.ToolChain.Gcc:${BASEID}a.tc || true
+${SDKTOOL} rmTC --id ProjectExplorer.ToolChain.Gcc:${BASEID}b.tc || true
 ${SDKTOOL} rmDev --id ${BASEID}.dev || true
+${SDKTOOL} rmDebugger --id ${BASEID}.debugger || true
 
 if [ -n "${REMOVEONLY}" ]; then
     echo "Kit removed: ${NAME}"
@@ -111,18 +111,25 @@ fi
 ABI="x86-linux-generic-elf-32bit"
 
 ${SDKTOOL} addTC \
-    --id "ProjectExplorer.ToolChain.Gcc:${BASEID}1.tc" \
+    --id "ProjectExplorer.ToolChain.Gcc:${BASEID}a.tc" \
     --language "1" \
     --name "GCC (${NAME})" \
     --path "$(type -p ${OE_QMAKE_CC})" \
     --abi "${ABI}" 
 
 ${SDKTOOL} addTC \
-    --id "ProjectExplorer.ToolChain.Gcc:${BASEID}2.tc" \
+    --id "ProjectExplorer.ToolChain.Gcc:${BASEID}b.tc" \
     --language "2" \
     --name "G++ (${NAME})" \
     --path "$(type -p ${OE_QMAKE_CXX})" \
     --abi "${ABI}" 
+
+${SDKTOOL} addDebugger \
+    --id "${BASEID}.debugger" \
+    --name "GDB (${NAME})" \
+    --engine "1" \
+    --binary "$(type -p ${GDB})" \
+    --abis "${ABI}"    
 
 ${SDKTOOL} addQt \
     --id "${BASEID}.qt" \
@@ -143,5 +150,18 @@ ${SDKTOOL} addDev \
     --sshPort "22" \
     --timeout "10" \
     --uname "root"
+
+${SDKTOOL} addKit \
+    --id "${BASEID}.kit" \
+    --name "${NAME}" \
+    --debuggerengine 1 \
+    --debugger ${GDB} \
+    --devicetype GenericLinuxOsType \
+    --sysroot ${SDKTARGETSYSROOT} \
+    --Ctoolchain ProjectExplorer.ToolChain.Gcc:${BASEID}a.tc \
+    --Cxxtoolchain ProjectExplorer.ToolChain.Gcc:${BASEID}b.tc \
+    --qt "${BASEID}.qt" \
+    --mkspec "${QMAKESPEC}" \
+
 
 echo "Configured Qt Creator with new kit: ${NAME}"
