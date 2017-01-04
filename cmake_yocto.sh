@@ -50,7 +50,6 @@ cmake $SOURCE_FOLDER -G "Unix Makefiles" \
 -DCMAKE_SYSROOT="$SDKTARGETSYSROOT" \
 -DCMAKE_BUILD_TYPE="Debug" \
 -DOE_QMAKE_PATH_EXTERNAL_HOST_BINS="/opt/poky/qt5/sysroots/x86_64-pokysdk-linux/usr/bin/qt5" \
--DCMAKE_PREFIX_PATH="$HOME/Qt/5.7/gcc_64/lib/cmake/Qt5Widgets;$HOME/Qt/5.7/gcc_64/lib/cmake/Qt5Quick"
 
 #cmake $SOURCE_FOLDER -G "Unix Makefiles" \
 #-DCMAKE_SYSROOT="$SDKTARGETSYSROOT" \
