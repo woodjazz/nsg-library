@@ -16,8 +16,10 @@ cd $POKY_FOLDER
 git checkout -b morty origin/morty
 source ./oe-init-build-env build-$MACHINE
 cp $SOURCE_FOLDER/meta-nsg/conf/bblayers.conf $POKY_FOLDER/build-$MACHINE/conf
+cp $SOURCE_FOLDER/meta-nsg/conf/local.conf $POKY_FOLDER/build-$MACHINE/conf
 bitbake nsg-dev
 bitbake nsg-dev -c populate_sdk
+printenv
 #bitbake meta-toolchain-qt5
 #./tmp/deploy/sdk/poky-glibc-x86_64-nsg-dev-i586-toolchain-2.2.sh
 #./tmp/deploy/sdk/poky-glibc-x86_64-nsg-dev-cortexa8hf-neon-toolchain-2.2.sh
@@ -37,6 +39,9 @@ bitbake nsg-dev -c populate_sdk
 # continue
 
 #lsblk -d
-#dd bs=4k if=b2qt-embedded-qt5-image-beaglebone.img of=/dev/sdf status=progress
+#dd bs=4k if=b2qt-embedded-qt5-image-beaglebone.img of=/dev/sdf status=progress; sync
 #pv -p b2qt-embedded-qt5-image-beaglebone.img | sudo dd bs=4k of=/dev/sdf
-#dd if=b2qt-embedded-qt5-image-beaglebone.img | pv -p | sudo dd of=/dev/sdf status=progress
+#dd if=b2qt-embedded-qt5-image-beaglebone.img | pv -p | sudo dd of=/dev/sdf
+#find . -print | grep zlib
+#grep -r IMAGE_TYPES .
+#sudo dd bs=4k if=nsg-dev-beaglebone.wic of=/dev/sdf status=progress; sync
