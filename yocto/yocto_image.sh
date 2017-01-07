@@ -1,7 +1,7 @@
 # git://code.qt.io/yocto/meta-boot2qt.git
 SOURCE_FOLDER="$PWD"
 POKY_FOLDER="$HOME/poky"
-MACHINE=beaglebone
+export MACHINE=beaglebone
 if [ ! -d "$POKY_FOLDER" ]; then
 	git clone git://git.yoctoproject.org/poky $POKY_FOLDER
 fi
@@ -35,3 +35,8 @@ bitbake nsg-dev -c populate_sdk
 # target remote ip:port
 # break main
 # continue
+
+#lsblk -d
+#dd bs=4k if=b2qt-embedded-qt5-image-beaglebone.img of=/dev/sdf status=progress
+#pv -p b2qt-embedded-qt5-image-beaglebone.img | sudo dd bs=4k of=/dev/sdf
+#dd if=b2qt-embedded-qt5-image-beaglebone.img | pv -p | sudo dd of=/dev/sdf status=progress
