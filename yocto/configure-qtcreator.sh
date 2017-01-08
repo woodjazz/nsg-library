@@ -90,7 +90,7 @@ if [ ! -d "${MKSPECPATH}" ]; then
 fi
 
 #MACHINE=$(grep '^MACHINE' ${MKSPECPATH}/../../qdevice.pri | cut -d'=' -f2 | tr -d ' ')
-MACHINE=qemux86
+MACHINE=beaglebone
 RELEASE=$(qmake -query QT_VERSION)
 
 NAME=${NAME:-"Custom Qt ${RELEASE} ${MACHINE}"}
