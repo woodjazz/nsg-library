@@ -134,7 +134,3 @@ These are some examples (from the samples folder) generated with the Emscripten 
 - Press [R key] to reset the camera position.
 
 >For momohome and planet you can connect a XBox360 gamepad to one USB and play around... (You can test your gamepad [here](http://html5gamepad.com/))
-
-
-
-
