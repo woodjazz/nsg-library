@@ -1,0 +1,26 @@
+#include( CMakeForceCompiler )
+set(CMAKE_COMPILER_EXTERNAL_TOOLCHAIN   "$ENV{OECORE_NATIVE_SYSROOT}/usr/bin")
+set(CMAKE_SYSROOT                       "$ENV{SDKTARGETSYSROOT}")
+set(CMAKE_AR                            "$ENV{AR}" CACHE PATH "ar")
+set(CMAKE_ASM_COMPILER                  "$ENV{AS}" CACHE PATH "assembler" )
+set(CMAKE_RANLIB                        "$ENV{RANLIB}" CACHE PATH "ranlib")
+#set(CMAKE_C_COMPILER                    "$ENV{CC}" CACHE PATH "cc")
+#set(CMAKE_CXX_COMPILER                  "$ENV{CXX}" CACHE PATH "cxx")
+set(CMAKE_STRIP                         "$ENV{STRIP}" CACHE PATH "strip")
+set(CMAKE_LINKER                        "$ENV{LD}" CACHE PATH "linker")
+set(CMAKE_NM                            "$ENV{NM}" CACHE PATH "nm")
+set(CMAKE_OBJCOPY                       "$ENV{OBJCOPY}" CACHE PATH "objcopy")
+set(CMAKE_OBJDUMP                       "$ENV{OBJDUMP}" CACHE PATH "objdump")
+
+
+set(CMAKE_SYSTEM_NAME "Linux")
+string(REGEX MATCH "sysroots/([a-zA-Z0-9]+)" CMAKE_SYSTEM_PROCESSOR $ENV{SDKTARGETSYSROOT})
+string(REGEX REPLACE "sysroots/" "" CMAKE_SYSTEM_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
+set( CMAKE_CXX_FLAGS $ENV{CXXFLAGS}  CACHE STRING "" FORCE )
+set( CMAKE_C_FLAGS $ENV{CFLAGS} CACHE STRING "" FORCE ) #same flags for C sources
+set( CMAKE_LDFLAGS_FLAGS ${CMAKE_CXX_FLAGS} CACHE STRING "" FORCE ) #same flags for C sources
+set( CMAKE_LIBRARY_PATH ${OECORE_TARGET_SYSROOT}/usr/lib )
+set( CMAKE_FIND_ROOT_PATH $ENV{OECORE_TARGET_SYSROOT} $ENV{OECORE_NATIVE_SYSROOT} )
+set( CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER )
+set( CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY )
+set( CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY )

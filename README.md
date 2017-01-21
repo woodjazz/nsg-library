@@ -85,6 +85,8 @@ For clang you probably will need:
 
 apt-get install libc++-dev
 
+Note: if you are running Linux under VMPlayer 12 then turn off OpenGL 3.3 setting the environment variable SVGA_VGPU10=0 (It will work as OpenGL 2.1.)
+
 -------------------------
 BUILDING: Emscripten
 -------------------------

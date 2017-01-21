@@ -23,38 +23,59 @@
 #3. This notice may not be removed or altered from any source distribution.
 #-------------------------------------------------------------------------------
 
-source /opt/poky/2.2/environment-setup-i586-poky-linux
+printUsage ()
+{
+    echo "source the yocto SDK environment-setup-file"
+    echo "Usage: $0 --dir <build-dir> [--type <[release] | debug>]" 
+    echo "Example: ./cmake_yocto.sh --dir build --type debug"
+}
+
+if [ -z "$SDKTARGETSYSROOT" ]; then
+    echo "Remember to source the yocto SDK environment before calling this script"
+    printUsage
+    exit 1
+fi
+
+while test -n "$1"; do
+  case "$1" in
+    "--dir")
+      shift
+      BUILDDIR=$1
+      ;;
+    "--type")
+      shift
+      BUILDTYPE=$1
+      ;;
+    *)
+      printUsage
+      exit 0
+      ;;
+  esac
+  shift
+done
+
+if [ -z "$BUILDDIR" ]; then
+    echo "Enter build target directory. (directory will be created on the parent directory of the current one"
+    printUsage
+    exit 1
+fi
+
 cd $( dirname $0 ) # Ensure we are in project root directory
 set -e
 SOURCE_FOLDER="$PWD"
 
-if [ ! -n "$1" ]; then
-	echo "Enter build target directory. (directory will be created on the parent directory of the current one"
-	exit 0
+cd ..
+cmake -E make_directory $BUILDDIR
+cd $BUILDDIR
+
+
+if [ "$BUILDTYPE" = "debug" ]; then
+	echo "Building DEBUG version..."
+    cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/yocto.toolchain.cmake" \
+    -DOE_QMAKE_PATH_EXTERNAL_HOST_BINS="$OE_QMAKE_PATH_HOST_BINS" 
+else	
+	echo "Building RELEASE version..."
+    cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="$SOURCE_FOLDER/cmake/toolchains/yocto.toolchain.cmake" \
+    -DOE_QMAKE_PATH_EXTERNAL_HOST_BINS="$OE_QMAKE_PATH_HOST_BINS" 
 fi
 
-cd ..
-cmake -E make_directory $1
-cd $1
-
-#cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug"
-
-#In order for find_package to be successful, Qt 5 must be found below the 
-#CMAKE_PREFIX_PATH, or the Qt5<Module>_DIR must be set in the CMake cache 
-#to the location of the Qt5WidgetsConfig.cmake file. The easiest way to use 
-#CMake is to set the CMAKE_PREFIX_PATH environment variable to the install 
-#prefix of Qt 5.
-#(see http://doc.qt.io/qt-5/cmake-manual.html)
-
-cmake $SOURCE_FOLDER -G "Unix Makefiles" \
--DCMAKE_SYSROOT="$SDKTARGETSYSROOT" \
--DCMAKE_BUILD_TYPE="Debug" \
--DOE_QMAKE_PATH_EXTERNAL_HOST_BINS="/opt/poky/qt5/sysroots/x86_64-pokysdk-linux/usr/bin/qt5" \
-
-#cmake $SOURCE_FOLDER -G "Unix Makefiles" \
-#-DCMAKE_SYSROOT="$SDKTARGETSYSROOT" \
-#-DOE_QMAKE_PATH_EXTERNAL_HOST_BINS="/opt/poky/qt5/sysroots/x86_64-pokysdk-linux/usr/bin/qt5" \
-#-DCMAKE_PREFIX_PATH="$HOME/Qt/5.7/gcc_64/lib/cmake/Qt5Widgets;$HOME/Qt/5.7/gcc_64/lib/cmake/Qt5Quick"
-
-
-#cmake $SOURCE_FOLDER -G "Unix Makefiles"

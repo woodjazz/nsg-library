@@ -1,6 +1,6 @@
 /*
--------------------------------------------------------------------------------
-This file is part of nsg-library.
+   -------------------------------------------------------------------------------
+   This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
 
 Copyright (c) 2014-2016 Néstor Silveira Gorski
@@ -22,7 +22,7 @@ appreciated but is not required.
 misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
-*/
+ */
 #include "QueuedTask.h"
 #include <assert.h>
 
@@ -36,15 +36,15 @@ namespace NSG
         }
 
         QueuedTask::QueuedTask(const std::string& name) 
-        : Worker(name),
-        taskAlive_(true) 
+            : Worker(name),
+            taskAlive_(true) 
         {
             Worker::Start(this);
         }
 
         QueuedTask::~QueuedTask() 
         {
-		    taskAlive_ = false;
+            taskAlive_ = false;
             condition_.notify_one();
             Join();
         }
@@ -75,17 +75,17 @@ namespace NSG
             std::lock_guard<Mutex> guard(mtx_);
             return queue_.empty();
         }
-       
+
 
         void QueuedTask::InternalTask() 
         {
             while(taskAlive_ || !IsEmpty()) 
             {
                 PData pData = Pop();
-                
+
                 if(nullptr == pData || pData->canceled_)
                     continue;
-                
+
                 try 
                 {
                     pData->pTask_->Run();
@@ -109,9 +109,9 @@ namespace NSG
             return id;
         }
 
-	    bool QueuedTask::CancelTask(int id) 
+        bool QueuedTask::CancelTask(int id) 
         {
-		    std::lock_guard<Mutex> guard(mtx_);
+            std::lock_guard<Mutex> guard(mtx_);
             auto it = keyDataMap_.find(id);
             if(it != keyDataMap_.end()) 
             {
@@ -120,7 +120,7 @@ namespace NSG
                 return true;
             }
             return false;
-	    }
+        }
 
         void QueuedTask::CancelAllTasks() 
         {

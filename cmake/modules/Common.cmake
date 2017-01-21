@@ -340,18 +340,20 @@ endmacro ()
 
 macro (setup_qt_sample)
     if (NOT CMAKE_GENERATOR STREQUAL Xcode)
-        find_package(Qt5Widgets)
-        if(Qt5Widgets_FOUND)
-            find_package(Qt5Quick REQUIRED)
-            set(IS_EXECUTABLE_A_BUNDLE 1)
-            aux_source_directory(. SRC_LIST)
-            # Tell CMake to run moc when necessary:
-            set(CMAKE_AUTOMOC ON)
-            # As moc files are generated in the binary dir, tell CMake
-            # to always look for includes there:
-            set(CMAKE_INCLUDE_CURRENT_DIR ON)
-            setup_executable(TRUE)
-            set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "samples")
+	    if (NOT CMAKE_CROSSCOMPILING OR DEFINED ENV{OE_QMAKE_PATH_HOST_BINS})
+            find_package(Qt5Widgets )
+            if(Qt5Widgets_FOUND)
+                find_package(Qt5Quick REQUIRED)
+                set(IS_EXECUTABLE_A_BUNDLE 1)
+                aux_source_directory(. SRC_LIST)
+                # Tell CMake to run moc when necessary:
+                set(CMAKE_AUTOMOC ON)
+                # As moc files are generated in the binary dir, tell CMake
+                # to always look for includes there:
+                set(CMAKE_INCLUDE_CURRENT_DIR ON)
+                setup_executable(TRUE)
+                set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "samples")
+            endif()
         endif()
     endif()
 endmacro ()

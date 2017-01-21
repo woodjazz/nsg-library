@@ -24,7 +24,7 @@
 # -------------------------------------------------------------------------------
 # */
 function(export_blend_tool input_file output_dir)
-	if(NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE AND NOT COVERITY)
+	if(NOT CMAKE_CROSSCOMPILING AND NOT IS_TARGET_WEB AND NOT IS_TARGET_MOBILE AND NOT COVERITY)
 		if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
 			set(BLENDER_EXECUTABLE "$ENV{BLENDER_BIN}/blender.app/Contents/MacOS/blender")
 		elseif(WIN32)
