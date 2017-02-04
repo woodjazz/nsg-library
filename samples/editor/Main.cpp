@@ -2,7 +2,7 @@
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
-Copyright (c) 2014-2016 Néstor Silveira Gorski
+Copyright (c) 2014-2017 Néstor Silveira Gorski
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages

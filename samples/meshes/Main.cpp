@@ -3,7 +3,7 @@
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
 
-Copyright (c) 2014-2016 N?stor Silveira Gorski
+Copyright (c) 2014-2017 N?stor Silveira Gorski
 
 -------------------------------------------------------------------------------
 This software is provided 'as-is', without any express or implied
