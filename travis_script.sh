@@ -2,9 +2,9 @@
 set -e
 case "${TRAVIS_OS_NAME}" in
   linux)
-	pwd && mkdir -p debug && cd debug && cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" && make && make test
+	pwd && mkdir -p debug && cd debug && cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" && make -j 4 && make test
 	cd ..
-	mkdir -p release && cd release && cmake .. -G "Unix Makefiles" && make && make test
+	mkdir -p release && cd release && cmake .. -G "Unix Makefiles" && make -j 4 && make test
 	cd ..
 	#./cmake_ems.sh emsbuild && cd../emsbuild && make
     ;;
