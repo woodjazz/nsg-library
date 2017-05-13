@@ -24,70 +24,69 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "NonCopyable.h"
+#include "Types.h"
 #include <functional>
 #include <vector>
 
-namespace NSG
-{
-    namespace FSM
-    {
-        class State;
-        class Condition : NonCopyable
-        {
-        public:
-            typedef std::function<bool()> CONDITION_FUNC;
-            void When(CONDITION_FUNC conditionFunc);
-        private:
-            Condition(State& newState);
-            typedef std::pair<bool, State*> RESULT;
-            RESULT Evaluate();
+namespace NSG {
+namespace FSM {
+class State;
+class Condition : NonCopyable {
+public:
+    typedef std::function<bool()> CONDITION_FUNC;
+    void When(CONDITION_FUNC conditionFunc);
 
-            State* pNewState_;
-            CONDITION_FUNC conditionFunc_;
-            friend class State;
-        };
+private:
+    Condition(State& newState);
+    typedef std::pair<bool, State*> RESULT;
+    RESULT Evaluate();
 
-        class State : NonCopyable
-        {
-        public:
-            State();
-            virtual ~State();
-            Condition& AddTransition(State& to);
-            virtual const State* GetState() const { return this; }
-        protected:
-            virtual void Begin() {}
-            virtual void Stay() {}
-            virtual void End() {}
-        private:
-            virtual State* Evaluate();
-            virtual void InternalBegin();
-            virtual void InternalEnd();
+    State* pNewState_;
+    CONDITION_FUNC conditionFunc_;
+    friend class State;
+};
 
-            typedef std::unique_ptr<Condition> PCondition;
-            std::vector<PCondition> conditions_;
-            State* nextBeginState_;
-            friend class Machine;
-        };
+class State : NonCopyable {
+public:
+    State();
+    virtual ~State();
+    Condition& AddTransition(State& to);
+    virtual const State* GetState() const { return this; }
 
-        class Machine : public State
-        {
-        public:
-            Machine();
-            Machine(State& initialState, bool isFirstState = true);
-            virtual ~Machine();
-            void Update();
-            const State* GetState() const { return pCurrentState_; }
-            void SetInitialState(State& initialState);
-            void Go();
-        private:
-            void InternalBegin();
-            void InternalEnd();
-            State* Evaluate();
-            State* pInitialState_;
-            State* pCurrentState_;
-            SignalUpdate::PSlot slotUpdate_;
-        };
-    }
+protected:
+    virtual void Begin() {}
+    virtual void Stay() {}
+    virtual void End() {}
+
+private:
+    virtual State* Evaluate();
+    virtual void InternalBegin();
+    virtual void InternalEnd();
+
+    typedef std::unique_ptr<Condition> PCondition;
+    std::vector<PCondition> conditions_;
+    State* nextBeginState_;
+    friend class Machine;
+};
+
+class Machine : public State {
+public:
+    Machine();
+    Machine(State& initialState, bool isFirstState = true);
+    virtual ~Machine();
+    void Update();
+    const State* GetState() const { return pCurrentState_; }
+    void SetInitialState(State& initialState);
+    void Go();
+
+private:
+    void InternalBegin();
+    void InternalEnd();
+    State* Evaluate();
+    State* pInitialState_;
+    State* pCurrentState_;
+    SignalUpdate::PSlot slotUpdate_;
+};
+}
 }

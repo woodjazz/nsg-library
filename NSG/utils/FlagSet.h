@@ -26,25 +26,12 @@ misrepresented as being the original software.
 #pragma once
 #include <bitset>
 
-template <class T, std::size_t N = 32 >
-struct FlagSet : std::bitset<N>
-{
-	FlagSet() : std::bitset<N>(0)
-	{
+template <class T, std::size_t N = 32> struct FlagSet : std::bitset<N> {
+    FlagSet() : std::bitset<N>(0) {}
 
-	}
+    FlagSet(int bits) : std::bitset<N>(bits) {}
 
-	FlagSet(int bits) : std::bitset<N>(bits)
-    {
-    }
+    FlagSet(const std::string& bits) : std::bitset<N>(bits) {}
 
-	FlagSet(const std::string& bits) : std::bitset<N>(bits)
-	{
-	}
-
-
-	operator unsigned long() const
-	{
-		return std::bitset<N>::to_ulong();
-	}
+    operator unsigned long() const { return std::bitset<N>::to_ulong(); }
 };

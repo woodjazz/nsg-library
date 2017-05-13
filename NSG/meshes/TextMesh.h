@@ -24,43 +24,45 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "GLIncludes.h"
-#include "SharedPointers.h"
-#include "Mesh.h"
 #include "FontAtlas.h"
+#include "GLIncludes.h"
+#include "Mesh.h"
+#include "SharedPointers.h"
 #include "Types.h"
-#include <memory>
-#include <vector>
-#include <string>
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
-namespace NSG
-{
-    class TextMesh : public Mesh
-    {
-    public:
-		TextMesh(const std::string& name);
-        ~TextMesh();
-		void SetAtlas(PFontAtlas atlas);
-        void SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
-        void SetAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign);
-        void GetAlignment(HorizontalAlignment& hAlign, VerticalAlignment& vAlign);
-        float GetWidth() const { return screenWidth_; }
-        float GetHeight() const { return screenHeight_; }
-        GLenum GetWireFrameDrawMode() const override;
-        GLenum GetSolidDrawMode() const override;
-        virtual size_t GetNumberOfTriangles() const override;
-        HorizontalAlignment GetTextHorizontalAlignment() const { return hAlignment_; }
-        VerticalAlignment GetTextVerticalAlignment() const { return vAlignment_; }
-        PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
-    private:
-        void AllocateResources() override;
-        bool IsValid() override;
-		PWeakFontAtlas pAtlas_;
-        std::string text_;
-        float screenWidth_;
-        float screenHeight_;
-        HorizontalAlignment hAlignment_;
-        VerticalAlignment vAlignment_;
-    };
+namespace NSG {
+class TextMesh : public Mesh {
+public:
+    TextMesh(const std::string& name);
+    ~TextMesh();
+    void SetAtlas(PFontAtlas atlas);
+    void SetText(const std::string& text, HorizontalAlignment hAlign,
+                 VerticalAlignment vAlign);
+    void SetAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign);
+    void GetAlignment(HorizontalAlignment& hAlign, VerticalAlignment& vAlign);
+    float GetWidth() const { return screenWidth_; }
+    float GetHeight() const { return screenHeight_; }
+    GLenum GetWireFrameDrawMode() const override;
+    GLenum GetSolidDrawMode() const override;
+    virtual size_t GetNumberOfTriangles() const override;
+    HorizontalAlignment GetTextHorizontalAlignment() const {
+        return hAlignment_;
+    }
+    VerticalAlignment GetTextVerticalAlignment() const { return vAlignment_; }
+    PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
+
+private:
+    void AllocateResources() override;
+    bool IsValid() override;
+    PWeakFontAtlas pAtlas_;
+    std::string text_;
+    float screenWidth_;
+    float screenHeight_;
+    HorizontalAlignment hAlignment_;
+    VerticalAlignment vAlignment_;
+};
 }

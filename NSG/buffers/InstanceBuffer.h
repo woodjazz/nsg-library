@@ -25,24 +25,22 @@ misrepresented as being the original software.
 */
 #pragma once
 
-#include "Types.h"
 #include "Buffer.h"
 #include "InstanceData.h"
+#include "Types.h"
 
-namespace NSG 
-{
-	class InstanceBuffer : public Buffer
-	{
-	public:
-		InstanceBuffer();
-		~InstanceBuffer();
-		static void Unbind();
-		void UpdateBatchBuffer(const Batch& batch);
-	private:
-        void AllocateResources() override;
-        void ReleaseResources() override;
-		void UpdateData(const std::vector<InstanceData>& data);
-		size_t maxInstances_;
-	};
+namespace NSG {
+class InstanceBuffer : public Buffer {
+public:
+    InstanceBuffer();
+    ~InstanceBuffer();
+    static void Unbind();
+    void UpdateBatchBuffer(const Batch& batch);
+
+private:
+    void AllocateResources() override;
+    void ReleaseResources() override;
+    void UpdateData(const std::vector<InstanceData>& data);
+    size_t maxInstances_;
+};
 }
-

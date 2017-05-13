@@ -25,49 +25,57 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include <string>
-#include <map>
-#include <future>
 #include <atomic>
+#include <future>
+#include <map>
+#include <string>
 
-namespace NSG
-{
-    class HTTPRequest
-    {
-    public:
-        typedef std::map<std::string, std::string> Form;
-        typedef std::function<void(const std::string& data)> OnLoadFunction;
-        typedef std::function<void(int httpError, const std::string& description)> OnErrorFunction;
-        typedef std::function<void(unsigned percentage)> OnProgressFunction;
-        HTTPRequest(const std::string& url, const Form& form, OnLoadFunction onLoad, OnErrorFunction onError, OnProgressFunction onProgress); // Post
-        HTTPRequest(const std::string& url, OnLoadFunction onLoad, OnErrorFunction onError, OnProgressFunction onProgress); // Get
-        ~HTTPRequest();
-        void StartRequest();
-        static void ParseURL(const std::string& url, std::string& protocol, std::string& host, int& port, std::string& path);
-    private:
-        #if EMSCRIPTEN
-        static void OnLoad(unsigned int id, void* arg, void* buffer, unsigned bytes);
-        static void OnError(unsigned int id, void* arg, int httpError, const char* statusDescription);
-        static void OnProgress(unsigned int id, void* arg, int bytesLoaded, int totalSize);
-        #endif
-        std::string url_;
-        std::string protocol_;
-        std::string host_;
-        int port_;
-        std::string path_;
-        #if EMSCRIPTEN
-        int requestHandle_;
-        #else
-        int httpError_;
-        std::atomic<bool> httpHasResult_;
-        std::string response_;
-        std::future<void> result_;
-        SignalEmpty::PSlot slotBeginFrame_;
-        #endif
-        OnLoadFunction onLoad_;
-        OnErrorFunction onError_;
-        OnProgressFunction onProgress_;
-        Form form_;
-        bool isPost_;
-    };
+namespace NSG {
+class HTTPRequest {
+public:
+    typedef std::map<std::string, std::string> Form;
+    typedef std::function<void(const std::string& data)> OnLoadFunction;
+    typedef std::function<void(int httpError, const std::string& description)>
+        OnErrorFunction;
+    typedef std::function<void(unsigned percentage)> OnProgressFunction;
+    HTTPRequest(const std::string& url, const Form& form, OnLoadFunction onLoad,
+                OnErrorFunction onError,
+                OnProgressFunction onProgress); // Post
+    HTTPRequest(const std::string& url, OnLoadFunction onLoad,
+                OnErrorFunction onError,
+                OnProgressFunction onProgress); // Get
+    ~HTTPRequest();
+    void StartRequest();
+    static void ParseURL(const std::string& url, std::string& protocol,
+                         std::string& host, int& port, std::string& path);
+
+private:
+#if EMSCRIPTEN
+    static void OnLoad(unsigned int id, void* arg, void* buffer,
+                       unsigned bytes);
+    static void OnError(unsigned int id, void* arg, int httpError,
+                        const char* statusDescription);
+    static void OnProgress(unsigned int id, void* arg, int bytesLoaded,
+                           int totalSize);
+#endif
+    std::string url_;
+    std::string protocol_;
+    std::string host_;
+    int port_;
+    std::string path_;
+#if EMSCRIPTEN
+    int requestHandle_;
+#else
+    int httpError_;
+    std::atomic<bool> httpHasResult_;
+    std::string response_;
+    std::future<void> result_;
+    SignalEmpty::PSlot slotBeginFrame_;
+#endif
+    OnLoadFunction onLoad_;
+    OnErrorFunction onError_;
+    OnProgressFunction onProgress_;
+    Form form_;
+    bool isPost_;
+};
 }

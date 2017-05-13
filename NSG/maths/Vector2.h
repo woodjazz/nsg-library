@@ -25,31 +25,28 @@ misrepresented as being the original software.
 */
 #pragma once
 
-namespace NSG
-{
-    struct Vector3;
-    struct Vector2
-    {
-        float x, y;
-        Vector2();
-        Vector2(float a);
-        Vector2(float a, float b);
-        Vector2(const Vector2& v);
-        Vector2(const Vector3& v);
-        const float& operator[](int i) const;
-        float& operator[](int i);
-        const Vector2& operator/=(float v);
-    };
-    typedef Vector2 Vertex2;
-   
+namespace NSG {
+struct Vector3;
+struct Vector2 {
+    float x, y;
+    Vector2();
+    Vector2(float a);
+    Vector2(float a, float b);
+    Vector2(const Vector2& v);
+    Vector2(const Vector3& v);
+    const float& operator[](int i) const;
+    float& operator[](int i);
+    const Vector2& operator/=(float v);
+};
+typedef Vector2 Vertex2;
 
-    bool operator!=(const Vector2& v1, const Vector2& v2);
-    bool operator==(const Vector2& v1, const Vector2& v2);
-    Vector2 operator+(const Vector2& v1, const Vector2& v2);
-    Vector2 operator-(const Vector2& v1, const Vector2& v2);
-    Vector2 operator+(const Vector2& v, float scalar);
-    Vector2 operator-(const Vector2& v, float scalar);
-    Vector2 operator*(const Vector2& v, float scalar);
-    Vector2 operator*(float scalar, const Vector2& v);
-    Vector2 operator/(const Vector2& v, float scalar);
+bool operator!=(const Vector2& v1, const Vector2& v2);
+bool operator==(const Vector2& v1, const Vector2& v2);
+Vector2 operator+(const Vector2& v1, const Vector2& v2);
+Vector2 operator-(const Vector2& v1, const Vector2& v2);
+Vector2 operator+(const Vector2& v, float scalar);
+Vector2 operator-(const Vector2& v, float scalar);
+Vector2 operator*(const Vector2& v, float scalar);
+Vector2 operator*(float scalar, const Vector2& v);
+Vector2 operator/(const Vector2& v, float scalar);
 }

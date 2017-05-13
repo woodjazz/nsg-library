@@ -25,37 +25,35 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
 
     // It is possible to use till 2 uv maps per mesh.
-    // In Blender this corresponds to the first and second mapping defined in the mesh
+    // In Blender this corresponds to the first and second mapping defined in
+    // the mesh
 
     auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto resource = Resource::GetOrCreate<ResourceFile>("data/aomap0.xml");
     LoaderXML data("loader");
     SignalEmpty::PSlot slot;
-    slot = data.Load(resource)->Connect([&]()
-    {
+    slot = data.Load(resource)->Connect([&]() {
         auto scene = data.GetScene(0);
         auto obj = scene->GetChild<SceneNode>("Cube", true);
         CHECK_CONDITION(obj);
         auto mesh = obj->GetMesh();
         auto uv0Name = mesh->GetUVName(0);
-        //CHECK_CONDITION(uv0Name == "UVMap0");
+        // CHECK_CONDITION(uv0Name == "UVMap0");
         auto uv1Name = mesh->GetUVName(1);
-        //CHECK_CONDITION(uv1Name == "UVMap1");
+        // CHECK_CONDITION(uv1Name == "UVMap1");
         auto material = obj->GetMaterial();
         CHECK_CONDITION(material->IsReady());
         auto texture = material->GetTexture(MaterialTexture::AO_MAP);
         auto uvNameUsedByTexture = texture->GetUVName();
         // This texture uses first uv map defined in the mesh
-        //CHECK_CONDITION(uvNameUsedByTexture == uv0Name);
+        // CHECK_CONDITION(uvNameUsedByTexture == uv0Name);
 
         auto resource = Resource::GetOrCreate<ResourceFile>("data/aomap1.xml");
-        slot = data.Load(resource)->Connect([&]()
-        {
+        slot = data.Load(resource)->Connect([&]() {
             auto scene = data.GetScene(0);
             auto obj = scene->GetChild<SceneNode>("Cube", true);
             CHECK_CONDITION(obj);
@@ -71,23 +69,24 @@ int NSG_MAIN(int argc, char* argv[])
             // This texture uses second uv map defined in the mesh
             CHECK_CONDITION(uvNameUsedByTexture == uv1Name);
 
-            auto resource = Resource::GetOrCreate<ResourceFile>("data/uvmap275.xml");
-            slot = data.Load(resource)->Connect([&]()
-            {
+            auto resource =
+                Resource::GetOrCreate<ResourceFile>("data/uvmap275.xml");
+            slot = data.Load(resource)->Connect([&]() {
                 auto scene = data.GetScene(0);
                 auto obj = scene->GetChild<SceneNode>("Cube", true);
                 CHECK_CONDITION(obj);
                 auto mesh = obj->GetMesh();
                 auto uv0Name = mesh->GetUVName(0);
-                //CHECK_CONDITION(uv0Name == "UVMap1");
+                // CHECK_CONDITION(uv0Name == "UVMap1");
                 auto uv1Name = mesh->GetUVName(1);
-                //CHECK_CONDITION(uv1Name == "UVMap2");
+                // CHECK_CONDITION(uv1Name == "UVMap2");
                 auto material = obj->GetMaterial();
                 CHECK_CONDITION(material->IsReady());
-                auto texture = material->GetTexture(MaterialTexture::DIFFUSE_MAP);
+                auto texture =
+                    material->GetTexture(MaterialTexture::DIFFUSE_MAP);
                 auto uvNameUsedByTexture = texture->GetUVName();
                 // This texture uses second uv map defined in the mesh
-                //CHECK_CONDITION(uvNameUsedByTexture == uv1Name);
+                // CHECK_CONDITION(uvNameUsedByTexture == uv1Name);
                 window = nullptr;
             });
         });

@@ -24,16 +24,15 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "EditorTypes.h"
 #include "EditorSceneNode.h"
+#include "EditorTypes.h"
 
-class EditorCamera : public EditorSceneNode
-{
+class EditorCamera : public EditorSceneNode {
 public:
     EditorCamera(const std::string& name);
     ~EditorCamera();
     void OnCreated() override;
+
 private:
     PEditorFrustum frustum_;
 };
-

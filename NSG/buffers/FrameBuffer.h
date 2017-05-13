@@ -24,58 +24,56 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "Object.h"
 #include "GLIncludes.h"
+#include "Object.h"
+#include "Types.h"
 #include <string>
 
-namespace NSG
-{
-    class FrameBuffer : public Object
-    {
-    public:
-        enum Flag
-        {
-            COLOR = 1 << 0,
-            DEPTH = 1 << 1,
-            STENCIL = 1 << 2,
-            COLOR_USE_TEXTURE = 1 << 3,
-            DEPTH_USE_TEXTURE = 1 << 4,
-            COLOR_CUBE_TEXTURE = 1 << 5
-        };
-        typedef FlagSet<Flag> Flags;
-		FrameBuffer(const std::string& name, Flags flags);
-        ~FrameBuffer();
-        PTexture GetColorTexture() const { return colorTexture_; }
-        PTexture GetDepthTexture() const { return depthTexture_; }
-        GLuint GetId() const { return framebuffer_; }
-        void SetSize(int width, int height);
-        void SetWindow(PWindow window);
-		int GetWidth() const { return width_; }
-		int GetHeight() const { return height_; }
-        void SetColorTexture(PTexture texture);
-        void SetDepthTexture(PTexture texture);
-        void AttachTarget(TextureTarget colorTexTarget);
-		TextureTarget GetDefaultTextureTarget() const;
-		void EnableAutoSize(bool enable) { autoSize_ = enable;  }
-    private:
-		bool IsValid() override;
-        void AllocateResources() override;
-        void ReleaseResources() override;
-        int originalWidth_;
-		int originalHeight_;
-		int width_;
-		int height_;
-		Flags flags_;
-        PTexture colorTexture_;
-        PTexture depthTexture_;
-        PTexture stencilTexture_;
-        GLuint framebuffer_;
-        GLuint colorRenderbuffer_;
-        GLuint depthStencilRenderBuffer_;
-		GLuint stencilRenderBuffer_;
-		SignalSizeChanged::PSlot slotViewChanged_;
-        PWeakWindow window_;
-		bool autoSize_;
+namespace NSG {
+class FrameBuffer : public Object {
+public:
+    enum Flag {
+        COLOR = 1 << 0,
+        DEPTH = 1 << 1,
+        STENCIL = 1 << 2,
+        COLOR_USE_TEXTURE = 1 << 3,
+        DEPTH_USE_TEXTURE = 1 << 4,
+        COLOR_CUBE_TEXTURE = 1 << 5
     };
+    typedef FlagSet<Flag> Flags;
+    FrameBuffer(const std::string& name, Flags flags);
+    ~FrameBuffer();
+    PTexture GetColorTexture() const { return colorTexture_; }
+    PTexture GetDepthTexture() const { return depthTexture_; }
+    GLuint GetId() const { return framebuffer_; }
+    void SetSize(int width, int height);
+    void SetWindow(PWindow window);
+    int GetWidth() const { return width_; }
+    int GetHeight() const { return height_; }
+    void SetColorTexture(PTexture texture);
+    void SetDepthTexture(PTexture texture);
+    void AttachTarget(TextureTarget colorTexTarget);
+    TextureTarget GetDefaultTextureTarget() const;
+    void EnableAutoSize(bool enable) { autoSize_ = enable; }
+
+private:
+    bool IsValid() override;
+    void AllocateResources() override;
+    void ReleaseResources() override;
+    int originalWidth_;
+    int originalHeight_;
+    int width_;
+    int height_;
+    Flags flags_;
+    PTexture colorTexture_;
+    PTexture depthTexture_;
+    PTexture stencilTexture_;
+    GLuint framebuffer_;
+    GLuint colorRenderbuffer_;
+    GLuint depthStencilRenderBuffer_;
+    GLuint stencilRenderBuffer_;
+    SignalSizeChanged::PSlot slotViewChanged_;
+    PWeakWindow window_;
+    bool autoSize_;
+};
 }

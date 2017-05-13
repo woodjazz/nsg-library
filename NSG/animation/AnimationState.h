@@ -24,39 +24,37 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "Animation.h"
+#include "Types.h"
 
-namespace NSG
-{
-    struct AnimationStateTrack : AnimationTrack
-    {
-        size_t currentKeyFrame_;
-        AnimationStateTrack(const AnimationTrack& base);
-    };
+namespace NSG {
+struct AnimationStateTrack : AnimationTrack {
+    size_t currentKeyFrame_;
+    AnimationStateTrack(const AnimationTrack& base);
+};
 
-    class AnimationState
-    {
-    public:
-        AnimationState(PAnimation animation);
-        ~AnimationState();
-        void Update();
-        void SetTime(float time);
-        float GetTime() const { return timePosition_; }
-        float GetLength() const;
-        void AddTime(float delta);
-        void SetLooped(bool looped);
-        bool IsLooped() const { return looped_; }
-        void SetWeight(float weight);
-        float GetWeight() const { return weight_; }
-        bool HasEnded() const;
-        PAnimation GetAnimation() const { return animation_; }
-    private:
-        void Blend(AnimationStateTrack& track, float weight);
-        PAnimation animation_;
-        float timePosition_;
-        std::vector<AnimationStateTrack> tracks_;
-        bool looped_;    
-        float weight_; //Blending weight.
-    };
+class AnimationState {
+public:
+    AnimationState(PAnimation animation);
+    ~AnimationState();
+    void Update();
+    void SetTime(float time);
+    float GetTime() const { return timePosition_; }
+    float GetLength() const;
+    void AddTime(float delta);
+    void SetLooped(bool looped);
+    bool IsLooped() const { return looped_; }
+    void SetWeight(float weight);
+    float GetWeight() const { return weight_; }
+    bool HasEnded() const;
+    PAnimation GetAnimation() const { return animation_; }
+
+private:
+    void Blend(AnimationStateTrack& track, float weight);
+    PAnimation animation_;
+    float timePosition_;
+    std::vector<AnimationStateTrack> tracks_;
+    bool looped_;
+    float weight_; // Blending weight.
+};
 }

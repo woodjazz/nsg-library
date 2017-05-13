@@ -24,15 +24,15 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "EditorSceneNode.h"
+#include "Types.h"
 using namespace NSG;
-class EditorLight : public EditorSceneNode
-{
+class EditorLight : public EditorSceneNode {
 public:
     EditorLight(const std::string& name);
     ~EditorLight();
-	void OnCreated() override;        
+    void OnCreated() override;
+
 private:
     void ConfigureChild(const Light* light, SceneNode* child);
     SignalLight::PSlot slotSetType_;

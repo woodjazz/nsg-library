@@ -24,48 +24,35 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <memory>
 #include "Check.h"
+#include <memory>
 
-namespace NSG
-{
-	template<typename T> std::shared_ptr<Node> SharedFromPointerNode(T* p)
-	{
-		try
-		{
-			return p->shared_from_this();
-		}
-		catch (...)
-		{
-			CHECK_CONDITION(!"shared_from_this has failed!!!");
-		}
-		return nullptr;
-	}
+namespace NSG {
+template <typename T> std::shared_ptr<Node> SharedFromPointerNode(T* p) {
+    try {
+        return p->shared_from_this();
+    } catch (...) {
+        CHECK_CONDITION(!"shared_from_this has failed!!!");
+    }
+    return nullptr;
+}
 
-	template<typename T> std::shared_ptr<Resource> SharedFromPointerResource(T* p)
-	{
-		try
-		{
-			return p->shared_from_this();
-		}
-		catch (...)
-		{
-			CHECK_CONDITION(!"shared_from_this has failed!!!");
-		}
-		return nullptr;
-	}
+template <typename T>
+std::shared_ptr<Resource> SharedFromPointerResource(T* p) {
+    try {
+        return p->shared_from_this();
+    } catch (...) {
+        CHECK_CONDITION(!"shared_from_this has failed!!!");
+    }
+    return nullptr;
+}
 
-	template<typename T> std::shared_ptr<T> SharedFromPointer(T* p)
-	{
-		try
-		{
-			return p->shared_from_this();
-		}
-		catch (...)
-		{
-            //CHECK_CONDITION(!"shared_from_this has failed!!!");
-		}
-		return nullptr;
-	}
-
+template <typename T> std::shared_ptr<T> SharedFromPointer(T* p) {
+    try {
+        return p->shared_from_this();
+    } catch (...) {
+        // CHECK_CONDITION(!"shared_from_this has failed!!!");
+    }
+    return nullptr;
+}
 }

@@ -24,90 +24,74 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Engine.h"
-#include "UniformsUpdate.h"
 #include "RenderingContext.h"
+#include "UniformsUpdate.h"
 #include "Window.h"
 #if defined(IS_TARGET_IOS)
 #include "IOSWindow.h"
 #endif
+#include "Animation.h"
 #include "FileSystem.h"
-#include "Resource.h"
-#include "Mesh.h"
+#include "LoaderXML.h"
 #include "Material.h"
+#include "Mesh.h"
+#include "Program.h"
+#include "Resource.h"
 #include "Shape.h"
 #include "Skeleton.h"
-#include "Animation.h"
-#include "Program.h"
-#include "LoaderXML.h"
 
 #if EMSCRIPTEN
 #include "SDL.h"
 #include <emscripten.h>
 #include <emscripten/bind.h>
-#include <html5.h>
+#include <emscripten/html5.h>
 #endif
 #include <thread>
 
-namespace NSG
-{
+namespace NSG {
 AppConfiguration Engine::conf_;
 
-Engine::Engine()
-    : Tick(conf_.fps_),
-      deltaTime_(0)
-{
-    Tick::Initialize();
-}
+Engine::Engine() : Tick(conf_.fps_), deltaTime_(0) { Tick::Initialize(); }
 
-Engine::~Engine()
-{
-}
+Engine::~Engine() {}
 
-void Engine::InitializeTicks()
-{
-}
+void Engine::InitializeTicks() {}
 
-void Engine::BeginTicks()
-{
+void Engine::BeginTicks() {
     auto mainWindow = Window::GetMainWindow();
-    if(mainWindow)
+    if (mainWindow)
         mainWindow->HandleEvents();
 }
 
-void Engine::DoTick(float delta)
-{
+void Engine::DoTick(float delta) {
     deltaTime_ = delta;
     Window::UpdateScenes(delta);
     Engine::SigUpdate()->Run(delta);
 }
 
-void Engine::EndTicks()
-{
+void Engine::EndTicks() {
     if (!Window::AreAllWindowsMinimized())
         RenderFrame();
 }
 
-void Engine::RenderFrame()
-{
+void Engine::RenderFrame() {
     Engine::SigBeginFrame()->Run();
     Window::RenderWindows();
 }
 
-int Engine::Run()
-{
+int Engine::Run() {
     FileSystem::Initialize();
     Tick::Initialize();
 #if EMSCRIPTEN
     {
         SDL_StartTextInput();
-        auto saveSlot = FileSystem::SigSaved()->Connect([]
-        {
-            emscripten_run_script("setTimeout(function() { window.close() }, 2000)");
+        auto saveSlot = FileSystem::SigSaved()->Connect([] {
+            emscripten_run_script(
+                "setTimeout(function() { window.close() }, 2000)");
         });
         bool saved = false;
 
-        auto runframe = [](void* arg)
-        {
+        auto runframe = [](void* arg) {
             bool& saved = *(bool*)arg;
             Engine::GetPtr()->PerformTicks();
             if (!Window::GetMainWindow() && !saved)
@@ -120,8 +104,7 @@ int Engine::Run()
     FileSystem::Save();
 #else
     {
-        for (;;)
-        {
+        for (;;) {
             PerformTicks();
             if (!Window::GetMainWindow())
                 break;
@@ -132,20 +115,17 @@ int Engine::Run()
     return 0;
 }
 
-SignalUpdate::PSignal Engine::SigUpdate()
-{
+SignalUpdate::PSignal Engine::SigUpdate() {
     static SignalUpdate::PSignal signalUpdate(new SignalUpdate);
     return signalUpdate;
 }
 
-SignalEmpty::PSignal Engine::SigBeginFrame()
-{
+SignalEmpty::PSignal Engine::SigBeginFrame() {
     static SignalEmpty::PSignal signalBeginFrame(new SignalEmpty);
     return signalBeginFrame;
 }
 
-void Engine::ReleaseMemory()
-{
+void Engine::ReleaseMemory() {
     Resource::Clear();
     Mesh::Clear();
     Material::Clear();

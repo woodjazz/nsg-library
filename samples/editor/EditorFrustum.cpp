@@ -24,14 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "EditorFrustum.h"
-#include "FrustumMesh.h"
-#include "Material.h"
 #include "Camera.h"
 #include "Frustum.h"
+#include "FrustumMesh.h"
+#include "Material.h"
 
-EditorFrustum::EditorFrustum(const std::string& name)
-    : EditorSceneNode(name)
-{
+EditorFrustum::EditorFrustum(const std::string& name) : EditorSceneNode(name) {
     SetMesh(Mesh::GetOrCreate<FrustumMesh>("NSGEditorFrustum"));
     SetMaterial(Material::GetOrCreate("NSGEditorFrustum"));
     material_->SetRenderPass(RenderPass::VERTEXCOLOR);
@@ -39,25 +37,20 @@ EditorFrustum::EditorFrustum(const std::string& name)
     material_->ReceiveShadows(false);
 }
 
-EditorFrustum::~EditorFrustum()
-{
+EditorFrustum::~EditorFrustum() {}
 
-}
-
-void EditorFrustum::SetCamera(PCamera camera)
-{
+void EditorFrustum::SetCamera(PCamera camera) {
     camera_ = camera;
     SetTransform(camera->GetTransform().Inverse());
-    std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
-    slotUpdated_ = camera->SigUpdated()->Connect([this]()
-    {
-        if(CanBeVisible())
-        {
+    std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(
+        camera->GetFrustum());
+    slotUpdated_ = camera->SigUpdated()->Connect([this]() {
+        if (CanBeVisible()) {
             auto camera = camera_.lock();
-            if (camera)
-            {
+            if (camera) {
                 SetTransform(camera->GetTransform().Inverse());
-                std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(camera->GetFrustum());
+                std::dynamic_pointer_cast<FrustumMesh>(GetMesh())->SetFrustum(
+                    camera->GetFrustum());
             }
         }
     });

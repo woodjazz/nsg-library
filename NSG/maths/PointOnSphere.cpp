@@ -25,164 +25,138 @@ misrepresented as being the original software.
 */
 #include "PointOnSphere.h"
 #include "Check.h"
-#include "Util.h"
 #include "Maths.h"
+#include "Util.h"
 #include <cmath>
 
-namespace NSG
-{
-    PointOnSphere::PointOnSphere()
-        : center_(0),
-          radius_(0),
-          theta_(0),
-          phi_(0),
-          up_(Vector3::Up)
-    {
-    }
+namespace NSG {
+PointOnSphere::PointOnSphere()
+    : center_(0), radius_(0), theta_(0), phi_(0), up_(Vector3::Up) {}
 
-    PointOnSphere::PointOnSphere(const Vertex3& center, float radius)
-        : center_(center),
-          radius_(radius),
-          theta_(0),
-          phi_(0),
-          up_(Vector3::Up)
-    {
-        initialPoint_ = point_ = CalculatePoint();
-        CalculateUpVector();
-    }
+PointOnSphere::PointOnSphere(const Vertex3& center, float radius)
+    : center_(center), radius_(radius), theta_(0), phi_(0), up_(Vector3::Up) {
+    initialPoint_ = point_ = CalculatePoint();
+    CalculateUpVector();
+}
 
-    PointOnSphere::PointOnSphere(const Vertex3& center, const Vertex3& pointInSphere)
-        : center_(center),
-          radius_(center.Distance(pointInSphere)),
-          theta_(0),
-          phi_(0)
-    {
-        SetPoint(pointInSphere);
-		initialPoint_ = point_;
-    }
+PointOnSphere::PointOnSphere(const Vertex3& center,
+                             const Vertex3& pointInSphere)
+    : center_(center), radius_(center.Distance(pointInSphere)), theta_(0),
+      phi_(0) {
+    SetPoint(pointInSphere);
+    initialPoint_ = point_;
+}
 
-    PointOnSphere::~PointOnSphere()
-    {
+PointOnSphere::~PointOnSphere() {}
 
-    }
+void PointOnSphere::IncAngles(float incTheta, float incPhi) {
+    SetAngles(theta_ + incTheta, phi_ + incPhi);
+}
 
-    void PointOnSphere::IncAngles(float incTheta, float incPhi)
-    {
-        SetAngles(theta_ + incTheta, phi_ + incPhi);
-    }
+void PointOnSphere::SetAngles(float theta, float phi) {
+    theta_ = theta;
+    phi_ = phi;
 
-    void PointOnSphere::SetAngles(float theta, float phi)
-    {
-        theta_ = theta;
-        phi_ = phi;
+    point_ = CalculatePoint();
+    CalculateUpVector();
+}
 
-        point_ = CalculatePoint();
-        CalculateUpVector();
-    }
-
-    bool PointOnSphere::SetCenterAndPoint(const Vertex3& center, const Vertex3& pointInSphere)
-    {
-        if (pointInSphere.Distance(center) > PRECISION)
-        {
-            if (center.Distance(center_) > PRECISION || pointInSphere.Distance(point_) > PRECISION)
-            {
-                center_ = center;
-                point_ = pointInSphere;
-                CalculateAnglesAndRadius();
-                CalculateUpVector();
-                return true;
-            }
+bool PointOnSphere::SetCenterAndPoint(const Vertex3& center,
+                                      const Vertex3& pointInSphere) {
+    if (pointInSphere.Distance(center) > PRECISION) {
+        if (center.Distance(center_) > PRECISION ||
+            pointInSphere.Distance(point_) > PRECISION) {
+            center_ = center;
+            point_ = pointInSphere;
+            CalculateAnglesAndRadius();
+            CalculateUpVector();
+            return true;
         }
-
-        return false;
     }
 
-    bool PointOnSphere::SetCenter(const Vertex3& center)
-    {
-        if (center.Distance(point_) > PRECISION)
-        {
-            if (center.Distance(center_) > PRECISION)
-            {
-                center_ = center;
-                CalculateAnglesAndRadius();
-                CalculateUpVector();
-                return true;
-            }
-        }
+    return false;
+}
 
-        return false;
+bool PointOnSphere::SetCenter(const Vertex3& center) {
+    if (center.Distance(point_) > PRECISION) {
+        if (center.Distance(center_) > PRECISION) {
+            center_ = center;
+            CalculateAnglesAndRadius();
+            CalculateUpVector();
+            return true;
+        }
     }
 
-    bool PointOnSphere::SetPoint(const Vertex3& pointInSphere)
-    {
-        if (pointInSphere.Distance(center_) > PRECISION)
-        {
-            if (pointInSphere.Distance(point_) > PRECISION)
-            {
-                point_ = pointInSphere;
-                CalculateAnglesAndRadius();
-                CalculateUpVector();
-                return true;
-            }
+    return false;
+}
+
+bool PointOnSphere::SetPoint(const Vertex3& pointInSphere) {
+    if (pointInSphere.Distance(center_) > PRECISION) {
+        if (pointInSphere.Distance(point_) > PRECISION) {
+            point_ = pointInSphere;
+            CalculateAnglesAndRadius();
+            CalculateUpVector();
+            return true;
         }
-        return false;
     }
+    return false;
+}
 
-    void PointOnSphere::CalculateAnglesAndRadius()
-    {
-        Vector3 rn = point_ - center_;
-        radius_ = rn.Length();
-        rn = rn.Normalize();
+void PointOnSphere::CalculateAnglesAndRadius() {
+    Vector3 rn = point_ - center_;
+    radius_ = rn.Length();
+    rn = rn.Normalize();
 
-        //calculate phi in order to be in the given point
-        float dy = rn.y;
-        phi_ = acos(dy);
+    // calculate phi in order to be in the given point
+    float dy = rn.y;
+    phi_ = acos(dy);
 
-        //calculate theta in order to be in the given point
-        float dx = rn.x;
-        float dz = rn.z;
+    // calculate theta in order to be in the given point
+    float dx = rn.x;
+    float dz = rn.z;
 
-        if (Abs(dx) < EPSILON)
-        {
-            if (dz < 0)
-                theta_ = -PI / 2;
-            else
-                theta_ = PI / 2;
-        }
+    if (Abs(dx) < EPSILON) {
+        if (dz < 0)
+            theta_ = -PI / 2;
         else
-        {
-            theta_ = atan(dz / dx);
+            theta_ = PI / 2;
+    } else {
+        theta_ = atan(dz / dx);
 
-            if (dx < 0)
-                theta_ += PI;
-        }
-
-        //CHECK_ASSERT(Distance(center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), point_) < 9 * PRECISION);
+        if (dx < 0)
+            theta_ += PI;
     }
 
+    // CHECK_ASSERT(Distance(center_ + radius_ * Vertex3(cos(theta_) *
+    // sin(phi_), cos(phi_), sin(theta_) * sin(phi_)), point_) < 9 * PRECISION);
+}
 
-    Vector3 PointOnSphere::CalculatePoint()
-    {
-        // Apply spherical coordinates
-        return center_ + radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_));
-    }
+Vector3 PointOnSphere::CalculatePoint() {
+    // Apply spherical coordinates
+    return center_ +
+           radius_ * Vertex3(cos(theta_) * sin(phi_), cos(phi_),
+                             sin(theta_) * sin(phi_));
+}
 
-    void PointOnSphere::CalculateUpVector()
-    {
-        // Apply spherical coordinates
-        Vertex3 currentPoint(cos(theta_) * sin(phi_), cos(phi_), sin(theta_) * sin(phi_));
+void PointOnSphere::CalculateUpVector() {
+    // Apply spherical coordinates
+    Vertex3 currentPoint(cos(theta_) * sin(phi_), cos(phi_),
+                         sin(theta_) * sin(phi_));
 
-        CHECK_ASSERT((center_ + radius_ * currentPoint).Distance(point_) < 9 * PRECISION);
+    CHECK_ASSERT((center_ + radius_ * currentPoint).Distance(point_) <
+                 9 * PRECISION);
 
-        // Reduce phi slightly to obtain another point on the same longitude line on the sphere.
-        auto newPhi = phi_ - 1;
-        Vertex3 newUpPoint(cos(theta_) * sin(newPhi), cos(newPhi), sin(theta_) * sin(newPhi));
+    // Reduce phi slightly to obtain another point on the same longitude line on
+    // the sphere.
+    auto newPhi = phi_ - 1;
+    Vertex3 newUpPoint(cos(theta_) * sin(newPhi), cos(newPhi),
+                       sin(theta_) * sin(newPhi));
 
-        up_ = (newUpPoint - currentPoint).Normalize();
-    }
+    up_ = (newUpPoint - currentPoint).Normalize();
+}
 
-    Quaternion PointOnSphere::GetOrientation() const
-    {
-		return Rotation((initialPoint_ - center_).Normalize(), (point_ - center_).Normalize());
-    }
+Quaternion PointOnSphere::GetOrientation() const {
+    return Rotation((initialPoint_ - center_).Normalize(),
+                    (point_ - center_).Normalize());
+}
 }

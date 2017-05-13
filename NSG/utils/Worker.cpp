@@ -32,55 +32,46 @@ misrepresented as being the original software.
 #include "emscripten.h"
 #endif
 
-namespace NSG
-{
-    Worker::Worker(const std::string& name)
-        : worker_(nullptr)
-    {
-        #if defined(EMSCRIPTEN)
-        finish_ = false;
-        std::string path = "./data/NSGWorker.js";
-        //handle_ = emscripten_create_worker(path.c_str());
-        #endif
-    }
+namespace NSG {
+Worker::Worker(const std::string& name) : worker_(nullptr) {
+#if defined(EMSCRIPTEN)
+    finish_ = false;
+    std::string path = "./data/NSGWorker.js";
+// handle_ = emscripten_create_worker(path.c_str());
+#endif
+}
 
-    Worker::~Worker()
-    {
-        #if defined(EMSCRIPTEN)
-        //emscripten_destroy_worker(handle_);
-        #endif
-    }
+Worker::~Worker() {
+#if defined(EMSCRIPTEN)
+// emscripten_destroy_worker(handle_);
+#endif
+}
 
-    void Worker::Start(Worker* worker)
-    {
-        assert(worker);
-        worker_ = worker;
-        #if defined(EMSCRIPTEN)
-        finish_ = false;
-        //emscripten_call_worker(handle_, "NSGWorkerEntryPoint", (char*)this, sizeof(Worker*), nullptr, nullptr);
-        //emscripten_run_script("new Worker('data/NSGWorker.js');");
-        //emscripten_run_script("document.write(5 + 6);");
-        
-        #else
-        thread_ = std::thread([this]() {WorkerEntryPoint();});
-        #endif
+void Worker::Start(Worker* worker) {
+    assert(worker);
+    worker_ = worker;
+#if defined(EMSCRIPTEN)
+    finish_ = false;
+// emscripten_call_worker(handle_, "NSGWorkerEntryPoint", (char*)this,
+// sizeof(Worker*), nullptr, nullptr);
+// emscripten_run_script("new Worker('data/NSGWorker.js');");
+// emscripten_run_script("document.write(5 + 6);");
 
-    }
+#else
+    thread_ = std::thread([this]() { WorkerEntryPoint(); });
+#endif
+}
 
-    void Worker::Join()
-    {
-        #if defined(EMSCRIPTEN)
-        while (!finish_)
-            std::this_thread::sleep_for(Milliseconds(50));
-        #else
-        thread_.join();
-        #endif
-    }
+void Worker::Join() {
+#if defined(EMSCRIPTEN)
+    while (!finish_)
+        std::this_thread::sleep_for(Milliseconds(50));
+#else
+    thread_.join();
+#endif
+}
 
-    #if !defined(EMSCRIPTEN)
-    void Worker::WorkerEntryPoint()
-    {
-        worker_->RunWorker();
-    }
-    #endif
+#if !defined(EMSCRIPTEN)
+void Worker::WorkerEntryPoint() { worker_->RunWorker(); }
+#endif
 }

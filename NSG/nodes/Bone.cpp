@@ -26,66 +26,55 @@ misrepresented as being the original software.
 #include "Bone.h"
 #include "pugixml.hpp"
 
-namespace NSG
-{
-    Bone::Bone(const std::string& name)
-        : Node(name)
-    {
+namespace NSG {
+Bone::Bone(const std::string& name) : Node(name) {}
+
+Bone::~Bone() {}
+
+void Bone::Load(const pugi::xml_node& node) {
+    Node::Load(node);
+    SetPose(Matrix4(GetPosition(), GetOrientation(), GetScale()));
+    pugi::xml_node child = node.child("Bone");
+    while (child) {
+        std::string name = child.attribute("name").as_string();
+        auto childBone = CreateChild<Bone>(name);
+        childBone->Load(child);
+        child = child.next_sibling("Bone");
     }
+}
 
-    Bone::~Bone()
-    {
-    }
+void Bone::Save(pugi::xml_node& node) const {
+    pugi::xml_node child = node.append_child("Bone");
+    Node::Save(child);
+    for (auto childObj : GetChildren())
+        std::dynamic_pointer_cast<Bone>(childObj)->Save(child);
+}
 
-    void Bone::Load(const pugi::xml_node& node)
-    {
-        Node::Load(node);
-        SetPose(Matrix4(GetPosition(), GetOrientation(), GetScale()));
-        pugi::xml_node child = node.child("Bone");
-        while (child)
-        {
-            std::string name = child.attribute("name").as_string();
-            auto childBone = CreateChild<Bone>(name);
-            childBone->Load(child);
-            child = child.next_sibling("Bone");
-        }
-    }
+PBone Bone::Clone() const {
+    auto clone = std::make_shared<Bone>(GetName());
+    clone->SetPosition(GetPosition());
+    clone->SetOrientation(GetOrientation());
+    clone->SetScale(GetScale());
+    clone->SetPose(GetPose());
+    return clone;
+}
 
-    void Bone::Save(pugi::xml_node& node) const
-    {
-        pugi::xml_node child = node.append_child("Bone");
-        Node::Save(child);
-        for (auto childObj : GetChildren())
-            std::dynamic_pointer_cast<Bone>(childObj)->Save(child);
-    }
+size_t Bone::GetMaxPlatformBones(size_t nBones) {
+    // set a maximum value per platform to avoid shader variations
+    // LOGI("Number of bones=%d", nBones);
 
-    PBone Bone::Clone() const
-    {
-        auto clone = std::make_shared<Bone>(GetName());
-        clone->SetPosition(GetPosition());
-        clone->SetOrientation(GetOrientation());
-        clone->SetScale(GetScale());
-        clone->SetPose(GetPose());
-        return clone;
-    }
+    const size_t MAX_BONES0 = Bone::MaxBones;
+    const size_t MAX_BONES1 = 48;
+    static_assert(Bone::MaxBones > MAX_BONES1,
+                  "MaxBones has to be greater than MAX_BONES1");
+    const size_t MAX_BONES2 = 32;
 
-    size_t Bone::GetMaxPlatformBones(size_t nBones)
-    {
-        // set a maximum value per platform to avoid shader variations
-        //LOGI("Number of bones=%d", nBones);
-
-        const size_t MAX_BONES0 = Bone::MaxBones;
-        const size_t MAX_BONES1 = 48;
-        static_assert(Bone::MaxBones > MAX_BONES1, "MaxBones has to be greater than MAX_BONES1");
-        const size_t MAX_BONES2 = 32;
-
-        if (nBones <= MAX_BONES2)
-            return MAX_BONES1;
-        else if (nBones <= MAX_BONES1)
-            return MAX_BONES1;
-        else if (nBones <= MAX_BONES0)
-            return MAX_BONES0;
-        return nBones;
-    }
-
+    if (nBones <= MAX_BONES2)
+        return MAX_BONES1;
+    else if (nBones <= MAX_BONES1)
+        return MAX_BONES1;
+    else if (nBones <= MAX_BONES0)
+        return MAX_BONES0;
+    return nBones;
+}
 }

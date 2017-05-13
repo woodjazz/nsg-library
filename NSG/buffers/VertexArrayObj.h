@@ -24,43 +24,41 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "Object.h"
 #include "GLIncludes.h"
-#include <string>
+#include "Object.h"
+#include "Types.h"
 #include <map>
+#include <string>
 
-namespace NSG
-{
-	struct VAOKey
-	{
-		InstanceBuffer* instancesBuffer;
-		Program* program;
-		Mesh* mesh;
-        bool solid;
-		bool operator < (const VAOKey& obj) const;
-		std::string GetName() const;
-	};
+namespace NSG {
+struct VAOKey {
+    InstanceBuffer* instancesBuffer;
+    Program* program;
+    Mesh* mesh;
+    bool solid;
+    bool operator<(const VAOKey& obj) const;
+    std::string GetName() const;
+};
 
-    class VertexArrayObj : public Object
-    {
-    public:
-		VertexArrayObj(const VAOKey& key);
-        ~VertexArrayObj();
-        void Use();
-        void Bind();
-        static void Unbind();
-        static PVertexArrayObj GetOrCreate(const VAOKey& key);
-        static void Clear();
-    private:
-        bool IsValid() override;
-        void AllocateResources() override;
-        void ReleaseResources()	override;
-        GLuint vao_; // vertex array object
-        VAOKey key_;
-        SignalEmpty::PSlot slotProgramReleased_;
-        SignalEmpty::PSlot slotMeshReleased_;
-		typedef std::map<VAOKey, PVertexArrayObj> VAOMap;
-		static VAOMap vaoMap_;
-    };
+class VertexArrayObj : public Object {
+public:
+    VertexArrayObj(const VAOKey& key);
+    ~VertexArrayObj();
+    void Use();
+    void Bind();
+    static void Unbind();
+    static PVertexArrayObj GetOrCreate(const VAOKey& key);
+    static void Clear();
+
+private:
+    bool IsValid() override;
+    void AllocateResources() override;
+    void ReleaseResources() override;
+    GLuint vao_; // vertex array object
+    VAOKey key_;
+    SignalEmpty::PSlot slotProgramReleased_;
+    SignalEmpty::PSlot slotMeshReleased_;
+    typedef std::map<VAOKey, PVertexArrayObj> VAOMap;
+    static VAOMap vaoMap_;
+};
 }

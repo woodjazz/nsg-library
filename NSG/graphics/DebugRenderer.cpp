@@ -29,77 +29,60 @@ misrepresented as being the original software.
 #include "Vector3.h"
 #include <cmath>
 
-namespace NSG
-{
-    DebugRenderer::DebugRenderer()
-        : lines_(std::make_shared<LinesMesh>("DebugRenderer"))
-    {
+namespace NSG {
+DebugRenderer::DebugRenderer()
+    : lines_(std::make_shared<LinesMesh>("DebugRenderer")) {}
 
+DebugRenderer::~DebugRenderer() {}
+
+void DebugRenderer::AddLine(const Vector3& from, const Vector3& to,
+                            const Color& color) {
+    lines_->Add(from, to, color);
+}
+
+void DebugRenderer::AddSphere(const Vector3& center, float radius,
+                              const Color& color) {
+    const int Res = 8;
+    const int DoubleRes = Res * 2;
+    const float polarInc = PI / Res;          // ringAngle
+    const float azimInc = TWO_PI / DoubleRes; // segAngle
+
+    std::vector<Vector3> v;
+    v.reserve(DoubleRes * (Res + 1));
+
+    for (float i = 0; i < Res + 1; i++) {
+        float tr = sin(PI - i * polarInc);
+        float ny = cos(PI - i * polarInc);
+
+        for (float j = 0; j <= DoubleRes; j++) {
+            float nx = tr * sin(j * azimInc);
+            float nz = tr * cos(j * azimInc);
+            auto normal = center + radius * Vertex3(nx, ny, nz);
+            v.push_back(normal);
+        }
     }
 
-    DebugRenderer::~DebugRenderer()
-    {
+    const int Nr = DoubleRes + 1;
 
-    }
+    int index1, index2, index3;
 
-    void DebugRenderer::AddLine(const Vector3& from, const Vector3& to, const Color& color)
-    {
-    	lines_->Add(from, to, color);
-    }
+    // Triangles
+    // Front Face CCW
+    for (int iy = 0; iy < Res; iy++) {
+        for (int ix = 0; ix < DoubleRes; ix++) {
+            // first tri
+            if (iy > 0) {
+                index1 = (iy + 0) * (Nr) + (ix + 0);
+                index2 = (iy + 0) * (Nr) + (ix + 1);
+                index3 = (iy + 1) * (Nr) + (ix + 0);
 
-    void DebugRenderer::AddSphere(const Vector3& center, float radius, const Color& color)
-    {
-        const int Res = 8;
-        const int DoubleRes = Res * 2;
-        const float polarInc = PI / Res; // ringAngle
-        const float azimInc = TWO_PI / DoubleRes; // segAngle
-
-        std::vector<Vector3> v;
-        v.reserve(DoubleRes * (Res + 1));
-
-        for (float i = 0; i < Res + 1; i++)
-        {
-            float tr = sin( PI - i * polarInc );
-            float ny = cos( PI - i * polarInc );
-
-            for (float j = 0; j <= DoubleRes; j++)
-            {
-                float nx = tr * sin(j * azimInc);
-                float nz = tr * cos(j * azimInc);
-				auto normal = center + radius * Vertex3(nx, ny, nz);
-                v.push_back(normal);
+                AddLine(v[index1], v[index2], color);
+                AddLine(v[index2], v[index3], color);
+                AddLine(v[index3], v[index1], color);
             }
         }
-
-        const int Nr = DoubleRes + 1;
-
-        int index1, index2, index3;
-
-        // Triangles
-        // Front Face CCW
-        for (int iy = 0; iy < Res; iy++)
-        {
-            for (int ix = 0; ix < DoubleRes; ix++)
-            {
-                // first tri
-                if (iy > 0)
-                {
-                    index1 = (iy + 0) * (Nr) + (ix + 0);
-                    index2 = (iy + 0) * (Nr) + (ix + 1);
-                    index3 = (iy + 1) * (Nr) + (ix + 0);
-
-                    AddLine(v[index1], v[index2], color);
-                    AddLine(v[index2], v[index3], color);
-                    AddLine(v[index3], v[index1], color);
-                }
-            }
-        }
-
     }
+}
 
-    void DebugRenderer::Clear()
-    {
-        lines_->Clear();
-    }
-
+void DebugRenderer::Clear() { lines_->Clear(); }
 }

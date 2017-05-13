@@ -25,11 +25,6 @@ misrepresented as being the original software.
 */
 #include "GameObject.h"
 
-GameObject::GameObject()
-{
-}
+GameObject::GameObject() {}
 
-GameObject::~GameObject()
-{
-}
-
+GameObject::~GameObject() {}

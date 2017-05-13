@@ -25,54 +25,44 @@ misrepresented as being the original software.
 */
 #if defined(IS_TARGET_WINDOWS)
 #include "WinWindow.h"
+#include "AppConfiguration.h"
+#include "Check.h"
 #include "Engine.h"
-#include "Tick.h"
 #include "Keys.h"
 #include "Log.h"
-#include "Check.h"
-#include "UTF8String.h"
-#include "AppConfiguration.h"
 #include "Object.h"
 #include "Scene.h"
+#include "Tick.h"
+#include "UTF8String.h"
 #include "imgui.h"
-#include <memory>
-#include <string>
 #include <locale>
-#include <thread>
+#include <memory>
 #include <mutex>
+#include <string>
 #include <strsafe.h>
+#include <thread>
 #ifndef __GNUC__
 #include <codecvt>
 #endif
 
-namespace NSG
-{
+namespace NSG {
 WinWindow::WinWindow(const std::string& name, WindowFlags flags)
-    : Window(name),
-      flags_(0),
-      hwnd_(0)
-{
+    : Window(name), flags_(0), hwnd_(0) {
     const AppConfiguration& conf = Engine::GetPtr()->GetAppConfiguration();
     Initialize(conf.x_, conf.y_, conf.width_, conf.height_, flags);
     LOGI("Window %s created.", name_.c_str());
 }
 
-WinWindow::WinWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags)
-    : Window(name),
-      flags_(0),
-      hwnd_(0)
-{
+WinWindow::WinWindow(const std::string& name, int x, int y, int width,
+                     int height, WindowFlags flags)
+    : Window(name), flags_(0), hwnd_(0) {
     Initialize(x, y, width, height, flags);
     LOGI("Window %s created.", name_.c_str());
 }
 
-WinWindow::~WinWindow()
-{
-    Close();
-}
+WinWindow::~WinWindow() { Close(); }
 
-static HGLRC CreateContext(HDC hdc)
-{
+static HGLRC CreateContext(HDC hdc) {
     PIXELFORMATDESCRIPTOR pfd;
     memset(&pfd, 0, sizeof(pfd));
     pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
@@ -95,13 +85,9 @@ static HGLRC CreateContext(HDC hdc)
          "\tcColorBits %d\n"
          "\tcAlphaBits %d\n"
          "\tcDepthBits %d\n"
-         "\tcStencilBits %d\n"
-         , pfd.iPixelType
-         , pfd.cColorBits
-         , pfd.cAlphaBits
-         , pfd.cDepthBits
-         , pfd.cStencilBits
-        );
+         "\tcStencilBits %d\n",
+         pfd.iPixelType, pfd.cColorBits, pfd.cAlphaBits, pfd.cDepthBits,
+         pfd.cStencilBits);
 
     int result = SetPixelFormat(hdc, pixelFormat, &pfd);
     CHECK_ASSERT(0 != result && "SetPixelFormat failed");
@@ -115,10 +101,8 @@ static HGLRC CreateContext(HDC hdc)
     return context;
 }
 
-static int MapKeyCode(int keyCode)
-{
-    switch (keyCode)
-    {
+static int MapKeyCode(int keyCode) {
+    switch (keyCode) {
     case VK_LMENU:
         keyCode = NSG_KEY_LALT;
         break;
@@ -171,93 +155,78 @@ static int MapKeyCode(int keyCode)
     return keyCode;
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT id, WPARAM wparam, LPARAM lparam)
-{
+LRESULT CALLBACK WndProc(HWND hwnd, UINT id, WPARAM wparam, LPARAM lparam) {
     auto window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-    if (window)
-    {
-        switch (id)
-        {
-        case WM_CLOSE:
-        {
+    if (window) {
+        switch (id) {
+        case WM_CLOSE: {
             window->Close();
-        }
-        break;
-        case WM_SIZE:
-        {
+        } break;
+        case WM_SIZE: {
             auto width = LOWORD(lparam);
             auto height = HIWORD(lparam);
             if (width > 0 && height > 0)
                 window->ViewChanged(width, height);
-        }
-        break;
-        case WM_MOUSEMOVE:
-        {
+        } break;
+        case WM_MOUSEMOVE: {
             window->OnMouseMove(LOWORD(lparam), HIWORD(lparam));
-        }
-        break;
+        } break;
 
-        case WM_MOUSEWHEEL:
-        {
-            POINT pt = { LOWORD(lparam), HIWORD(lparam) };
+        case WM_MOUSEWHEEL: {
+            POINT pt = {LOWORD(lparam), HIWORD(lparam)};
             ScreenToClient(hwnd, &pt);
             auto mx = pt.x;
             auto my = pt.y;
             window->OnMouseWheel((float)mx, (float)my);
-        }
-        break;
+        } break;
 
         case WM_LBUTTONDOWN:
         case WM_MBUTTONDOWN:
-        case WM_RBUTTONDOWN:
-        {
+        case WM_RBUTTONDOWN: {
             auto mx = LOWORD(lparam);
             auto my = HIWORD(lparam);
-            auto button = id == WM_LBUTTONDOWN ? NSG_BUTTON_LEFT : (id == WM_MBUTTONDOWN ? NSG_BUTTON_MIDDLE : NSG_BUTTON_RIGHT);
+            auto button = id == WM_LBUTTONDOWN
+                              ? NSG_BUTTON_LEFT
+                              : (id == WM_MBUTTONDOWN ? NSG_BUTTON_MIDDLE
+                                                      : NSG_BUTTON_RIGHT);
             window->OnMouseDown(button, mx, my);
-        }
-        break;
+        } break;
 
         case WM_LBUTTONUP:
         case WM_MBUTTONUP:
-        case WM_RBUTTONUP:
-        {
+        case WM_RBUTTONUP: {
             auto mx = LOWORD(lparam);
             auto my = HIWORD(lparam);
-            auto button = id == WM_LBUTTONUP ? NSG_BUTTON_LEFT : (id == WM_MBUTTONUP ? NSG_BUTTON_MIDDLE : NSG_BUTTON_RIGHT);
+            auto button = id == WM_LBUTTONUP
+                              ? NSG_BUTTON_LEFT
+                              : (id == WM_MBUTTONUP ? NSG_BUTTON_MIDDLE
+                                                    : NSG_BUTTON_RIGHT);
             window->OnMouseUp(button, mx, my);
-        }
-        break;
+        } break;
         case WM_KEYDOWN:
-        case WM_SYSKEYDOWN:
-        {
+        case WM_SYSKEYDOWN: {
             int action = NSG_KEY_PRESS;
             int modifier = GetKeyState(VK_LSHIFT) ? NSG_KEY_MOD_SHIFT : 0;
             modifier |= GetKeyState(VK_LCONTROL) ? NSG_KEY_MOD_CONTROL : 0;
             modifier |= GetKeyState(VK_LMENU) ? NSG_KEY_MOD_ALT : 0;
             window->OnKey(MapKeyCode((int)wparam), action, modifier);
-        }
-        break;
+        } break;
         case WM_KEYUP:
-        case WM_SYSKEYUP:
-        {
+        case WM_SYSKEYUP: {
             int action = NSG_KEY_RELEASE;
             int modifier = GetKeyState(VK_LSHIFT) ? NSG_KEY_MOD_SHIFT : 0;
             modifier |= GetKeyState(VK_LCONTROL) ? NSG_KEY_MOD_CONTROL : 0;
             modifier |= GetKeyState(VK_LMENU) ? NSG_KEY_MOD_ALT : 0;
             window->OnKey(MapKeyCode((int)wparam), action, modifier);
-        }
-        break;
-        case WM_CHAR:
-        {
+        } break;
+        case WM_CHAR: {
             std::string text(1, (char)wparam);
             window->OnText(text);
             UTF8String utf8(text.c_str());
             unsigned unicode = utf8.AtUTF8(0);
             if (unicode)
                 window->OnChar(unicode);
-        }
-        break;
+        } break;
         default:
             break;
         }
@@ -265,8 +234,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT id, WPARAM wparam, LPARAM lparam)
     return DefWindowProc(hwnd, id, wparam, lparam);
 }
 
-void WinWindow::Initialize(int x, int y, int width, int height, WindowFlags flags)
-{
+void WinWindow::Initialize(int x, int y, int width, int height,
+                           WindowFlags flags) {
     HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(nullptr);
 
     WNDCLASSEXA wcx;
@@ -281,41 +250,28 @@ void WinWindow::Initialize(int x, int y, int width, int height, WindowFlags flag
     wcx.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
     wcx.lpszMenuName = "MainMenu";
     wcx.lpszClassName = name_.c_str();
-    wcx.hIconSm = (HICON)LoadImage(hInstance,
-                                   MAKEINTRESOURCE(5),
-                                   IMAGE_ICON,
-                                   GetSystemMetrics(SM_CXSMICON),
-                                   GetSystemMetrics(SM_CYSMICON),
-                                   LR_DEFAULTCOLOR);
+    wcx.hIconSm =
+        (HICON)LoadImage(hInstance, MAKEINTRESOURCE(5), IMAGE_ICON,
+                         GetSystemMetrics(SM_CXSMICON),
+                         GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
 
     auto result = RegisterClassExA(&wcx);
 
     CHECK_ASSERT(result && "RegisterClassExA failed!");
 
-    hwnd_ = CreateWindowA(wcx.lpszClassName
-                          , name_.c_str()
-                          , WS_OVERLAPPEDWINDOW |
-                          ((int)WindowFlag::SHOWN & flags ? WS_VISIBLE : 0)
-                          , 0
-                          , 0
-                          , width
-                          , height
-                          , nullptr
-                          , nullptr
-                          , hInstance
-                          , this
-                         );
+    hwnd_ = CreateWindowA(
+        wcx.lpszClassName, name_.c_str(),
+        WS_OVERLAPPEDWINDOW | ((int)WindowFlag::SHOWN & flags ? WS_VISIBLE : 0),
+        0, 0, width, height, nullptr, nullptr, hInstance, this);
 
-    SetWindowLongPtr(hwnd_, GWLP_USERDATA, (LONG_PTR)this);
+    SetWindowLongPtr(hwnd_, GWLP_USERDATA, (LONG_PTR) this);
 
-    if (Window::mainWindow_)
-    {
+    if (Window::mainWindow_) {
         isMainWindow_ = false;
-        // Do not create a new context. Instead, share the main window's context.
+        // Do not create a new context. Instead, share the main window's
+        // context.
         SetContext();
-    }
-    else
-    {
+    } else {
         HDC hdc = GetDC(hwnd_);
         CreateContext(hdc);
         Window::SetMainWindow(this);
@@ -324,27 +280,22 @@ void WinWindow::Initialize(int x, int y, int width, int height, WindowFlags flag
     SetSize(width, height);
 }
 
-void WinWindow::Close()
-{
+void WinWindow::Close() {
     Window::Close();
     UnregisterClassA(name_.c_str(), GetModuleHandle(nullptr));
 }
 
-void WinWindow::SetContext()
-{
+void WinWindow::SetContext() {
     auto context = wglGetCurrentContext();
     int result = wglMakeCurrent(wglGetCurrentDC(), context);
     CHECK_CONDITION(0 != result && "wglMakeCurrent failed!");
 }
 
-void WinWindow::Destroy()
-{
-    if (!isClosed_)
-    {
+void WinWindow::Destroy() {
+    if (!isClosed_) {
         isClosed_ = true;
         Window::NotifyOneWindow2Remove();
-        if (isMainWindow_)
-        {
+        if (isMainWindow_) {
             wglDeleteContext(wglGetCurrentContext());
             Window::SetMainWindow(nullptr);
         }
@@ -352,43 +303,25 @@ void WinWindow::Destroy()
     }
 }
 
-void WinWindow::SwapWindowBuffers()
-{
-    SwapBuffers(wglGetCurrentDC());
-}
+void WinWindow::SwapWindowBuffers() { SwapBuffers(wglGetCurrentDC()); }
 
-void WinWindow::HandleEvents()
-{
+void WinWindow::HandleEvents() {
     MSG msg;
-    if (PeekMessage(&msg, (HWND)nullptr, 0, 0, PM_REMOVE))
-    {
+    if (PeekMessage(&msg, (HWND) nullptr, 0, 0, PM_REMOVE)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
 }
 
-void WinWindow::Show()
-{
-    ShowWindow(hwnd_, SW_SHOW);
-}
+void WinWindow::Show() { ShowWindow(hwnd_, SW_SHOW); }
 
-void WinWindow::Hide()
-{
-    ShowWindow(hwnd_, SW_HIDE);
-}
+void WinWindow::Hide() { ShowWindow(hwnd_, SW_HIDE); }
 
-void WinWindow::Raise()
-{
-    SwitchToThisWindow(hwnd_, FALSE);
-}
+void WinWindow::Raise() { SwitchToThisWindow(hwnd_, FALSE); }
 
-void WinWindow::SetupImgui()
-{
-    Window::SetupImgui();
-}
+void WinWindow::SetupImgui() { Window::SetupImgui(); }
 
-void WinWindow::BeginImguiRender()
-{
+void WinWindow::BeginImguiRender() {
     ImGuiIO& io = ImGui::GetIO();
     io.ImeWindowHandle = hwnd_;
     // Hide OS mouse cursor if ImGui is drawing it

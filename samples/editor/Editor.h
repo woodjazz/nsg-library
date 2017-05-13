@@ -24,56 +24,56 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "GUI.h"
+#include "Types.h"
 #include "Window.h"
 using namespace NSG;
 struct ImDrawList;
-class Editor : public IRender
-{
+class Editor : public IRender {
 public:
-	Editor();
-	~Editor();
-	void SetCamera(PCamera camera);
-	void SetWindow(PWindow window);
-	void SetScene(PScene scene);
-	void SetNode(PNode node);
-	Node* GetNode() const;
-	PTexture GetMaterialPreview(PMaterial material);
-	PCamera GetEditorCamera() const { return editorCamera_; }
-	void Render() override;
-	void ShowGUIProperties(Node* node);
-	void ShowGUIProperties(SceneNode* node);
-	void ShowGUIProperties(Material* material);
-	void ShowGUIProperties(Light* light);
-	void ShowGUIProperties(Camera* camera);
+    Editor();
+    ~Editor();
+    void SetCamera(PCamera camera);
+    void SetWindow(PWindow window);
+    void SetScene(PScene scene);
+    void SetNode(PNode node);
+    Node* GetNode() const;
+    PTexture GetMaterialPreview(PMaterial material);
+    PCamera GetEditorCamera() const { return editorCamera_; }
+    void Render() override;
+    void ShowGUIProperties(Node* node);
+    void ShowGUIProperties(SceneNode* node);
+    void ShowGUIProperties(Material* material);
+    void ShowGUIProperties(Light* light);
+    void ShowGUIProperties(Camera* camera);
+
 private:
-	int GetSceneChildren(Node* node) const;
-	void ShowGUIHierarchy(Node* node);
-	void SetControl();
-	void ShowWindows();
-	void ShowGame();
-	void RenderGame();
-	void ShowScene();
-	void ShowHierachy();
-	void OnMouseDown(int button, float x, float y);
-	void ShowInspector();
-	PTexture GetScenePreview(Scene* scene, Camera* camera);
-	PTexture GetGamePreview(Scene* scene, Camera* camera);
-	PCameraControl control_;
-	PFrameBuffer previewFrameBuffer_;
-	PFrameBuffer sceneFrameBuffer_;
-	PFrameBuffer gameFrameBuffer_;
-	PWeakCamera camera_;
-	PWeakWindow window_;
-	PWeakScene scene_;
-	PWeakNode node_;
-	SignalMouseButton::PSlot slotMouseDown_;
-	PScene scenePreview_;
-	PSceneNode previewNode_;
-	bool isSceneHovered_;
-	PCamera editorCamera_;
-	PTexture gTexture_;
-	GUI editorGUI_;
-	GUI gameGUI_;
+    int GetSceneChildren(Node* node) const;
+    void ShowGUIHierarchy(Node* node);
+    void SetControl();
+    void ShowWindows();
+    void ShowGame();
+    void RenderGame();
+    void ShowScene();
+    void ShowHierachy();
+    void OnMouseDown(int button, float x, float y);
+    void ShowInspector();
+    PTexture GetScenePreview(Scene* scene, Camera* camera);
+    PTexture GetGamePreview(Scene* scene, Camera* camera);
+    PCameraControl control_;
+    PFrameBuffer previewFrameBuffer_;
+    PFrameBuffer sceneFrameBuffer_;
+    PFrameBuffer gameFrameBuffer_;
+    PWeakCamera camera_;
+    PWeakWindow window_;
+    PWeakScene scene_;
+    PWeakNode node_;
+    SignalMouseButton::PSlot slotMouseDown_;
+    PScene scenePreview_;
+    PSceneNode previewNode_;
+    bool isSceneHovered_;
+    PCamera editorCamera_;
+    PTexture gTexture_;
+    GUI editorGUI_;
+    GUI gameGUI_;
 };

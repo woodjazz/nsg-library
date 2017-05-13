@@ -29,9 +29,8 @@ misrepresented as being the original software.
 
 extern void TimedTaskTest();
 
-int NSG_MAIN(int argc, char* argv[])
-{
-	auto thread = std::thread([&](){TimedTaskTest(); });
-	thread.join();
-	return 0;
+int NSG_MAIN(int argc, char* argv[]) {
+    auto thread = std::thread([&]() { TimedTaskTest(); });
+    thread.join();
+    return 0;
 };

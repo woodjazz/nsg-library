@@ -32,81 +32,71 @@ static std::mt19937 mt(rd());
 static std::uniform_real_distribution<float> dist(0.0, TWO_PI);
 static const auto TEX_SIZE = 1 / 7.f;
 
-Explo::Explo(PSceneNode node)
-	: totalTime_(0),
-	alpha_(1)
-{
+Explo::Explo(PSceneNode node) : totalTime_(0), alpha_(1) {
     auto mesh = QuadMesh::GetNDC();
-	material_ = Material::Create();
-	texture_ = std::make_shared<Texture2D>(Resource::Get("data/explo.png"));
+    material_ = Material::Create();
+    texture_ = std::make_shared<Texture2D>(Resource::Get("data/explo.png"));
     material_->SetTexture(texture_);
     material_->SetRenderPass(RenderPass::UNLIT);
-	material_->EnableTransparent(true);
-    material_->SetBillboardType(BillboardType::SPHERICAL);//BillboardType::CYLINDRICAL_Z);
-	sprite_ = node->CreateChild<SceneNode>();
-	sprite_->Roll(dist(mt));
+    material_->EnableTransparent(true);
+    material_->SetBillboardType(
+        BillboardType::SPHERICAL); // BillboardType::CYLINDRICAL_Z);
+    sprite_ = node->CreateChild<SceneNode>();
+    sprite_->Roll(dist(mt));
     sprite_->Hide(true);
-	sprite_->SetMesh(mesh);
-	sprite_->SetMaterial(material_);
+    sprite_->SetMesh(mesh);
+    sprite_->SetMaterial(material_);
     uvTransform_ = Vector4(TEX_SIZE, TEX_SIZE, 0, 0);
-	texture_->SetUVTransform(uvTransform_);
+    texture_->SetUVTransform(uvTransform_);
     filter_ = Material::GetOrCreate("ShockWaveMaterial");
     filter_->SetRenderPass(RenderPass::SHOCKWAVE);
 }
 
-Explo::~Explo()
-{
+Explo::~Explo() {}
 
-}
-
-void Explo::Start()
-{
-    if(slotUpdate_)
+void Explo::Start() {
+    if (slotUpdate_)
         return;
-    
+
     sprite_->GetParent()->Hide(true, false);
     sprite_->Hide(false);
 
-    slotUpdate_ = Engine::GetPtr()->SigUpdate()->Connect([this](float deltaTime)
-    {
-        auto data = filter_->GetShockWaveFilter();
-        data.time_ += deltaTime * 0.3f;
-        if(data.time_ > 0.5f)
-        {
-            Level::GetCurrent()->GetCamera()->RemoveFilter(filter_);
-            data.time_ = 0;
-        }
-        filter_->SetFilterShockWave(data);
-
-        const auto fps = 1 / 24.f;
-        if (totalTime_ > fps)
-        {
-            totalTime_ = 0;
-            if (uvTransform_.z >= 1)
-            {
-                uvTransform_.z = 0;
-                uvTransform_.w += TEX_SIZE;
-                if (uvTransform_.w >= 1)
-                {
-                    uvTransform_.z = 0;
-                    uvTransform_.w = 0;
-                    filter_->SetFilterShockWave(ShockWaveFilter());
-                    auto obj = static_cast<GameObject*>(sprite_->GetParent()->GetUserData());
-                    auto p = obj->shared_from_this();
-					p->Destroyed();
-                    slotUpdate_ = nullptr;
-                    return;
-                }
+    slotUpdate_ =
+        Engine::GetPtr()->SigUpdate()->Connect([this](float deltaTime) {
+            auto data = filter_->GetShockWaveFilter();
+            data.time_ += deltaTime * 0.3f;
+            if (data.time_ > 0.5f) {
+                Level::GetCurrent()->GetCamera()->RemoveFilter(filter_);
+                data.time_ = 0;
             }
-            texture_->SetUVTransform(uvTransform_);
-            uvTransform_.z += TEX_SIZE;
-            if (uvTransform_.w >= 0.95f-TEX_SIZE)
-                alpha_ -= TEX_SIZE;
-            material_->SetAlpha(alpha_);
-        }
-        else
-            totalTime_ += deltaTime;
-    });
+            filter_->SetFilterShockWave(data);
+
+            const auto fps = 1 / 24.f;
+            if (totalTime_ > fps) {
+                totalTime_ = 0;
+                if (uvTransform_.z >= 1) {
+                    uvTransform_.z = 0;
+                    uvTransform_.w += TEX_SIZE;
+                    if (uvTransform_.w >= 1) {
+                        uvTransform_.z = 0;
+                        uvTransform_.w = 0;
+                        filter_->SetFilterShockWave(ShockWaveFilter());
+                        auto obj = static_cast<GameObject*>(
+                            sprite_->GetParent()->GetUserData());
+                        auto p = obj->shared_from_this();
+                        p->Destroyed();
+                        slotUpdate_ = nullptr;
+                        return;
+                    }
+                }
+                texture_->SetUVTransform(uvTransform_);
+                uvTransform_.z += TEX_SIZE;
+                if (uvTransform_.w >= 0.95f - TEX_SIZE)
+                    alpha_ -= TEX_SIZE;
+                material_->SetAlpha(alpha_);
+            } else
+                totalTime_ += deltaTime;
+        });
 
     Level::GetCurrent()->GetCamera()->AddFilter(filter_);
 

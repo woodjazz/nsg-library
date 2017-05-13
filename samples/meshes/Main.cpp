@@ -28,8 +28,8 @@ misrepresented as being the original software.
 using namespace NSG;
 PScene scene;
 
-std::pair<PSceneNode, PSceneNode> CreateObject(PMesh mesh, Color color, const Vector3& pos)
-{
+std::pair<PSceneNode, PSceneNode> CreateObject(PMesh mesh, Color color,
+                                               const Vector3& pos) {
     PSceneNode obj1;
     {
         auto obj = scene->CreateChild<SceneNode>();
@@ -58,8 +58,7 @@ std::pair<PSceneNode, PSceneNode> CreateObject(PMesh mesh, Color color, const Ve
     return std::pair<PSceneNode, PSceneNode>{obj1, obj2};
 }
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
     auto window = Window::Create();
     scene = std::make_shared<Scene>("scene");
@@ -68,20 +67,23 @@ int NSG_MAIN(int argc, char* argv[])
     camera->SetWindow(window);
     auto control = std::make_shared<CameraControl>(camera);
 
-
     CreateObject(Mesh::Create<PlaneMesh>(), Color(1, 0, 0), Vector3(-20, 0, 0));
-    CreateObject(Mesh::Create<CircleMesh>(), Color(0, 1, 0), Vector3(-10, 0, 0));
+    CreateObject(Mesh::Create<CircleMesh>(), Color(0, 1, 0),
+                 Vector3(-10, 0, 0));
     CreateObject(Mesh::Create<BoxMesh>(), Color(0, 0, 1), Vector3(0, 0, 0));
-    CreateObject(Mesh::Create<EllipseMesh>(), Color(1, 1, 0), Vector3(10, 0, 0));
-    CreateObject(Mesh::Create<RectangleMesh>(), Color(1, 0, 1), Vector3(20, 0, 0));
-    CreateObject(Mesh::Create<RoundedRectangleMesh>(), Color(1, 1, 1), Vector3(30, 0, 0));
+    CreateObject(Mesh::Create<EllipseMesh>(), Color(1, 1, 0),
+                 Vector3(10, 0, 0));
+    CreateObject(Mesh::Create<RectangleMesh>(), Color(1, 0, 1),
+                 Vector3(20, 0, 0));
+    CreateObject(Mesh::Create<RoundedRectangleMesh>(), Color(1, 1, 1),
+                 Vector3(30, 0, 0));
     CreateObject(Mesh::Create<SphereMesh>(), Color(0, 1, 1), Vector3(40, 0, 0));
-    auto obj = CreateObject(Mesh::Create<CylinderMesh>(), Color(0.5f, 0, 0), Vector3(50, 0, 0));
-    //control->AutoZoom();
+    auto obj = CreateObject(Mesh::Create<CylinderMesh>(), Color(0.5f, 0, 0),
+                            Vector3(50, 0, 0));
+    // control->AutoZoom();
     control->Track(obj.first);
     window->SetScene(scene);
     auto r = Engine::Create()->Run();
     scene = nullptr;
     return r;
 }
-

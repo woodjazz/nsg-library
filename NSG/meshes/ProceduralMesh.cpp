@@ -27,16 +27,12 @@ misrepresented as being the original software.
 #include "RenderingContext.h"
 #include "Window.h"
 
-namespace NSG
-{
-    ProceduralMesh::ProceduralMesh(const std::string& name, bool dynamic)
-        : Mesh(name, dynamic)
-    {
-    }
+namespace NSG {
+ProceduralMesh::ProceduralMesh(const std::string& name, bool dynamic)
+    : Mesh(name, dynamic) {}
 
-	bool ProceduralMesh::IsValid() 
-	{ 
-		auto mainWindow = Window::GetMainWindow();
-		return mainWindow && mainWindow->IsReady();
-	}
+bool ProceduralMesh::IsValid() {
+    auto mainWindow = Window::GetMainWindow();
+    return mainWindow && mainWindow->IsReady();
+}
 }

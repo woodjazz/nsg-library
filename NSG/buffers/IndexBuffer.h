@@ -27,20 +27,19 @@ misrepresented as being the original software.
 
 #include "Buffer.h"
 
-namespace NSG 
-{
-	class IndexBuffer : public Buffer
-	{
-	public:
-		IndexBuffer(GLenum usage);
-		IndexBuffer(const Indexes& indexes, GLenum usage);
-		~IndexBuffer();
-        void UpdateData();
-		void SetData(GLsizeiptr size, const GLvoid* data);
-		static void Unbind();
-    private:
-        void AllocateResources() override;
-        void ReleaseResources() override;
-        const Indexes& indexes_;
-	};
+namespace NSG {
+class IndexBuffer : public Buffer {
+public:
+    IndexBuffer(GLenum usage);
+    IndexBuffer(const Indexes& indexes, GLenum usage);
+    ~IndexBuffer();
+    void UpdateData();
+    void SetData(GLsizeiptr size, const GLvoid* data);
+    static void Unbind();
+
+private:
+    void AllocateResources() override;
+    void ReleaseResources() override;
+    const Indexes& indexes_;
+};
 }

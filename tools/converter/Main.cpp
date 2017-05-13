@@ -23,51 +23,37 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "tclap/CmdLine.h"
 #include "NSG.h"
 #include "TrueTypeConverter.h"
-#include <fstream>
+#include "tclap/CmdLine.h"
 #include <cstdint>
+#include <fstream>
 using namespace NSG;
-class IFileConstraint : public TCLAP::Constraint<std::string>
-{
+class IFileConstraint : public TCLAP::Constraint<std::string> {
 public:
-    IFileConstraint () {}
+    IFileConstraint() {}
 
-    std::string description() const
-    {
+    std::string description() const {
         return "Has to be a valid file (full path)";
     }
 
-    std::string shortID() const
-    {
-        return "Input file";
-    }
+    std::string shortID() const { return "Input file"; }
 
-    bool check(const std::string& filename) const
-    {
+    bool check(const std::string& filename) const {
         std::ifstream file(filename, std::ios::binary);
         return file.is_open();
     }
 };
 
-class OFileConstraint : public TCLAP::Constraint<std::string>
-{
+class OFileConstraint : public TCLAP::Constraint<std::string> {
 public:
-    OFileConstraint () {}
+    OFileConstraint() {}
 
-    std::string description() const
-    {
-        return "Has to be a valid directory";
-    }
+    std::string description() const { return "Has to be a valid directory"; }
 
-    std::string shortID() const
-    {
-        return "Output directory";
-    }
+    std::string shortID() const { return "Output directory"; }
 
-    bool check(const std::string& filename) const
-    {
+    bool check(const std::string& filename) const {
         Path path(filename);
         bool hasExtension = path.HasExtension();
         std::ofstream file(path.GetFullAbsoluteFilePath());
@@ -75,13 +61,11 @@ public:
     }
 };
 
-class BitmapPixelsConstraint : public TCLAP::Constraint<int>
-{
+class BitmapPixelsConstraint : public TCLAP::Constraint<int> {
 public:
-    BitmapPixelsConstraint() {};
+    BitmapPixelsConstraint(){};
 
-    std::string description() const
-    {
+    std::string description() const {
         stringstream ss;
 
         ss << "Must be equal or greater than 32";
@@ -91,19 +75,14 @@ public:
 
     std::string shortID() const { return "Bitmap pixels (width or height)"; }
 
-    bool check(const int& pixels) const
-    {
-        return pixels >= 32;
-    }
+    bool check(const int& pixels) const { return pixels >= 32; }
 };
 
-class FontPixelsConstraint : public TCLAP::Constraint<int>
-{
+class FontPixelsConstraint : public TCLAP::Constraint<int> {
 public:
-    FontPixelsConstraint() {};
+    FontPixelsConstraint(){};
 
-    std::string description() const
-    {
+    std::string description() const {
         stringstream ss;
 
         ss << "Must be equal or greater than 8";
@@ -113,19 +92,14 @@ public:
 
     std::string shortID() const { return "Font pixels height"; }
 
-    bool check(const int& pixels) const
-    {
-        return pixels >= 8;
-    }
+    bool check(const int& pixels) const { return pixels >= 8; }
 };
 
-class CharacterConstraint : public TCLAP::Constraint<int>
-{
+class CharacterConstraint : public TCLAP::Constraint<int> {
 public:
-    CharacterConstraint() {};
+    CharacterConstraint(){};
 
-    std::string description() const
-    {
+    std::string description() const {
         stringstream ss;
 
         ss << "Must be greater than 31";
@@ -135,40 +109,48 @@ public:
 
     std::string shortID() const { return "Character"; }
 
-    bool check(const int& ch) const
-    {
-        return ch > 31;
-    }
+    bool check(const int& ch) const { return ch > 31; }
 };
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
 
-    try
-    {
+    try {
         static const char* VERSION = "1.0";
 
         TCLAP::CmdLine cmd("NSG Converter", ' ', VERSION);
-		cmd.setExceptionHandling(false);
+        cmd.setExceptionHandling(false);
 
         IFileConstraint iConstraintFile;
-        TCLAP::ValueArg<std::string> iArg("i", "input", "Input file to be converted", false, "", &iConstraintFile);
+        TCLAP::ValueArg<std::string> iArg("i", "input",
+                                          "Input file to be converted", false,
+                                          "", &iConstraintFile);
 
         OFileConstraint oConstraintFile;
-        TCLAP::ValueArg<std::string> oArg("o", "output", "Output directory", false, "", &oConstraintFile);
+        TCLAP::ValueArg<std::string> oArg("o", "output", "Output directory",
+                                          false, "", &oConstraintFile);
 
         BitmapPixelsConstraint pixelsConstraint;
-        TCLAP::ValueArg<int> wArg("x", "width", "Bitmap width. By default is 512.", false, 512, &pixelsConstraint);
+        TCLAP::ValueArg<int> wArg("x", "width",
+                                  "Bitmap width. By default is 512.", false,
+                                  512, &pixelsConstraint);
 
-        TCLAP::ValueArg<int> hArg("y", "height", "Bitmap height. By default is 512.", false, 512, &pixelsConstraint);
+        TCLAP::ValueArg<int> hArg("y", "height",
+                                  "Bitmap height. By default is 512.", false,
+                                  512, &pixelsConstraint);
 
         FontPixelsConstraint fontPixelsConstraint;
-        TCLAP::ValueArg<int> fArg("f", "fheight", "Font height in pixels. By default is 32.", false, 32, &fontPixelsConstraint);
+        TCLAP::ValueArg<int> fArg("f", "fheight",
+                                  "Font height in pixels. By default is 32.",
+                                  false, 32, &fontPixelsConstraint);
 
         CharacterConstraint charConstraint;
-        TCLAP::ValueArg<int> sArg("s", "sChar", "Starting character to bake. By default is 32.", false, 32, &charConstraint);
-        TCLAP::ValueArg<int> eArg("e", "eChar", "Final character to bake. By default is 127.", false, 127, &charConstraint);
+        TCLAP::ValueArg<int> sArg(
+            "s", "sChar", "Starting character to bake. By default is 32.",
+            false, 32, &charConstraint);
+        TCLAP::ValueArg<int> eArg("e", "eChar",
+                                  "Final character to bake. By default is 127.",
+                                  false, 127, &charConstraint);
 
         TCLAP::SwitchArg zArg("z", "compress", "Compress the file.", false);
 
@@ -189,46 +171,38 @@ int NSG_MAIN(int argc, char* argv[])
         Path outputDir;
         outputDir.SetPath(oArg.getValue());
 
-		if (outputDir.HasPath() && inputFile.HasExtension())
-		{
-			if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) == "ttf")
-			{
-				int fontPixelsHeight = fArg.getValue();
-				int bitmapWidth = wArg.getValue();
-				int bitmapHeight = hArg.getValue();
-				int sChar = sArg.getValue();
-				int eChar = eArg.getValue();
-				TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight, bitmapWidth, bitmapHeight);
-				obj.Load();
-				CHECK_CONDITION(obj.Save(outputDir, zArg.getValue()));
-			}
-			else
-			{
-				LOGE("Cannot convert file. Unknown file extension");
-				return -1;
-			}
-		}
+        if (outputDir.HasPath() && inputFile.HasExtension()) {
+            if (Path::GetLowercaseFileExtension(inputFile.GetFilename()) ==
+                "ttf") {
+                int fontPixelsHeight = fArg.getValue();
+                int bitmapWidth = wArg.getValue();
+                int bitmapHeight = hArg.getValue();
+                int sChar = sArg.getValue();
+                int eChar = eArg.getValue();
+                TrueTypeConverter obj(inputFile, sChar, eChar, fontPixelsHeight,
+                                      bitmapWidth, bitmapHeight);
+                obj.Load();
+                CHECK_CONDITION(obj.Save(outputDir, zArg.getValue()));
+            } else {
+                LOGE("Cannot convert file. Unknown file extension");
+                return -1;
+            }
+        }
         return 0;
-    }
-    catch (TCLAP::ArgException& e)
-    {
-        std::cerr << endl << "error: " << e.error() << " for arg " << e.argId() << std::endl;
-    }
-    catch (std::exception& e)
-    {
+    } catch (TCLAP::ArgException& e) {
+        std::cerr << endl
+                  << "error: " << e.error() << " for arg " << e.argId()
+                  << std::endl;
+    } catch (std::exception& e) {
         const char* pWhat = "*** UNKNOWN EXCEPTION (1) ***";
 
         if (!string(e.what()).empty())
             pWhat = e.what();
 
         std::cerr << endl << "error: " << pWhat << std::endl;
-    }
-	catch (TCLAP::ExitException& e)
-	{
-		return e.getExitStatus();
-	}
-    catch (...)
-    {
+    } catch (TCLAP::ExitException& e) {
+        return e.getExitStatus();
+    } catch (...) {
         std::cerr << endl << "*** UNKNOWN EXCEPTION (2) *** " << endl;
     }
 

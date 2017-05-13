@@ -26,47 +26,29 @@ misrepresented as being the original software.
 #pragma once
 #include <memory>
 
-namespace NSG
-{
-	template<typename T>
-	class Singleton
-	{
-	public:
+namespace NSG {
+template <typename T> class Singleton {
+public:
+    static std::shared_ptr<T> Create() {
+        if (!p_.lock()) {
+            auto p = std::shared_ptr<T>(new T);
+            p_ = p;
+            return p;
+        } else
+            return p_.lock();
+    }
 
-        static std::shared_ptr<T> Create()
-		{
-            if(!p_.lock())
-            {
-                auto p = std::shared_ptr<T>(new T);
-                p_ = p;
-                return p;
-            }
-            else
-                return p_.lock();
-	    }
+    inline static T* GetPtr() { return p_.lock().get(); }
 
-		inline static T* GetPtr()
-		{
-            return p_.lock().get();
-	    }
+    inline static std::shared_ptr<T> GetSharedPtr() { return p_.lock(); }
 
-		inline static std::shared_ptr<T> GetSharedPtr()
-		{
-			return p_.lock();
-		}
+protected:
+    Singleton() {}
 
-	protected:
-		Singleton()
-		{
-		}
+    ~Singleton() { p_.reset(); }
 
-		~Singleton()
-		{
-			p_.reset();
-		}
+    static std::weak_ptr<T> p_;
+};
 
-        static std::weak_ptr<T> p_;
-	};
-
-    template<typename T> std::weak_ptr<T> Singleton<T>::p_;
+template <typename T> std::weak_ptr<T> Singleton<T>::p_;
 }

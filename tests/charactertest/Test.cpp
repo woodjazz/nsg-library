@@ -26,11 +26,10 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-static PCharacter SetupScene(PScene scene)
-{
+static PCharacter SetupScene(PScene scene) {
     scene->SetAmbientColor(Color(0.f));
     auto materialFloor = Material::Create();
-	materialFloor->SetRenderPass(RenderPass::LIT);
+    materialFloor->SetRenderPass(RenderPass::LIT);
     materialFloor->SetDiffuseColor(Color(0.1f));
     materialFloor->CastShadow(false);
     auto boxMesh(Mesh::Create<BoxMesh>());
@@ -46,7 +45,7 @@ static PCharacter SetupScene(PScene scene)
     body->AddShape(floorShape);
 
     auto materialBox = Material::Create();
-	materialBox->SetRenderPass(RenderPass::LIT);
+    materialBox->SetRenderPass(RenderPass::LIT);
     materialBox->SetDiffuseColor(Color::Red);
 
     auto nodeBox = scene->CreateChild<SceneNode>("Player");
@@ -57,13 +56,14 @@ static PCharacter SetupScene(PScene scene)
     nodeBox->SetPosition(Vertex3(0, 6, 5));
     auto controller = nodeBox->GetOrCreateCharacter();
     std::swap(characterScale.y, characterScale.z);
-    auto controllerShape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_BOX, characterScale));
+    auto controllerShape =
+        Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_BOX, characterScale));
     controllerShape->SetBB(BoundingBox(-1, 1));
     auto q = Quaternion(Radians(90.f), Vertex3(1, 0, 0));
     controller->AddShape(controllerShape, Vector3::Zero, q);
 
     auto materialObstacle = Material::Create();
-	materialObstacle->SetRenderPass(RenderPass::LIT);
+    materialObstacle->SetRenderPass(RenderPass::LIT);
     materialObstacle->SetDiffuseColor(Color::Red);
 
     {
@@ -126,52 +126,38 @@ static PCharacter SetupScene(PScene scene)
     light->SetGlobalLookAtDirection(Vector3(0, -1, 0));
     light->SetShadowColor(Color(0, 1, 0, 1));
 
-    //static auto followCamera = std::make_shared<FollowCamera>(camera);
-    //followCamera->Track(controller.get(), 10);
+    // static auto followCamera = std::make_shared<FollowCamera>(camera);
+    // followCamera->Track(controller.get(), 10);
 
     return controller;
 }
 
-static void Test01()
-{
+static void Test01() {
     static auto scene = std::make_shared<Scene>();
     static auto character = SetupScene(scene);
-    static auto window = Window::Create("0", 0, 0, 320, 200, (int)WindowFlag::HIDDEN);
+    static auto window =
+        Window::Create("0", 0, 0, 320, 200, (int)WindowFlag::HIDDEN);
     window->SetScene(scene);
 
-    struct GoForward : FSM::State
-    {
-        void Stay() override
-        {
+    struct GoForward : FSM::State {
+        void Stay() override {
             character->SetForwardSpeed(5);
             character->SetAngularSpeed(0);
         }
     } forward;
 
-    struct TurnRight : FSM::State
-    {
-		void Begin() override
-		{
-			character->Rotate(-90);
-		}
-        void Stay() override
-        {
-            character->SetForwardSpeed(0);
-        }
+    struct TurnRight : FSM::State {
+        void Begin() override { character->Rotate(-90); }
+        void Stay() override { character->SetForwardSpeed(0); }
     } turnRight;
 
-    struct Exit : FSM::State
-    {
-        void Begin() override
-        {
-            window = nullptr;
-        }
+    struct Exit : FSM::State {
+        void Begin() override { window = nullptr; }
     } exit;
 
     static auto goal = scene->GetChild<SceneNode>("Obstacle2", false);
     FSM::Machine fsm(forward);
-    auto ExitFunc = [&]()
-    {
+    auto ExitFunc = [&]() {
         auto collider = character->StepForwardCollides();
         return collider && goal.get() == collider->GetSceneNode();
     };
@@ -179,15 +165,16 @@ static void Test01()
     turnRight.AddTransition(exit).When([&]() { return ExitFunc(); });
     forward.AddTransition(exit).When([&]() { return ExitFunc(); });
 
-	forward.AddTransition(turnRight).When([&]() { return nullptr != character->StepForwardCollides(); });
-	turnRight.AddTransition(forward).When([&]() { return nullptr == character->StepForwardCollides(); });
+    forward.AddTransition(turnRight).When(
+        [&]() { return nullptr != character->StepForwardCollides(); });
+    turnRight.AddTransition(forward).When(
+        [&]() { return nullptr == character->StepForwardCollides(); });
 
     fsm.Go();
     Engine::Create()->Run();
 }
 
-static void Test02()
-{
+static void Test02() {
     auto scene = std::make_shared<Scene>();
     auto character = SetupScene(scene);
     auto window = Window::Create();
@@ -199,19 +186,15 @@ static void Test02()
 
     auto playerControl = std::make_shared<PlayerControl>(window);
 
-    auto slotMoved = playerControl->SigMoved()->Connect([&](float x, float y)
-    {
+    auto slotMoved = playerControl->SigMoved()->Connect([&](float x, float y) {
         speed = y;
         turn = -x;
     });
 
-    auto slotButtonA = playerControl->SigButtonA()->Connect([&](bool pressed)
-    {
-        buttonA = pressed;
-    });
+    auto slotButtonA = playerControl->SigButtonA()->Connect(
+        [&](bool pressed) { buttonA = pressed; });
 
-    auto slotUpdate = Engine::SigUpdate()->Connect([&](float deltaTime)
-    {
+    auto slotUpdate = Engine::SigUpdate()->Connect([&](float deltaTime) {
         character->SetForwardSpeed(5 * speed);
         character->SetAngularSpeed(turn * 90);
         if (buttonA)
@@ -223,8 +206,7 @@ static void Test02()
     engine->Run();
 }
 
-void Test()
-{
+void Test() {
     Test01();
-    //Test02();
+    // Test02();
 }

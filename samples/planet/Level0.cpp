@@ -20,14 +20,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Level0.h"
-#include "Planet.h"
-#include "Sun.h"
 #include "Enemy.h"
+#include "Planet.h"
 #include "Player.h"
+#include "Sun.h"
 
-Level0::Level0(PWindow window)
-    : Level(window)
-{
+Level0::Level0(PWindow window) : Level(window) {
     scene_ = std::make_shared<Scene>("Level1");
     scene_->SetAmbientColor(Color(0.1f));
     AddObject(std::make_shared<Planet>(scene_));
@@ -38,26 +36,20 @@ Level0::Level0(PWindow window)
     camera_->SetPosition(Vertex3(0, 0, 10));
     camera_->SetWindow(window);
     window->SetScene(scene_);
-    //control_ = std::make_shared<CameraControl>(camera_);
+    // control_ = std::make_shared<CameraControl>(camera_);
 }
 
-Level0::~Level0()
-{
-}
+Level0::~Level0() {}
 
-void Level0::GenerateEnemies()
-{
+void Level0::GenerateEnemies() {
     int total = 0;
-    for(int i=0; i<10; i++)
-    {
-        for(int j=0; j<10; j++)
-        {
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
             ++total;
             auto enemy = std::make_shared<Enemy>(scene_);
-            enemy->SetPosition(-PI10 * (i+1), PI10 * j);
+            enemy->SetPosition(-PI10 * (i + 1), PI10 * j);
             AddObject(enemy);
         }
     }
     Enemy::SetTotal(total);
-
 }

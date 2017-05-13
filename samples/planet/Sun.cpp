@@ -26,21 +26,16 @@ misrepresented as being the original software.
 #include "Sun.h"
 #include "Planet.h"
 
-Sun::Sun(PScene scene)
-: sun_(scene->CreateChild<Light>())
-{
+Sun::Sun(PScene scene) : sun_(scene->CreateChild<Light>()) {
     sun_->EnableShadows(false);
-    //auto material(Material::Create());
-    //material->SetRenderPass(RenderPass::LIT);
-    //material->SetDiffuseColor(ColorRGB(1, 0, 0));
-    //sun_->SetMaterial(material);
-    //sun_->SetMesh(Planet::GetMesh());
-    //sun_->SetPosition(Vertex3(10, 10, 10));
+    // auto material(Material::Create());
+    // material->SetRenderPass(RenderPass::LIT);
+    // material->SetDiffuseColor(ColorRGB(1, 0, 0));
+    // sun_->SetMaterial(material);
+    // sun_->SetMesh(Planet::GetMesh());
+    // sun_->SetPosition(Vertex3(10, 10, 10));
     sun_->SetType(LightType::DIRECTIONAL);
     sun_->SetGlobalLookAtDirection(Vector3(-0.3f, 0.4f, 1));
 }
 
-Sun::~Sun()
-{
-
-}
+Sun::~Sun() {}

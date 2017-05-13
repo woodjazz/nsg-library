@@ -26,17 +26,15 @@ misrepresented as being the original software.
 #pragma once
 #include "RectangleMesh.h"
 
-namespace NSG
-{
-	class QuadMesh : public RectangleMesh
-	{
-	public:
-		QuadMesh(const std::string& name);
-		~QuadMesh();
-		void Set(float size = 2);
-		PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
-		static PQuadMesh GetNDC(); //NDC = Normalized screen coordinates
-	private:
-		float size_;
-	};
+namespace NSG {
+class QuadMesh : public RectangleMesh {
+public:
+    QuadMesh(const std::string& name);
+    ~QuadMesh();
+    void Set(float size = 2);
+    PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
+    static PQuadMesh GetNDC(); // NDC = Normalized screen coordinates
+private:
+    float size_;
+};
 }

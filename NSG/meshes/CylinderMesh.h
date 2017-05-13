@@ -26,26 +26,26 @@ misrepresented as being the original software.
 #pragma once
 #include "ProceduralMesh.h"
 
-namespace NSG
-{
-	class CylinderMesh : public ProceduralMesh
-	{
-	public:
-		CylinderMesh(const std::string& name);
-		~CylinderMesh();
-		void Set(float radius = 0.5f, float height = 1, int rings = 8, bool capped = true);
-		void SetOrientation(const Quaternion& q);
-		GLenum GetWireFrameDrawMode() const override;
-		GLenum GetSolidDrawMode() const override;
-		size_t GetNumberOfTriangles() const override;
-        void AllocateResources() override;
-        PhysicsShape GetShapeType() const override { return SH_CYLINDER_Y; }
-	private:
-		float radius_;
-		float height_;
-		int rings_;
-		bool capped_;
-		Quaternion q_;
-		friend class App;
-	};
+namespace NSG {
+class CylinderMesh : public ProceduralMesh {
+public:
+    CylinderMesh(const std::string& name);
+    ~CylinderMesh();
+    void Set(float radius = 0.5f, float height = 1, int rings = 8,
+             bool capped = true);
+    void SetOrientation(const Quaternion& q);
+    GLenum GetWireFrameDrawMode() const override;
+    GLenum GetSolidDrawMode() const override;
+    size_t GetNumberOfTriangles() const override;
+    void AllocateResources() override;
+    PhysicsShape GetShapeType() const override { return SH_CYLINDER_Y; }
+
+private:
+    float radius_;
+    float height_;
+    int rings_;
+    bool capped_;
+    Quaternion q_;
+    friend class App;
+};
 }

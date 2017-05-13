@@ -26,76 +26,73 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
+static void Test01() {
+    PointOnSphere sphere;
 
-static void Test01()
-{
-	PointOnSphere sphere;
+    {
+        Vertex3 position(0, 0, 10);
+        Vertex3 center(0);
 
-	{
-		Vertex3 position(0, 0, 10);
-		Vertex3 center(0);
+        sphere.SetCenterAndPoint(center, position);
 
-		sphere.SetCenterAndPoint(center, position);
+        CHECK_CONDITION(position.Distance(sphere.GetPoint()) < PRECISION);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+    }
 
-		CHECK_CONDITION(position.Distance(sphere.GetPoint()) < PRECISION);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
-	}
+    {
+        Vertex3 position(0, 0, 10);
+        Vertex3 center(0, 0, 9);
 
-	{
-		Vertex3 position(0, 0, 10);
-		Vertex3 center(0, 0, 9);
+        sphere.SetCenterAndPoint(center, position);
 
-		sphere.SetCenterAndPoint(center, position);
+        CHECK_CONDITION(position.Distance(sphere.GetPoint()) < PRECISION);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
 
-		CHECK_CONDITION(position.Distance(sphere.GetPoint()) < PRECISION);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+        sphere.IncAngles(PI, 0);
 
-		sphere.IncAngles(PI, 0);
+        CHECK_CONDITION(Vertex3(0, 0, 8).Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
 
-		CHECK_CONDITION(Vertex3(0, 0, 8).Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+        sphere.IncAngles(PI, 0);
 
-		sphere.IncAngles(PI, 0);
+        CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+    }
 
-		CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
-	}
+    {
+        Vertex3 position(0, 0, 10);
+        Vertex3 center(0, 0, 9);
 
-	{
-		Vertex3 position(0, 0, 10);
-		Vertex3 center(0, 0, 9);
+        sphere.SetCenterAndPoint(center, position);
 
-		sphere.SetCenterAndPoint(center, position);
+        CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+        CHECK_CONDITION(sphere.GetUp().z < -0.4f);
 
-		CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
-		CHECK_CONDITION(sphere.GetUp().z < -0.4f);
+        sphere.IncAngles(0, PI / 2);
 
-		sphere.IncAngles(0, PI / 2);
+        CHECK_CONDITION(Vertex3(0, -1, 9).Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.4f);
+        CHECK_CONDITION(sphere.GetUp().z > 0.8f);
 
-		CHECK_CONDITION(Vertex3(0, -1, 9).Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.4f);
-		CHECK_CONDITION(sphere.GetUp().z > 0.8f);
+        sphere.IncAngles(0, PI / 2);
 
-		sphere.IncAngles(0, PI / 2);
+        CHECK_CONDITION(Vertex3(0, 0, 8).Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y < -0.8f);
+        CHECK_CONDITION(sphere.GetUp().z > 0.4f);
 
-		CHECK_CONDITION(Vertex3(0, 0, 8).Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y < -0.8f);
-		CHECK_CONDITION(sphere.GetUp().z > 0.4f);
+        sphere.IncAngles(0, PI / 2);
 
-		sphere.IncAngles(0, PI / 2);
+        CHECK_CONDITION(Vertex3(0, 1, 9).Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y < -0.4f);
+        CHECK_CONDITION(sphere.GetUp().z < -0.8f);
 
-		CHECK_CONDITION(Vertex3(0, 1, 9).Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y < -0.4f);
-		CHECK_CONDITION(sphere.GetUp().z < -0.8f);
+        sphere.IncAngles(0, PI / 2);
 
-		sphere.IncAngles(0, PI / 2);
-
-		CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
-		CHECK_CONDITION(sphere.GetUp().z < -0.4f);
-
-	}
+        CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+        CHECK_CONDITION(sphere.GetUp().z < -0.4f);
+    }
 #if 0
 	{
 		for (int i = 0; i < 5000; i++)
@@ -109,103 +106,95 @@ static void Test01()
 		}
 	}
 #endif
-	{
-		Vertex3 position(0, 0, 10);
-		Vertex3 center(1, 0, 10);
+    {
+        Vertex3 position(0, 0, 10);
+        Vertex3 center(1, 0, 10);
 
-		sphere.SetCenterAndPoint(center, position);
+        sphere.SetCenterAndPoint(center, position);
 
-		CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+        CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
 
-		sphere.IncAngles(PI, 0);
+        sphere.IncAngles(PI, 0);
 
-		CHECK_CONDITION(Vertex3(2, 0, 10).Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+        CHECK_CONDITION(Vertex3(2, 0, 10).Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
 
-		sphere.IncAngles(PI, 0);
+        sphere.IncAngles(PI, 0);
 
-		CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+        CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+    }
 
-	}
+    {
+        Vertex3 position(0, 0, 10);
+        Vertex3 center(0, 0, 9);
 
+        sphere.SetCenterAndPoint(center, position);
 
-	{
-		Vertex3 position(0, 0, 10);
-		Vertex3 center(0, 0, 9);
+        CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
 
-		sphere.SetCenterAndPoint(center, position);
+        sphere.IncAngles(PI / 2, 0);
 
-		CHECK_CONDITION(position.Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+        CHECK_CONDITION(Vertex3(-1, 0, 9).Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
 
-		sphere.IncAngles(PI/2, 0);
+        sphere.IncAngles(PI / 2, 0);
 
-		CHECK_CONDITION(Vertex3(-1, 0, 9).Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+        CHECK_CONDITION(Vertex3(0, 0, 8).Distance(sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+    }
 
-		sphere.IncAngles(PI / 2, 0);
+    {
+        Vertex3 position(1, 0, 10);
+        Vertex3 center(-20, 0, 5);
 
-		CHECK_CONDITION(Vertex3(0, 0, 8).Distance(sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
-	}
+        sphere.SetCenterAndPoint(center, position);
 
+        CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+    }
 
+    {
+        Vertex3 position = Vector3(0.1f, 0, 10);
+        Vertex3 center(0);
 
-	{
-		Vertex3 position(1, 0, 10);
-		Vertex3 center(-20, 0, 5);
+        sphere.SetCenterAndPoint(center, position);
 
-		sphere.SetCenterAndPoint(center, position);
+        CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+    }
 
-		CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
-	}
+    {
+        Vertex3 position = Vector3(1, 0, -10);
+        Vertex3 center = Vector3(10, 10, 10);
 
+        sphere.SetCenterAndPoint(center, position);
 
-	{
-		Vertex3 position = Vector3(0.1f, 0, 10);
-		Vertex3 center(0);
+        CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+    }
 
-		sphere.SetCenterAndPoint(center, position);
+    {
+        Vertex3 position = Vector3(10, 1, 5);
+        Vertex3 center = Vector3(0);
 
-		CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
-	}
+        sphere.SetCenterAndPoint(center, position);
 
-	{
-		Vertex3 position = Vector3(1, 0, -10);
-		Vertex3 center = Vector3(10, 10, 10);
+        CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+    }
 
-		sphere.SetCenterAndPoint(center, position);
+    {
+        Vertex3 position = Vector3(0, 0, 5);
+        Vertex3 center = Vector3(0);
 
-		CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
-	}
+        sphere.SetCenterAndPoint(center, position);
 
-	{
-		Vertex3 position = Vector3(10, 1, 5);
-		Vertex3 center = Vector3(0);
-
-		sphere.SetCenterAndPoint(center, position);
-
-		CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
-	}
-
-	{
-		Vertex3 position = Vector3(0, 0, 5);
-		Vertex3 center = Vector3(0);
-
-		sphere.SetCenterAndPoint(center, position);
-
-		CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
-		CHECK_CONDITION(sphere.GetUp().y > 0.8f);
-	}
+        CHECK_CONDITION(Distance(position, sphere.GetPoint()) < 0.05f);
+        CHECK_CONDITION(sphere.GetUp().y > 0.8f);
+    }
 }
 
-void Tests()
-{
-    Test01();
-}
+void Tests() { Test01(); }

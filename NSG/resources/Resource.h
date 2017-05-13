@@ -24,35 +24,38 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "Object.h"
-#include "WeakFactory.h"
+#include "Types.h"
 #include "Util.h"
+#include "WeakFactory.h"
 #include <string>
 
-namespace NSG
-{
-	class Resource : public Object, public WeakFactory<std::string, Resource>, public std::enable_shared_from_this<Resource>
-	{
-	public:
-		Resource(const std::string& name);
-		virtual ~Resource();
-		void SetBuffer(const std::string& buffer) { buffer_ = buffer; }
-        const char* GetData() const { return buffer_.c_str(); }
-		int GetBytes() const;
-        void ReleaseResources() override;
-		const std::string& GetBuffer() const { return buffer_; }
-		void SaveExternal(pugi::xml_node& node, const Path& path, const Path& outputDir);
-		void Save(pugi::xml_node& node);
-		const std::string& GetName() const { return name_; }
-		void SetSerializable(bool serializable);
-		bool IsSerializable() const;
-		void SetName(const std::string& name);
-        static void SaveResources(pugi::xml_node& node);
-		static void SaveResourcesExternally(pugi::xml_node& node, const Path& path, const Path& outputDir);
-		void Load(const pugi::xml_node& node) override;
-	protected:
-		std::string buffer_;
-		bool serializable_;
-	};
+namespace NSG {
+class Resource : public Object,
+                 public WeakFactory<std::string, Resource>,
+                 public std::enable_shared_from_this<Resource> {
+public:
+    Resource(const std::string& name);
+    virtual ~Resource();
+    void SetBuffer(const std::string& buffer) { buffer_ = buffer; }
+    const char* GetData() const { return buffer_.c_str(); }
+    int GetBytes() const;
+    void ReleaseResources() override;
+    const std::string& GetBuffer() const { return buffer_; }
+    void SaveExternal(pugi::xml_node& node, const Path& path,
+                      const Path& outputDir);
+    void Save(pugi::xml_node& node);
+    const std::string& GetName() const { return name_; }
+    void SetSerializable(bool serializable);
+    bool IsSerializable() const;
+    void SetName(const std::string& name);
+    static void SaveResources(pugi::xml_node& node);
+    static void SaveResourcesExternally(pugi::xml_node& node, const Path& path,
+                                        const Path& outputDir);
+    void Load(const pugi::xml_node& node) override;
+
+protected:
+    std::string buffer_;
+    bool serializable_;
+};
 }

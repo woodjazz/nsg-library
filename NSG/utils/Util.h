@@ -24,25 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "Color.h"
+#include "Quaternion.h"
 #include "Types.h"
 #include "Vector3.h"
-#include "Quaternion.h"
-#include "Color.h"
 #include <string>
 
 class btQuaternion;
 class btVector3;
 class btTransform;
-namespace NSG
-{
-	btTransform ToTransform(const Vector3& pos, const Quaternion& rot);
-	btVector3 ToBtVector3(const Vector3& obj);
-	Vector3 ToVector3(const btVector3& obj);
-	btQuaternion ToBtQuaternion(const Quaternion& q);
-	Quaternion ToQuaternion(const btQuaternion& q);
-	std::string GetUniqueName(const std::string& name = "");
-    unsigned short Transform(unsigned char selected[4]);
-    Color Transform(unsigned short id);
-	std::string CompressBuffer(const std::string& buf);
-	std::string DecompressBuffer(const std::string& buffer);
+namespace NSG {
+btTransform ToTransform(const Vector3& pos, const Quaternion& rot);
+btVector3 ToBtVector3(const Vector3& obj);
+Vector3 ToVector3(const btVector3& obj);
+btQuaternion ToBtQuaternion(const Quaternion& q);
+Quaternion ToQuaternion(const btQuaternion& q);
+std::string GetUniqueName(const std::string& name = "");
+unsigned short Transform(unsigned char selected[4]);
+Color Transform(unsigned short id);
+std::string CompressBuffer(const std::string& buf);
+std::string DecompressBuffer(const std::string& buffer);
 }

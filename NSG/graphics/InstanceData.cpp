@@ -25,9 +25,6 @@ misrepresented as being the original software.
 */
 #include "InstanceData.h"
 
-namespace NSG
-{
-    InstanceData::InstanceData()
-    {
-    }
+namespace NSG {
+InstanceData::InstanceData() {}
 }

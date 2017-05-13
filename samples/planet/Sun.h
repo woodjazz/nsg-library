@@ -24,14 +24,14 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "NSG.h"
 #include "GameObject.h"
+#include "NSG.h"
 using namespace NSG;
-class Sun : public GameObject
-{
+class Sun : public GameObject {
 public:
-	Sun(PScene scene);
-	~Sun();
+    Sun(PScene scene);
+    ~Sun();
+
 private:
-	PLight sun_;
+    PLight sun_;
 };

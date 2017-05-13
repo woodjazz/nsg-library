@@ -24,64 +24,46 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Batch.h"
+#include "Check.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "SceneNode.h"
-#include "RenderingContext.h"
-#include "RenderingCapabilities.h"
 #include "Pass.h"
+#include "RenderingCapabilities.h"
+#include "RenderingContext.h"
 #include "RigidBody.h"
-#include "Check.h"
+#include "SceneNode.h"
 
-namespace NSG
-{
-	Batch::Batch()
-		: material_(nullptr),
-		mesh_(nullptr),
-		allowInstancing_(true)
-	{
+namespace NSG {
+Batch::Batch() : material_(nullptr), mesh_(nullptr), allowInstancing_(true) {}
 
-	}
+Batch::Batch(Material* material, Mesh* mesh)
+    : material_(material), mesh_(mesh), allowInstancing_(true) {
+    CHECK_ASSERT(material_ && mesh_);
+}
 
-	Batch::Batch(Material* material, Mesh* mesh)
-		: material_(material),
-		mesh_(mesh),
-		allowInstancing_(true)
-	{
-		CHECK_ASSERT(material_ && mesh_);
-	}
+Batch::~Batch() {}
 
-	Batch::~Batch()
-	{
-	}
+bool Batch::operator==(const Batch& obj) const {
+    return material_ == obj.material_ && mesh_ == obj.mesh_ &&
+           nodes_ == obj.nodes_;
+}
 
-	bool Batch::operator == (const Batch& obj) const
-	{
-		return material_ == obj.material_ && mesh_ == obj.mesh_ && nodes_ == obj.nodes_;
-	}
+bool Batch::IsReady() { return material_->IsReady() && mesh_->IsReady(); }
 
-	bool Batch::IsReady()
-	{
-		return material_->IsReady() && mesh_->IsReady();
-	}
+void Batch::Add(SceneNode* node) {
+    allowInstancing_ &= !node->GetArmature();
+    nodes_.push_back(node);
+}
 
-	void Batch::Add(SceneNode* node)
-	{
-		allowInstancing_ &= !node->GetArmature();
-		nodes_.push_back(node);
-	}
+bool Batch::AllowInstancing() const {
+    return RenderingCapabilities::GetPtr()->HasInstancedArrays() &&
+           allowInstancing_ && mesh_->IsStatic();
+}
 
-	bool Batch::AllowInstancing() const
-	{
-        return RenderingCapabilities::GetPtr()->HasInstancedArrays() && allowInstancing_ && mesh_->IsStatic();
-	}
-
-	void Batch::Clear()
-	{
-		material_ = nullptr;
-		mesh_ = nullptr;
-		nodes_.clear();
-		allowInstancing_ = true;
-	}
-
+void Batch::Clear() {
+    material_ = nullptr;
+    mesh_ = nullptr;
+    nodes_.clear();
+    allowInstancing_ = true;
+}
 }

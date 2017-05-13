@@ -24,31 +24,21 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "QuadMesh.h"
-#include "Types.h"
 #include "Check.h"
+#include "Types.h"
 
-namespace NSG
-{
-    QuadMesh::QuadMesh(const std::string& name)
-        : RectangleMesh(name)
-    {
-        Set();
-    }
+namespace NSG {
+QuadMesh::QuadMesh(const std::string& name) : RectangleMesh(name) { Set(); }
 
-    QuadMesh::~QuadMesh()
-    {
-    }
+QuadMesh::~QuadMesh() {}
 
-    void QuadMesh::Set(float size)
-    {
-        if (size_ != size)
-            RectangleMesh::Set(size, size);
-    }
-
-    PQuadMesh QuadMesh::GetNDC()
-    {
-        static auto mesh = Mesh::Create<QuadMesh>(GetUniqueName("NSGNDCQuadMesh"));
-        return mesh;
-    }
+void QuadMesh::Set(float size) {
+    if (size_ != size)
+        RectangleMesh::Set(size, size);
 }
 
+PQuadMesh QuadMesh::GetNDC() {
+    static auto mesh = Mesh::Create<QuadMesh>(GetUniqueName("NSGNDCQuadMesh"));
+    return mesh;
+}
+}

@@ -28,34 +28,29 @@ misrepresented as being the original software.
 Planet::Planet(PScene scene)
     : planet_(scene->CreateChild<SceneNode>()),
       clouds_(planet_->CreateChild<SceneNode>()),
-      grid_(planet_->CreateChild<SceneNode>("Grid"))
-{
-	auto colorTexture = std::make_shared<Texture2D>(
-		ResourceFile::GetOrCreate("data/earthcolor.jpg"),
-		(int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y
-		);
+      grid_(planet_->CreateChild<SceneNode>("Grid")) {
+    auto colorTexture = std::make_shared<Texture2D>(
+        ResourceFile::GetOrCreate("data/earthcolor.jpg"),
+        (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 
-	auto specularTexture = std::make_shared<Texture2D>(
-		ResourceFile::GetOrCreate("data/earthspecular.jpg"),
-		(int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y
-		);
+    auto specularTexture = std::make_shared<Texture2D>(
+        ResourceFile::GetOrCreate("data/earthspecular.jpg"),
+        (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 
-	specularTexture->SetMapType(TextureType::SPEC);
+    specularTexture->SetMapType(TextureType::SPEC);
 
-	auto normalTexture = std::make_shared<Texture2D>(
-		Resource::Get("data/earthnormal.jpg"),
-		(int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y
-		);
+    auto normalTexture = std::make_shared<Texture2D>(
+        Resource::Get("data/earthnormal.jpg"),
+        (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 
-	normalTexture->SetMapType(TextureType::NORM);
+    normalTexture->SetMapType(TextureType::NORM);
 
-	auto cloudsTexture = std::make_shared<Texture2D>(
-		Resource::Get("data/clouds.jpg"),
-		(int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y
-		);
+    auto cloudsTexture = std::make_shared<Texture2D>(
+        Resource::Get("data/clouds.jpg"),
+        (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
 
     planet_->SetMesh(Planet::GetMesh());
-	planet_->SetScale(2.5f);
+    planet_->SetScale(2.5f);
     {
         auto material(Material::Create());
         material->SetRenderPass(RenderPass::LIT);
@@ -63,14 +58,14 @@ Planet::Planet(PScene scene)
         material->SetTexture(specularTexture);
         material->SetTexture(normalTexture);
         material->SetDiffuseColor(Color(0.8f, 0.8f, 0.8f));
-        //material->SetSpecularColor(Color(1.0f, 0.0f, 0.0f));
+        // material->SetSpecularColor(Color(1.0f, 0.0f, 0.0f));
         material->SetAmbientIntensity(3.f);
         material->SetShininess(10);
         planet_->SetMaterial(material);
     }
 
     clouds_->SetMesh(Planet::GetMesh());
-	clouds_->SetScale(1.15f);
+    clouds_->SetScale(1.15f);
     {
         auto material(Material::Create());
         material->SetRenderPass(RenderPass::LIT);
@@ -84,7 +79,7 @@ Planet::Planet(PScene scene)
     }
 
     grid_->SetMesh(Planet::GetGridMesh());
-	grid_->SetScale(1.3f);
+    grid_->SetScale(1.3f);
     {
         auto material(Material::Create());
         material->SetFillMode(FillMode::WIREFRAME);
@@ -96,26 +91,21 @@ Planet::Planet(PScene scene)
         grid_->SetMaterial(material);
     }
 
-	updateSlot_ = Engine::SigUpdate()->Connect([&](float deltaTime)
-    {
+    updateSlot_ = Engine::SigUpdate()->Connect([&](float deltaTime) {
         auto angle = PI10 * deltaTime;
         clouds_->Roll(angle * 0.5f);
     });
 }
 
-Planet::~Planet()
-{
-}
+Planet::~Planet() {}
 
-PSphereMesh Planet::GetMesh()
-{
+PSphereMesh Planet::GetMesh() {
     auto mesh(Mesh::GetOrCreateClass<SphereMesh>("PlanetMesh"));
     mesh->Set(1.f, 36);
     return mesh;
 }
 
-PIcoSphereMesh Planet::GetGridMesh()
-{
+PIcoSphereMesh Planet::GetGridMesh() {
     auto mesh(Mesh::GetOrCreateClass<IcoSphereMesh>("GridMesh"));
     mesh->Set(1.f, 4);
     return mesh;

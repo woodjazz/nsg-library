@@ -26,12 +26,10 @@ misrepresented as being the original software.
 #pragma once
 #include "Shader.h"
 
-namespace NSG 
-{
-	class VertexShader : public Shader
-	{
-	public:
-		VertexShader(const char* source);
-		~VertexShader();
-	};
+namespace NSG {
+class VertexShader : public Shader {
+public:
+    VertexShader(const char* source);
+    ~VertexShader();
+};
 }

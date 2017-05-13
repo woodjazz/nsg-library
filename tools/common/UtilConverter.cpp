@@ -24,43 +24,34 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "UtilConverter.h"
+#include "Matrix3.h"
 #include "Plane.h"
 #include "Util.h"
-#include "Matrix3.h"
 #include <cmath>
 
-namespace BlenderConverter
-{
-	using namespace NSG;
-	Matrix4 ToMatrix(const float m[][4])
-	{
-		return Matrix4(
-			m[0][0], m[0][1], m[0][2], m[0][3],
-			m[1][0], m[1][1], m[1][2], m[1][3],
-			m[2][0], m[2][1], m[2][2], m[2][3],
-			m[3][0], m[3][1], m[3][2], m[3][3]
-			);
-	}
+namespace BlenderConverter {
+using namespace NSG;
+Matrix4 ToMatrix(const float m[][4]) {
+    return Matrix4(m[0][0], m[0][1], m[0][2], m[0][3], m[1][0], m[1][1],
+                   m[1][2], m[1][3], m[2][0], m[2][1], m[2][2], m[2][3],
+                   m[3][0], m[3][1], m[3][2], m[3][3]);
+}
 
-	Matrix3 ToMatrix(const float m[][3])
-	{
-		return Matrix3(
-			m[0][0], m[0][1], m[0][2],
-			m[1][0], m[1][1], m[1][2],
-			m[2][0], m[2][1], m[2][2]
-			);
-	}
+Matrix3 ToMatrix(const float m[][3]) {
+    return Matrix3(m[0][0], m[0][1], m[0][2], m[1][0], m[1][1], m[1][2],
+                   m[2][0], m[2][1], m[2][2]);
+}
 
-    Matrix4 GeneratePointTransformMatrix(const Plane& plane, const Vector3& center)
-    {
-        Vector3 normal = plane.GetNormal();
-        Vector3 sideA = Vector3::Right;
-        if (std::abs(normal.Dot(sideA )) > 0.999f )
-            sideA = Vector3::Up;
-        Vector3 sideB(normal.Cross(sideA).Normalize());
-        sideA = sideB.Cross(normal);
-        Matrix3 rot(sideA, sideB, normal);
-        Matrix4 result = Matrix4().Translate(center) * Matrix4(rot);
-        return result.Inverse();
-    }
+Matrix4 GeneratePointTransformMatrix(const Plane& plane,
+                                     const Vector3& center) {
+    Vector3 normal = plane.GetNormal();
+    Vector3 sideA = Vector3::Right;
+    if (std::abs(normal.Dot(sideA)) > 0.999f)
+        sideA = Vector3::Up;
+    Vector3 sideB(normal.Cross(sideA).Normalize());
+    sideA = sideB.Cross(normal);
+    Matrix3 rot(sideA, sideB, normal);
+    Matrix4 result = Matrix4().Translate(center) * Matrix4(rot);
+    return result.Inverse();
+}
 }

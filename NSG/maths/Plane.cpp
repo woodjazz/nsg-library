@@ -24,61 +24,48 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Plane.h"
-#include "Util.h"
 #include "Check.h"
+#include "Util.h"
 
-namespace NSG
-{
-    const Plane Plane::UP(Vector3::Up, Vector3(0));
+namespace NSG {
+const Plane Plane::UP(Vector3::Up, Vector3(0));
 
-    Plane::Plane()
-    {
-    }
+Plane::Plane() {}
 
-    Plane::Plane(const Plane& plane) :
-        normald_(plane.normald_)
-    {
-    }
+Plane::Plane(const Plane& plane) : normald_(plane.normald_) {}
 
-    Plane::Plane(const Vector3& v0, const Vector3& v1, const Vector3& v2)
-    {
-        Define(v0, v1, v2);
-    }
+Plane::Plane(const Vector3& v0, const Vector3& v1, const Vector3& v2) {
+    Define(v0, v1, v2);
+}
 
-    Plane::Plane(const Vector3& normal, const Vector3& point)
-    {
-        Define(normal, point);
-    }
+Plane::Plane(const Vector3& normal, const Vector3& point) {
+    Define(normal, point);
+}
 
-    void Plane::Define(const Vector3& v0, const Vector3& v1, const Vector3& v2)
-    {
-		CHECK_ASSERT(v0.Distance(v1) > 0.0001f);
-		CHECK_ASSERT(v0.Distance(v2) > 0.0001f);
+void Plane::Define(const Vector3& v0, const Vector3& v1, const Vector3& v2) {
+    CHECK_ASSERT(v0.Distance(v1) > 0.0001f);
+    CHECK_ASSERT(v0.Distance(v2) > 0.0001f);
 
-        Vector3 dist1 = v1 - v0;
-        Vector3 dist2 = v2 - v0;
-        Define(dist1.Cross(dist2).Normalize(), v1);
-    }
+    Vector3 dist1 = v1 - v0;
+    Vector3 dist2 = v2 - v0;
+    Define(dist1.Cross(dist2).Normalize(), v1);
+}
 
-    void Plane::Define(const Vector3& normal, const Vector3& point)
-    {
-        normald_ = Vector4(normal, -normal.Dot(point));
-    }
+void Plane::Define(const Vector3& normal, const Vector3& point) {
+    normald_ = Vector4(normal, -normal.Dot(point));
+}
 
+float Plane::Distance(const Vector3& point) const {
+    return Vector3(normald_).Dot(point) + normald_.w;
+}
 
-    float Plane::Distance(const Vector3& point) const
-    {
-        return Vector3(normald_).Dot(point) + normald_.w;
-    }
+Plane::Side Plane::SideOfPlane(const Vector3& point) const {
+    float dotValue = Distance(point);
 
-    Plane::Side Plane::SideOfPlane(const Vector3& point) const
-    {
-        float dotValue = Distance(point);
-
-        if (dotValue > 0)
-            return Side::INFRONT;
-        else if (dotValue < 0)
-            return Side::BEHIND;
-        return Side::INPLANE;
-    }
+    if (dotValue > 0)
+        return Side::INFRONT;
+    else if (dotValue < 0)
+        return Side::BEHIND;
+    return Side::INPLANE;
+}
 }

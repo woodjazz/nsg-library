@@ -20,61 +20,59 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "GUI.h"
-#include "imgui.h"
+#include "Camera.h"
+#include "Camera.h"
 #include "Check.h"
-#include "RenderingContext.h"
-#include "Camera.h"
-#include "Texture2D.h"
-#include "Window.h"
 #include "Engine.h"
-#include "Keys.h"
-#include "Program.h"
-#include "Camera.h"
-#include "VertexBuffer.h"
 #include "IndexBuffer.h"
-#include "StringConverter.h"
+#include "Keys.h"
 #include "Maths.h"
+#include "Program.h"
+#include "RenderingContext.h"
+#include "StringConverter.h"
+#include "Texture2D.h"
+#include "VertexBuffer.h"
+#include "Window.h"
+#include "imgui.h"
 #include <map>
 
-namespace NSG
-{
-    template<> std::map<std::string, PGUI> StrongFactory<std::string, GUI>::objsMap_ = std::map<std::string, PGUI> {};
+namespace NSG {
+template <>
+std::map<std::string, PGUI> StrongFactory<std::string, GUI>::objsMap_ =
+    std::map<std::string, PGUI>{};
 
-    GUI::GUI(const std::string& name)
-        : Object(name),
-          fontTexture_(std::make_shared<Texture2D>(name + "GUIFontTexture")),
-          program_(Program::GetOrCreate("IMGUI\n")),
-          vBuffer_(new VertexBuffer(GL_STREAM_DRAW)),
-          iBuffer_(new IndexBuffer(GL_STREAM_DRAW)),
-          state_(ImGui::CreateContext()),
-          configured_(false)
-    {
-        ImGui::SetCurrentContext(state_);
+GUI::GUI(const std::string& name)
+    : Object(name),
+      fontTexture_(std::make_shared<Texture2D>(name + "GUIFontTexture")),
+      program_(Program::GetOrCreate("IMGUI\n")),
+      vBuffer_(new VertexBuffer(GL_STREAM_DRAW)),
+      iBuffer_(new IndexBuffer(GL_STREAM_DRAW)), state_(ImGui::CreateContext()),
+      configured_(false) {
+    ImGui::SetCurrentContext(state_);
 
-        camera_ = std::make_shared<Camera>(name + "IMGUICamera");
-        program_->Set(camera_.get());
+    camera_ = std::make_shared<Camera>(name + "IMGUICamera");
+    program_->Set(camera_.get());
 
-        pass_.SetBlendMode(BLEND_MODE::ALPHA);
-        pass_.EnableScissorTest(false);
-        pass_.EnableDepthTest(false);
-        pass_.SetCullFace(CullFaceMode::DISABLED);
+    pass_.SetBlendMode(BLEND_MODE::ALPHA);
+    pass_.EnableScissorTest(false);
+    pass_.EnableDepthTest(false);
+    pass_.SetCullFace(CullFaceMode::DISABLED);
 
-        camera_->EnableOrtho();
-        ImGuiIO& io = ImGui::GetIO();
-        io.UserData = this;
-        unsigned char* pixels;
-        int width, height;
-        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-        fontTexture_->SetWrapMode(TextureWrapMode::REPEAT);
-        fontTexture_->SetSize(width, height);
-        
-        io.RenderDrawListsFn = [](ImDrawData * draw_data)
-        {
-            static_cast<GUI*>(ImGui::GetIO().UserData)->InternalDraw(draw_data);
-        };
+    camera_->EnableOrtho();
+    ImGuiIO& io = ImGui::GetIO();
+    io.UserData = this;
+    unsigned char* pixels;
+    int width, height;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+    fontTexture_->SetWrapMode(TextureWrapMode::REPEAT);
+    fontTexture_->SetSize(width, height);
 
-        slotTextureBeforeAllocating_ = fontTexture_->SigBeforeAllocating()->Connect([this]()
-        {
+    io.RenderDrawListsFn = [](ImDrawData* draw_data) {
+        static_cast<GUI*>(ImGui::GetIO().UserData)->InternalDraw(draw_data);
+    };
+
+    slotTextureBeforeAllocating_ =
+        fontTexture_->SigBeforeAllocating()->Connect([this]() {
             fontTexture_->DisableInvalidation();
             ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
@@ -86,133 +84,133 @@ namespace NSG
             fontTexture_->EnableInvalidation();
         });
 
-
-        slotTextureAllocated_ = fontTexture_->SigAllocated()->Connect([this]()
-        {
-            ImGui::SetCurrentContext(state_);
-            ImGuiIO& io = ImGui::GetIO();
-            // Store our identifier
-            io.Fonts->TexID = (void*)(intptr_t)fontTexture_->GetID();
-            // Cleanup (don't clear the input data if you want to append new fonts later)
-            io.Fonts->ClearInputData();
-            io.Fonts->ClearTexData();
-        });
-    }
-
-    GUI::~GUI()
-    {
+    slotTextureAllocated_ = fontTexture_->SigAllocated()->Connect([this]() {
         ImGui::SetCurrentContext(state_);
-        ImGui::Shutdown();
-        ImGui::DestroyContext(state_);
-    }
-
-    bool GUI::IsValid()
-    {
-        return vBuffer_->IsReady() && iBuffer_->IsReady() && fontTexture_->IsReady();
-    }
-
-    void GUI::AllocateResources()
-    {
-        context_ = RenderingContext::Create();
-    }
-
-    void GUI::ReleaseResources()
-    {
-        context_ = nullptr;
-    }
-
-    void GUI::InternalDraw(ImDrawData* draw_data)
-    {
-        CHECK_GL_STATUS();
-
-        if (!IsReady())
-            return;
-
-        program_->Set(camera_.get());
-        auto& io = ImGui::GetIO();
-        const float width = io.DisplaySize.x;
-        const float height = io.DisplaySize.y;
-        camera_->SetWindow(window_.lock());
-        camera_->SetOrthoProjection({ 0, width, height, 0, -1, 1 });
-        context_->SetupPass(&pass_);
-        CHECK_CONDITION(context_->SetProgram(program_.get()));
-        context_->SetVertexBuffer(vBuffer_.get());
-        context_->SetIndexBuffer(iBuffer_.get());
-        program_->SetVariables(false);
-
-        context_->SetVertexBuffer(vBuffer_.get());
-        context_->SetAttributes([&]()
-        {
-            auto attribLocationPosition = program_->GetAttPositionLoc();
-            auto attribLocationUV = program_->GetAttTextCoordLoc0();
-            auto attribLocationColor = program_->GetAttColorLoc();
-
-#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-            glVertexAttribPointer(attribLocationPosition, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
-            glVertexAttribPointer(attribLocationUV, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
-            glVertexAttribPointer(attribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, col));
-#undef OFFSETOF
-        });
-
-        for (int n = 0; n < draw_data->CmdListsCount; n++)
-        {
-            const ImDrawList* cmd_list = draw_data->CmdLists[n];
-            const ImDrawIdx* idx_buffer_offset = 0;
-            vBuffer_->SetData((GLsizeiptr)cmd_list->VtxBuffer.size() * sizeof(ImDrawVert), (GLvoid*)&cmd_list->VtxBuffer.front());
-            iBuffer_->SetData((GLsizeiptr)cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx), (GLvoid*)&cmd_list->IdxBuffer.front());
-            for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin(); pcmd != cmd_list->CmdBuffer.end(); pcmd++)
-            {
-                if (pcmd->UserCallback)
-                {
-                    pcmd->UserCallback(cmd_list, pcmd);
-                }
-                else
-                {
-                    context_->SetTexture(0, (GLuint)(intptr_t)pcmd->TextureId);
-                    context_->SetScissorTest(true, (int)pcmd->ClipRect.x, (int)(height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-                    context_->DrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, GL_UNSIGNED_SHORT, idx_buffer_offset);
-                }
-                idx_buffer_offset += pcmd->ElemCount;
-            }
-        }
-        CHECK_GL_STATUS();
-    }
-
-    void GUI::Render(PWindow window, std::function<void(void)> callback)
-    {
-        if (!window || !IsReady())
-            return;
-        Setup();
-        ImGui::SetCurrentContext(state_);
-        window_ = window;
-        window->BeginImguiRender();
         ImGuiIO& io = ImGui::GetIO();
-        auto width = (float)window->GetWidth();
-        auto height = (float)window->GetHeight();
-        if (area_ != Rect(0))
-            io.DisplaySize = ImVec2{ Clamp(area_.z, 0.f, width), Clamp(area_.w, 0.f, height) };
-        else
-            io.DisplaySize = ImVec2{ width, height };
+        // Store our identifier
+        io.Fonts->TexID = (void*)(intptr_t)fontTexture_->GetID();
+        // Cleanup (don't clear the input data if you want to append new fonts
+        // later)
+        io.Fonts->ClearInputData();
+        io.Fonts->ClearTexData();
+    });
+}
 
-        io.DeltaTime = Engine::GetPtr()->GetDeltaTime();
-        ImGui::NewFrame();
-        callback();
-        ImGui::Render();
+GUI::~GUI() {
+    ImGui::SetCurrentContext(state_);
+    ImGui::Shutdown();
+    ImGui::DestroyContext(state_);
+}
+
+bool GUI::IsValid() {
+    return vBuffer_->IsReady() && iBuffer_->IsReady() &&
+           fontTexture_->IsReady();
+}
+
+void GUI::AllocateResources() { context_ = RenderingContext::Create(); }
+
+void GUI::ReleaseResources() { context_ = nullptr; }
+
+void GUI::InternalDraw(ImDrawData* draw_data) {
+    CHECK_GL_STATUS();
+
+    if (!IsReady())
+        return;
+
+    program_->Set(camera_.get());
+    auto& io = ImGui::GetIO();
+    const float width = io.DisplaySize.x;
+    const float height = io.DisplaySize.y;
+    camera_->SetWindow(window_.lock());
+    camera_->SetOrthoProjection({0, width, height, 0, -1, 1});
+    context_->SetupPass(&pass_);
+    CHECK_CONDITION(context_->SetProgram(program_.get()));
+    context_->SetVertexBuffer(vBuffer_.get());
+    context_->SetIndexBuffer(iBuffer_.get());
+    program_->SetVariables(false);
+
+    context_->SetVertexBuffer(vBuffer_.get());
+    context_->SetAttributes([&]() {
+        auto attribLocationPosition = program_->GetAttPositionLoc();
+        auto attribLocationUV = program_->GetAttTextCoordLoc0();
+        auto attribLocationColor = program_->GetAttColorLoc();
+
+#define OFFSETOF(TYPE, ELEMENT) ((size_t) & (((TYPE*)0)->ELEMENT))
+        glVertexAttribPointer(attribLocationPosition, 2, GL_FLOAT, GL_FALSE,
+                              sizeof(ImDrawVert),
+                              (GLvoid*)OFFSETOF(ImDrawVert, pos));
+        glVertexAttribPointer(attribLocationUV, 2, GL_FLOAT, GL_FALSE,
+                              sizeof(ImDrawVert),
+                              (GLvoid*)OFFSETOF(ImDrawVert, uv));
+        glVertexAttribPointer(attribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE,
+                              sizeof(ImDrawVert),
+                              (GLvoid*)OFFSETOF(ImDrawVert, col));
+#undef OFFSETOF
+    });
+
+    for (int n = 0; n < draw_data->CmdListsCount; n++) {
+        const ImDrawList* cmd_list = draw_data->CmdLists[n];
+        const ImDrawIdx* idx_buffer_offset = 0;
+        vBuffer_->SetData((GLsizeiptr)cmd_list->VtxBuffer.size() *
+                              sizeof(ImDrawVert),
+                          (GLvoid*)&cmd_list->VtxBuffer.front());
+        iBuffer_->SetData((GLsizeiptr)cmd_list->IdxBuffer.size() *
+                              sizeof(ImDrawIdx),
+                          (GLvoid*)&cmd_list->IdxBuffer.front());
+        for (const ImDrawCmd* pcmd = cmd_list->CmdBuffer.begin();
+             pcmd != cmd_list->CmdBuffer.end(); pcmd++) {
+            if (pcmd->UserCallback) {
+                pcmd->UserCallback(cmd_list, pcmd);
+            } else {
+                context_->SetTexture(0, (GLuint)(intptr_t)pcmd->TextureId);
+                context_->SetScissorTest(
+                    true, (int)pcmd->ClipRect.x,
+                    (int)(height - pcmd->ClipRect.w),
+                    (int)(pcmd->ClipRect.z - pcmd->ClipRect.x),
+                    (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+                context_->DrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount,
+                                       GL_UNSIGNED_SHORT, idx_buffer_offset);
+            }
+            idx_buffer_offset += pcmd->ElemCount;
+        }
     }
+    CHECK_GL_STATUS();
+}
 
-    void GUI::Setup()
-    {
-        if (configured_)
-            return;
+void GUI::Render(PWindow window, std::function<void(void)> callback) {
+    if (!window || !IsReady())
+        return;
+    Setup();
+    ImGui::SetCurrentContext(state_);
+    window_ = window;
+    window->BeginImguiRender();
+    ImGuiIO& io = ImGui::GetIO();
+    auto width = (float)window->GetWidth();
+    auto height = (float)window->GetHeight();
+    if (area_ != Rect(0))
+        io.DisplaySize =
+            ImVec2{Clamp(area_.z, 0.f, width), Clamp(area_.w, 0.f, height)};
+    else
+        io.DisplaySize = ImVec2{width, height};
 
-        configured_ = true;
+    io.DeltaTime = Engine::GetPtr()->GetDeltaTime();
+    ImGui::NewFrame();
+    callback();
+    ImGui::Render();
+}
 
-        auto mainWindow = Window::GetMainWindow();
+void GUI::Setup() {
+    if (configured_)
+        return;
 
-        mainWindow->SetupImgui();
+    configured_ = true;
 
-        slotKey_ = mainWindow->SigKey()->Connect([this](int key, int action, int modifier)
-        {
+    auto mainWindow = Window::GetMainWindow();
+
+    mainWindow->SetupImgui();
+
+    slotKey_ = mainWindow->SigKey()->Connect(
+        [this](int key, int action, int modifier) {
             ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             io.KeysDown[key] = action ? true : false;
@@ -221,31 +219,30 @@ namespace NSG
             io.KeyAlt = (modifier & NSG_KEY_MOD_ALT) != 0;
         });
 
-        slotText_ = mainWindow->SigText()->Connect([this](std::string text)
-        {
-            ImGui::SetCurrentContext(state_);
-            ImGuiIO& io = ImGui::GetIO();
-            io.AddInputCharactersUTF8(text.c_str());
-        });
+    slotText_ = mainWindow->SigText()->Connect([this](std::string text) {
+        ImGui::SetCurrentContext(state_);
+        ImGuiIO& io = ImGui::GetIO();
+        io.AddInputCharactersUTF8(text.c_str());
+    });
 
-//        slotChar_ = mainWindow->SigUnsigned()->Connect([this](unsigned int character)
-//        {
-//            //            ImGui::SetCurrentContext(state_);
-//            //            ImGuiIO& io = ImGui::GetIO();
-//            //            io.AddInputCharacter(character);
-//        });
+    //        slotChar_ = mainWindow->SigUnsigned()->Connect([this](unsigned int
+    //        character)
+    //        {
+    //            //            ImGui::SetCurrentContext(state_);
+    //            //            ImGuiIO& io = ImGui::GetIO();
+    //            //            io.AddInputCharacter(character);
+    //        });
 
-
-        slotMouseMoved_ = mainWindow->SigMouseMoved()->Connect([this](int x, int y)
-        {
+    slotMouseMoved_ =
+        mainWindow->SigMouseMoved()->Connect([this](int x, int y) {
             ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
-            //LOGI("%s", ToString(area_).c_str());
+            // LOGI("%s", ToString(area_).c_str());
         });
 
-        slotMouseDown_ = mainWindow->SigMouseDownInt()->Connect([this](int button, int x, int y)
-        {
+    slotMouseDown_ = mainWindow->SigMouseDownInt()->Connect(
+        [this](int button, int x, int y) {
             ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             if (button == NSG_BUTTON_LEFT)
@@ -257,8 +254,8 @@ namespace NSG
             io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
         });
 
-        slotMouseUp_ = mainWindow->SigMouseUpInt()->Connect([this](int button, int x, int y)
-        {
+    slotMouseUp_ =
+        mainWindow->SigMouseUpInt()->Connect([this](int button, int x, int y) {
             ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             if (button == NSG_BUTTON_LEFT)
@@ -270,8 +267,8 @@ namespace NSG
             io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
         });
 
-        slotMouseWheel_ = mainWindow->SigMouseWheel()->Connect([this](float, float y)
-        {
+    slotMouseWheel_ =
+        mainWindow->SigMouseWheel()->Connect([this](float, float y) {
             ImGui::SetCurrentContext(state_);
             ImGuiIO& io = ImGui::GetIO();
             if (y > 0)
@@ -280,17 +277,17 @@ namespace NSG
                 io.MouseWheel = -1;
         });
 
-//        slotMultiGesture_ = mainWindow->SigMultiGesture()->Connect([this](int timestamp, float x, float y, float dTheta, float dDist, int numFingers)
-//        {
-//            //ImGui::SetInternalState(state_);
-//            //ImGuiIO& io = ImGui::GetIO();
-//            //io.MouseDown[0] = numFingers > 0 ? true : false;
-//            //io.MousePos = io.MousePos = ImVec2((float)x - area_.x, (float)y - area_.y);
-//        });
-    }
+    //        slotMultiGesture_ =
+    //        mainWindow->SigMultiGesture()->Connect([this](int timestamp, float
+    //        x, float y, float dTheta, float dDist, int numFingers)
+    //        {
+    //            //ImGui::SetInternalState(state_);
+    //            //ImGuiIO& io = ImGui::GetIO();
+    //            //io.MouseDown[0] = numFingers > 0 ? true : false;
+    //            //io.MousePos = io.MousePos = ImVec2((float)x - area_.x,
+    //            (float)y - area_.y);
+    //        });
+}
 
-    void GUI::SetArea(const Rect& area)
-    {
-        area_ = area;
-    }
+void GUI::SetArea(const Rect& area) { area_ = area; }
 }

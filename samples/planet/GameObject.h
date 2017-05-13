@@ -26,11 +26,10 @@ misrepresented as being the original software.
 #pragma once
 #include "NSG.h"
 using namespace NSG;
-struct GameObject : std::enable_shared_from_this<GameObject>
-{
-	GameObject();
-	virtual ~GameObject();
-	virtual void Destroyed() {};
+struct GameObject : std::enable_shared_from_this<GameObject> {
+    GameObject();
+    virtual ~GameObject();
+    virtual void Destroyed(){};
 };
 
 typedef std::shared_ptr<GameObject> PGameObject;

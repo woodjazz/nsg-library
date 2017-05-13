@@ -26,12 +26,10 @@ misrepresented as being the original software.
 #pragma once
 #include "Shader.h"
 
-namespace NSG 
-{
-	class FragmentShader : public Shader
-	{
-	public:
-		FragmentShader(const char* source);
-		~FragmentShader();
-	};
+namespace NSG {
+class FragmentShader : public Shader {
+public:
+    FragmentShader(const char* source);
+    ~FragmentShader();
+};
 }

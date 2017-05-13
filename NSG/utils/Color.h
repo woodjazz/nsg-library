@@ -25,39 +25,44 @@ misrepresented as being the original software.
 */
 #pragma once
 
-namespace NSG
-{
-    struct Vector3;
-    struct Vector4;
-    struct Color
-    {
-        union { float x, r, s; };
-        union { float y, g, t; };
-        union { float z, b, p; };
-        union { float w, a, v; };
-
-        Color();
-        Color(float v);
-        Color(float r, float g, float b, float a = 1.f);
-        Color(const Vector3& v);
-        Color(const Vector4& v);
-        Color(const Color& v);
-        const float& operator[](int i) const;
-        float& operator[](int i);
-        static const Color White;
-        static const Color Black;
-        static const Color Red;
-        static const Color Green;
-        static const Color Blue;
-        static const Color Yellow;
-        static const Color DodgerBlue;
-        static const Color DarkOrange;
-        static const Color PeachPuff;
-        static const Color SkyBlue;
+namespace NSG {
+struct Vector3;
+struct Vector4;
+struct Color {
+    union {
+        float x, r, s;
     };
-    bool operator!=(const Color& v1, const Color& v2);
-    bool operator==(const Color& v1, const Color& v2);
-    Color operator*(const Color& v, float scalar);
-    Color operator*(const Color& v1, const Color& v2);
+    union {
+        float y, g, t;
+    };
+    union {
+        float z, b, p;
+    };
+    union {
+        float w, a, v;
+    };
 
+    Color();
+    Color(float v);
+    Color(float r, float g, float b, float a = 1.f);
+    Color(const Vector3& v);
+    Color(const Vector4& v);
+    Color(const Color& v);
+    const float& operator[](int i) const;
+    float& operator[](int i);
+    static const Color White;
+    static const Color Black;
+    static const Color Red;
+    static const Color Green;
+    static const Color Blue;
+    static const Color Yellow;
+    static const Color DodgerBlue;
+    static const Color DarkOrange;
+    static const Color PeachPuff;
+    static const Color SkyBlue;
+};
+bool operator!=(const Color& v1, const Color& v2);
+bool operator==(const Color& v1, const Color& v2);
+Color operator*(const Color& v, float scalar);
+Color operator*(const Color& v1, const Color& v2);
 }

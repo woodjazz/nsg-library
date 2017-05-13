@@ -6,34 +6,30 @@
 #include <iostream>
 #include <string>
 
-
 using namespace TCLAP;
 using namespace std;
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 
-	try {
+    try {
 
-	CmdLine cmd("this is a message", ' ', "0.99" );
+        CmdLine cmd("this is a message", ' ', "0.99");
 
-	ValueArg<int> itest("i", "intTest", "integer test", true, 5, "int");
-	cmd.add( itest );
+        ValueArg<int> itest("i", "intTest", "integer test", true, 5, "int");
+        cmd.add(itest);
 
-	//
-	// Parse the command line.
-	//
-	cmd.parse(argc,argv);
+        //
+        // Parse the command line.
+        //
+        cmd.parse(argc, argv);
 
-	//
-	// Set variables
-	//
-	int _intTest = itest.getValue();
-	cout << "found int: " << _intTest << endl;
+        //
+        // Set variables
+        //
+        int _intTest = itest.getValue();
+        cout << "found int: " << _intTest << endl;
 
-	} catch ( ArgException& e )
-	{ cout << "ERROR: " << e.error() << " " << e.argId() << endl; }
+    } catch (ArgException& e) {
+        cout << "ERROR: " << e.error() << " " << e.argId() << endl;
+    }
 }
-
-
-

@@ -27,38 +27,36 @@ misrepresented as being the original software.
 #if defined(IS_TARGET_LINUX)
 #include "Types.h"
 #include "Window.h"
-#include <string>
 #include <X11/Xlib.h>
-#include <GL/glx.h>
+#include <string>
+namespace NSG {
+class LinuxX11Window : public Window {
+public:
+    LinuxX11Window(const std::string& name, WindowFlags flags);
+    LinuxX11Window(const std::string& name, int x, int y, int width, int height,
+                   WindowFlags flags);
+    ~LinuxX11Window();
+    void Destroy() override;
+    virtual void CreateContext() = 0;
+    virtual void DestroyContext() = 0;
+    void HandleEvents() override;
 
-namespace NSG
-{
-    class LinuxWindow : public Window
-    {
-    public:
-        LinuxWindow(const std::string& name, WindowFlags flags);
-        LinuxWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-        ~LinuxWindow();
-        void SwapWindowBuffers() override;
-        void Destroy() override;
-        void HandleEvents() override;
-    private:
-        void SetContext() override;
-        void Show() override;
-        void Hide() override;
-        void Raise() override;
-        void SetupImgui() override;
-        void BeginImguiRender() override;
-        void Initialize(int x, int y, int width, int height, WindowFlags flags);
-        void Close() override;
-        int flags_;
-		GLXContext context_;
-        XVisualInfo* visualInfo_;
-        ::Window hwnd_;
-        int keyModifier_;
-        static Display* display_;
-        static XIM im_;
-        static XIC ic_;
-    };
+protected:
+    void Initialize(int x, int y, int width, int height, WindowFlags flags);
+    void Close() override;
+    static Display* display_;
+    ::Window hwnd_;
+
+private:
+    void Show() override;
+    void Hide() override;
+    void Raise() override;
+    void SetupImgui() override;
+    void BeginImguiRender() override;
+    int flags_;
+    int keyModifier_;
+    static XIM im_;
+    static XIC ic_;
+};
 }
 #endif

@@ -27,20 +27,12 @@ misrepresented as being the original software.
 using namespace NSG;
 using namespace NSG::Task;
 
-static void TimedTaskTest0()
-{
-    struct TaskBase : NSG::Task::Task
-    {
+static void TimedTaskTest0() {
+    struct TaskBase : NSG::Task::Task {
         int counter_;
 
-        TaskBase() 
-            : counter_(0) 
-        {
-        }
-        void Run() 
-        {
-            ++counter_;
-        }
+        TaskBase() : counter_(0) {}
+        void Run() { ++counter_; }
     };
 
     struct Task0 : TaskBase {};
@@ -66,7 +58,6 @@ static void TimedTaskTest0()
     PTask pTask2(p2);
     PTask pTask3(p3);
     PTask pTask4(p4);
-
 
     TimePoint t0 = Clock::now() + Milliseconds(50);
     TimePoint t1 = Clock::now() + Milliseconds(80);
@@ -96,60 +87,42 @@ static void TimedTaskTest0()
     CHECK_CONDITION(p4->counter_ == 3);
 }
 
-static void TimedTaskTest1()
-{
-    struct TaskBase : NSG::Task::Task
-    {
+static void TimedTaskTest1() {
+    struct TaskBase : NSG::Task::Task {
         int counter_;
         bool overdue_;
         bool hasException_;
 
-        TaskBase() 
-            : counter_(0), overdue_(false), hasException_(false) 
-        {
-        }
-        
-        void Run() 
-        {
-            ++counter_;
-        }
-        
-        bool OverDue(Milliseconds overDueTime) 
-        {
+        TaskBase() : counter_(0), overdue_(false), hasException_(false) {}
+
+        void Run() { ++counter_; }
+
+        bool OverDue(Milliseconds overDueTime) {
             overdue_ = true;
             return true;
         }
-        
-        void Exception(const std::exception& e) 
-        {
-            hasException_ = true;
-        }
+
+        void Exception(const std::exception& e) { hasException_ = true; }
     };
 
-    struct Task0 : TaskBase 
-    {
-        void Run() 
-        {
+    struct Task0 : TaskBase {
+        void Run() {
             TaskBase::Run();
             std::this_thread::sleep_for(Milliseconds(100));
         }
     };
 
-    struct Task1 : TaskBase 
-    {
-        bool OverDue(Milliseconds overDueTime) 
-        {
+    struct Task1 : TaskBase {
+        bool OverDue(Milliseconds overDueTime) {
             TaskBase::OverDue(overDueTime);
             return false;
         }
     };
 
-    struct Task2 : TaskBase 
-    {
-        void Run() 
-        {
+    struct Task2 : TaskBase {
+        void Run() {
             TaskBase::Run();
-            //throw std::runtime_error("Error in task2");
+            // throw std::runtime_error("Error in task2");
         }
     };
 
@@ -172,15 +145,14 @@ static void TimedTaskTest1()
     std::this_thread::sleep_for(Milliseconds(250));
 
     CHECK_CONDITION(p0->counter_ == 1);
-    //CHECK_CONDITION(p1->overdue_);
-    //CHECK_CONDITION(p1->counter_ == 0);
-    //CHECK_CONDITION(p2->overdue_);
-    //CHECK_CONDITION(p2->counter_ == 1);
-    //CHECK_CONDITION(p2->hasException_);
+    // CHECK_CONDITION(p1->overdue_);
+    // CHECK_CONDITION(p1->counter_ == 0);
+    // CHECK_CONDITION(p2->overdue_);
+    // CHECK_CONDITION(p2->counter_ == 1);
+    // CHECK_CONDITION(p2->hasException_);
 }
 
-void TimedTaskTest()
-{
+void TimedTaskTest() {
     TimedTaskTest0();
     TimedTaskTest1();
 }

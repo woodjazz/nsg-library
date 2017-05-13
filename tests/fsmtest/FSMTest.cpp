@@ -26,8 +26,7 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG::FSM;
 
-static void FSMTest0()
-{
+static void FSMTest0() {
     struct INITIALIZING : public State {};
     struct BUSY : public State {};
     struct ERROR1 : public State {};
@@ -60,7 +59,7 @@ static void FSMTest0()
     machine.Update();
 
     CHECK_CONDITION(machine.GetState() == &initializing);
-    
+
     machine.Update();
 
     CHECK_CONDITION(machine.GetState() == &busy);
@@ -122,35 +121,22 @@ static void FSMTest0()
     machine.Update();
 
     CHECK_CONDITION(machine.GetState() == &ready);
-    
+
     machine.Update();
 
     CHECK_CONDITION(machine.GetState() == &ready);
 }
 
-static void FSMTest1()
-{
-    struct CounterState : public State 
-    {
+static void FSMTest1() {
+    struct CounterState : public State {
 
-        CounterState() : nStart_(0), nStay_(0), nEnd_(0) 
-        {
-        }
+        CounterState() : nStart_(0), nStay_(0), nEnd_(0) {}
 
-        void Begin() 
-        {
-            ++nStart_;
-        }
+        void Begin() { ++nStart_; }
 
-        void Stay() 
-        {
-            ++nStay_;
-        }
+        void Stay() { ++nStay_; }
 
-        void End() 
-        {
-            ++nEnd_;
-        }
+        void End() { ++nEnd_; }
 
         int nStart_;
         int nStay_;
@@ -180,20 +166,23 @@ static void FSMTest1()
 
     CHECK_CONDITION(machine.GetState() == &initializing);
 
-    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 0 && initializing.nEnd_ == 0);
+    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 0 &&
+                    initializing.nEnd_ == 0);
 
     machine.Update();
 
-    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 0);
+    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 1 &&
+                    initializing.nEnd_ == 0);
 
     CHECK_CONDITION(machine.GetState() == &initializing);
 
     condition1 = true;
 
     machine.Update();
-    
-    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 1 && initializing.nEnd_ == 1);
-  
+
+    CHECK_CONDITION(initializing.nStart_ == 1 && initializing.nStay_ == 1 &&
+                    initializing.nEnd_ == 1);
+
     CHECK_CONDITION(machine.GetState() == &initializing);
 
     machine.Update();
@@ -214,11 +203,13 @@ static void FSMTest1()
 
     CHECK_CONDITION(machine.GetState() == &ready);
 
-    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 0 && ready.nEnd_ == 0);
+    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 0 &&
+                    ready.nEnd_ == 0);
 
     machine.Update();
 
-    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 0);
+    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 1 &&
+                    ready.nEnd_ == 0);
 
     CHECK_CONDITION(machine.GetState() == &ready);
 
@@ -227,27 +218,32 @@ static void FSMTest1()
     machine.Update();
     machine.Update();
 
-    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 1 && ready.nEnd_ == 1);
+    CHECK_CONDITION(ready.nStart_ == 1 && ready.nStay_ == 1 &&
+                    ready.nEnd_ == 1);
 
     CHECK_CONDITION(machine.GetState() == &error);
 
-    CHECK_CONDITION(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 0);
+    CHECK_CONDITION(error.nStart_ == 1 && error.nStay_ == 0 &&
+                    error.nEnd_ == 0);
 
     condition3 = false;
 
     machine.Update();
     machine.Update();
 
-    CHECK_CONDITION(error.nStart_ == 1 && error.nStay_ == 0 && error.nEnd_ == 1);
+    CHECK_CONDITION(error.nStart_ == 1 && error.nStay_ == 0 &&
+                    error.nEnd_ == 1);
 
     CHECK_CONDITION(machine.GetState() == &initializing);
 
-    CHECK_CONDITION(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 1);
+    CHECK_CONDITION(initializing.nStart_ == 2 && initializing.nStay_ == 1 &&
+                    initializing.nEnd_ == 1);
 
     machine.Update();
     machine.Update();
 
-    CHECK_CONDITION(initializing.nStart_ == 2 && initializing.nStay_ == 1 && initializing.nEnd_ == 2);
+    CHECK_CONDITION(initializing.nStart_ == 2 && initializing.nStay_ == 1 &&
+                    initializing.nEnd_ == 2);
 
     CHECK_CONDITION(machine.GetState() == &busy);
 
@@ -261,7 +257,8 @@ static void FSMTest1()
 
     CHECK_CONDITION(machine.GetState() == &ready);
 
-    CHECK_CONDITION(ready.nStart_ == 2 && ready.nStay_ == 1 && ready.nEnd_ == 1);
+    CHECK_CONDITION(ready.nStart_ == 2 && ready.nStay_ == 1 &&
+                    ready.nEnd_ == 1);
 
     CHECK_CONDITION(machine.GetState() == &ready);
 
@@ -269,11 +266,11 @@ static void FSMTest1()
 
     CHECK_CONDITION(machine.GetState() == &ready);
 
-    CHECK_CONDITION(ready.nStart_ == 2 && ready.nStay_ == 2 && ready.nEnd_ == 1);
+    CHECK_CONDITION(ready.nStart_ == 2 && ready.nStay_ == 2 &&
+                    ready.nEnd_ == 1);
 }
 
-static void FSMTest2()
-{
+static void FSMTest2() {
     struct INITIALIZING : public State {};
 
     struct INITIALIZE_JOBS : public State {};
@@ -372,7 +369,6 @@ static void FSMTest2()
     machine.Update();
 
     CHECK_CONDITION(machine.GetState() == &ready);
-   
 
     machine.Update();
 
@@ -419,8 +415,7 @@ static void FSMTest2()
     CHECK_CONDITION(machine.GetState() == &ready);
 }
 
-void FSMTest()
-{
+void FSMTest() {
     FSMTest0();
     FSMTest1();
     FSMTest2();

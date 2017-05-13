@@ -27,12 +27,10 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Window.h"
 #include <string>
-namespace NSG
-{
-    class ExternalWindow : public Window
-    {
-    public:
-        ExternalWindow(const std::string& name);
-        ~ExternalWindow();
-    };
+namespace NSG {
+class ExternalWindow : public Window {
+public:
+    ExternalWindow(const std::string& name);
+    ~ExternalWindow();
+};
 }

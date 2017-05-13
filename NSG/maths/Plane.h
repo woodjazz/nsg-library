@@ -28,27 +28,27 @@ misrepresented as being the original software.
 #include "Vector4.h"
 #include <vector>
 
-namespace NSG
-{
-    class Plane
-    {
-	public:
-        static const Plane UP;
-        enum class Side {INPLANE, BEHIND, INFRONT};
-        Plane();
-        Plane(const Plane& plane);
-        Plane(const Vector3& v0, const Vector3& v1, const Vector3& v2);
-        Plane(const Vector3& normal, const Vector3& point);
-        Plane(const Vector4& plane);
-        void Define(const Vector3& v0, const Vector3& v1, const Vector3& v2);
-        void Define(const Vector3& normal, const Vector3& point);
-        float Distance(const Vector3& point) const;
-        Side SideOfPlane(const Vector3& point) const;
-        const Vector4& GetNormalD() const { return normald_; }
-		Vector4& GetNormalDRef() { return normald_; }
-        Vector3 GetNormal() const { return Vector3(normald_.x, normald_.y, normald_.z); }
-	private:
-		Vector4 normald_;
-    };
+namespace NSG {
+class Plane {
+public:
+    static const Plane UP;
+    enum class Side { INPLANE, BEHIND, INFRONT };
+    Plane();
+    Plane(const Plane& plane);
+    Plane(const Vector3& v0, const Vector3& v1, const Vector3& v2);
+    Plane(const Vector3& normal, const Vector3& point);
+    Plane(const Vector4& plane);
+    void Define(const Vector3& v0, const Vector3& v1, const Vector3& v2);
+    void Define(const Vector3& normal, const Vector3& point);
+    float Distance(const Vector3& point) const;
+    Side SideOfPlane(const Vector3& point) const;
+    const Vector4& GetNormalD() const { return normald_; }
+    Vector4& GetNormalDRef() { return normald_; }
+    Vector3 GetNormal() const {
+        return Vector3(normald_.x, normald_.y, normald_.z);
+    }
 
+private:
+    Vector4 normald_;
+};
 }

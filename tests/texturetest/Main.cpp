@@ -28,9 +28,7 @@ misrepresented as being the original software.
 
 extern void Tests();
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     Tests();
     return 0;
 };
-

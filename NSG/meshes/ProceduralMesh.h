@@ -26,12 +26,10 @@ misrepresented as being the original software.
 #pragma once
 #include "Mesh.h"
 
-namespace NSG
-{
-	class ProceduralMesh : public Mesh
-	{
-	public:
-		ProceduralMesh(const std::string& name, bool dynamic = false);
-		bool IsValid() override;
-	};
+namespace NSG {
+class ProceduralMesh : public Mesh {
+public:
+    ProceduralMesh(const std::string& name, bool dynamic = false);
+    bool IsValid() override;
+};
 }

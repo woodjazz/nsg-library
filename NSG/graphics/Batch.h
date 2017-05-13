@@ -24,33 +24,32 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "Object.h"
+#include "Types.h"
 
-namespace NSG
-{
-	class Batch
-    {
-	public:
-		Batch();
-		Batch(Material* material, Mesh* mesh);
-    	~Batch();
-		bool operator == (const Batch& obj) const;
-		//Batch(const Batch&) = delete;
-		//Batch& operator = (const Batch&) = delete;
-    	bool IsReady();
-		void Add(SceneNode* node);
-		Mesh* GetMesh() const { return mesh_; }
-		Material* GetMaterial() const { return material_; }
-		const std::vector<SceneNode*>& GetNodes() const { return nodes_; }
-		bool AllowInstancing() const;
-		void Clear();
-		bool IsEmpty() const { return !material_; }
-        static const size_t MaxNodesInBatch = 10000;
-	private:
-        Material* material_;
-        Mesh* mesh_;
-        std::vector<SceneNode*> nodes_;
-		bool allowInstancing_;
-    };
+namespace NSG {
+class Batch {
+public:
+    Batch();
+    Batch(Material* material, Mesh* mesh);
+    ~Batch();
+    bool operator==(const Batch& obj) const;
+    // Batch(const Batch&) = delete;
+    // Batch& operator = (const Batch&) = delete;
+    bool IsReady();
+    void Add(SceneNode* node);
+    Mesh* GetMesh() const { return mesh_; }
+    Material* GetMaterial() const { return material_; }
+    const std::vector<SceneNode*>& GetNodes() const { return nodes_; }
+    bool AllowInstancing() const;
+    void Clear();
+    bool IsEmpty() const { return !material_; }
+    static const size_t MaxNodesInBatch = 10000;
+
+private:
+    Material* material_;
+    Mesh* mesh_;
+    std::vector<SceneNode*> nodes_;
+    bool allowInstancing_;
+};
 }

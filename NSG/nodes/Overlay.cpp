@@ -24,56 +24,25 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Overlay.h"
-#include "Material.h"
 #include "FontAtlas.h"
+#include "Material.h"
 #include "ResourceFile.h"
-#include "Texture2D.h"
 #include "TextMesh.h"
+#include "Texture2D.h"
 
-namespace NSG
-{
-    Overlay::Overlay(const std::string& name)
-        : SceneNode(name),
-          hAlign_(CENTER_ALIGNMENT),
-          vAlign_(MIDDLE_ALIGNMENT),
-          font_(std::make_shared<FontAtlas>())
-    {
+namespace NSG {
+Overlay::Overlay(const std::string& name)
+    : SceneNode(name), hAlign_(CENTER_ALIGNMENT), vAlign_(MIDDLE_ALIGNMENT) {}
 
-    }
+Overlay::~Overlay() {}
 
-    Overlay::~Overlay()
-    {
-    }
-
-    void Overlay::SetMaterialName(const std::string& name)
-    {
-        SetMaterial(Material::GetOrCreate(name));
-        if(font_->IsReady())
-        {
-        	GetMaterial()->SetTextMap(font_->GetTexture());
-        	SetMesh(font_->GetOrCreateMesh(text_, hAlign_, vAlign_));
-        }
-    }
-
-    void Overlay::SetFont(const std::string& xmlName, const std::string& atlasName)
-    {
-        font_->Set(Resource::GetOrCreate<ResourceFile>(xmlName));
-        auto atlasTexture = std::make_shared<Texture2D>(Resource::GetOrCreate<ResourceFile>(atlasName));
-        if(GetMaterial())
-        	GetMaterial()->SetTextMap(atlasTexture);
-        font_->SetTexture(atlasTexture);
+void Overlay::SetText(const std::string& text, HorizontalAlignment hAlign,
+                      VerticalAlignment vAlign) {
+    if (text_ != text || hAlign_ != hAlign || vAlign_ != vAlign) {
+        text_ = text;
+        hAlign_ = hAlign;
+        vAlign_ = vAlign;
         SetMesh(font_->GetOrCreateMesh(text_, hAlign_, vAlign_));
     }
-
-    void Overlay::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
-    {
-        if (text_ != text || hAlign_ != hAlign || vAlign_ != vAlign)
-        {
-            text_ = text;
-            hAlign_ = hAlign;
-            vAlign_ = vAlign;
-            if(font_)
-            	SetMesh(font_->GetOrCreateMesh(text_, hAlign_, vAlign_));
-        }
-    }
+}
 }

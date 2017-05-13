@@ -29,28 +29,28 @@ misrepresented as being the original software.
 #include "Window.h"
 #include <string>
 
-namespace NSG
-{
-    class IOSWindow : public Window
-    {
-    public:
-        IOSWindow(const std::string& name, WindowFlags flags);
-        IOSWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-        ~IOSWindow();
-        void SwapWindowBuffers() override;
-        void Destroy() override;
-        void HandleEvents() override;
-        static int RunApplication();
-    private:
-        void SetContext() override;
-        void Show() override;
-        void Hide() override;
-        void Raise() override;
-        void SetupImgui() override;
-        void BeginImguiRender() override;
-        void Initialize(int x, int y, int width, int height, WindowFlags flags);
-        void Close() override;
-        int flags_;
-    };
+namespace NSG {
+class IOSWindow : public Window {
+public:
+    IOSWindow(const std::string& name, WindowFlags flags);
+    IOSWindow(const std::string& name, int x, int y, int width, int height,
+              WindowFlags flags);
+    ~IOSWindow();
+    void SwapWindowBuffers() override;
+    void Destroy() override;
+    void HandleEvents() override;
+    static int RunApplication();
+
+private:
+    void SetContext() override;
+    void Show() override;
+    void Hide() override;
+    void Raise() override;
+    void SetupImgui() override;
+    void BeginImguiRender() override;
+    void Initialize(int x, int y, int width, int height, WindowFlags flags);
+    void Close() override;
+    int flags_;
+};
 }
 #endif

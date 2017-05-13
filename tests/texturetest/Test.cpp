@@ -26,14 +26,16 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-static void Test01()
-{
+static void Test01() {
     auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 5));
-    auto resource = Resource::GetOrCreate<ResourceFile>("data/stonediffuse.dds");
-    auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+    auto resource =
+        Resource::GetOrCreate<ResourceFile>("data/stonediffuse.dds");
+    auto texture = std::make_shared<Texture2D>(
+        resource,
+        (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::Create<SphereMesh>();
     auto material = Material::Create();
     material->SetRenderPass(RenderPass::UNLIT);
@@ -44,14 +46,16 @@ static void Test01()
     Engine::Create()->RenderFrame();
 }
 
-static void Test02()
-{
+static void Test02() {
     auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 5));
-    auto resource = Resource::GetOrCreateClass<ResourceFile>("data/tex_etc1.ktx");
-    auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+    auto resource =
+        Resource::GetOrCreateClass<ResourceFile>("data/tex_etc1.ktx");
+    auto texture = std::make_shared<Texture2D>(
+        resource,
+        (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::CreateClass<SphereMesh>();
     auto material = Material::Create();
     material->SetRenderPass(RenderPass::UNLIT);
@@ -62,14 +66,16 @@ static void Test02()
     Engine::Create()->RenderFrame();
 }
 
-static void Test03()
-{
+static void Test03() {
     auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 5));
-    auto resource = Resource::GetOrCreateClass<ResourceFile>("data/tex_pvr.pvr");
-    auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+    auto resource =
+        Resource::GetOrCreateClass<ResourceFile>("data/tex_pvr.pvr");
+    auto texture = std::make_shared<Texture2D>(
+        resource,
+        (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
     auto mesh = Mesh::CreateClass<SphereMesh>();
     auto material = Material::Create();
     material->SetRenderPass(RenderPass::UNLIT);
@@ -80,8 +86,7 @@ static void Test03()
     Engine::Create()->RenderFrame();
 }
 
-static void Test04()
-{
+static void Test04() {
     auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
 
     {
@@ -92,18 +97,19 @@ static void Test04()
         CHECK_CONDITION(TextureFormat::DXT1 == image->GetFormat());
         image->Decompress();
         CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat());
-        //CHECK_CONDITION(image->SaveAsPNG("data/"));
+        // CHECK_CONDITION(image->SaveAsPNG("data/"));
     }
 
     {
-        auto resource = Resource::CreateClass<ResourceFile>("data/tex_etc1.ktx");
+        auto resource =
+            Resource::CreateClass<ResourceFile>("data/tex_etc1.ktx");
         CHECK_CONDITION(resource->IsReady());
         auto image = std::make_shared<Image>(resource);
         image->ReadResource();
         CHECK_CONDITION(TextureFormat::ETC1 == image->GetFormat());
         image->Decompress();
         CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat());
-        //CHECK_CONDITION(image->SaveAsPNG("data/"));
+        // CHECK_CONDITION(image->SaveAsPNG("data/"));
     }
 
     {
@@ -114,7 +120,7 @@ static void Test04()
         CHECK_CONDITION(TextureFormat::PVRTC_RGBA_2BPP == image->GetFormat());
         image->Decompress();
         CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat());
-        //CHECK_CONDITION(image->SaveAsPNG("data/"));
+        // CHECK_CONDITION(image->SaveAsPNG("data/"));
     }
 
     {
@@ -125,34 +131,32 @@ static void Test04()
         CHECK_CONDITION(TextureFormat::DXT1 == image->GetFormat());
         image->Decompress();
         CHECK_CONDITION(TextureFormat::RGBA == image->GetFormat());
-        //CHECK_CONDITION(image->SaveAsPNG("data/"));
+        // CHECK_CONDITION(image->SaveAsPNG("data/"));
     }
 }
 
-static void Test05()
-{
+static void Test05() {
     auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto scene = std::make_shared<Scene>();
     window->SetScene(scene);
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 5));
     auto texture = std::make_shared<Texture2D>("texture");
-	const int COLS = 10;
-    static const unsigned char data[][COLS] =
-    {
-        { 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-        { 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
-        { 0xFF, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
-        { 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
-        { 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
-        { 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
-        { 0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
-        { 0xFF, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
-        { 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
-        { 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+    const int COLS = 10;
+    static const unsigned char data[][COLS] = {
+        {0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+        {0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+        {0xFF, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
+        {0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
+        {0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
+        {0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
+        {0xFF, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
+        {0xFF, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF},
+        {0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+        {0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
     };
-	auto n = sizeof(data) / (COLS * sizeof(char));
-	texture->SetSize(n, n);
+    auto n = sizeof(data) / (COLS * sizeof(char));
+    texture->SetSize(n, n);
     texture->SetData(&(data[0][0]));
     texture->SetFormat(GL_ALPHA);
     auto mesh = Mesh::CreateClass<QuadMesh>();
@@ -165,9 +169,7 @@ static void Test05()
     Engine::Create()->PerformTicks();
 }
 
-
-void Tests()
-{
+void Tests() {
     Test05();
     Test04();
     Test01();

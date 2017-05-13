@@ -26,17 +26,14 @@ misrepresented as being the original software.
 #pragma once
 #include <string>
 
-namespace NSG
-{
-	class UTF8String : std::string
-	{
-	public:
-		UTF8String(const char* str);
-		~UTF8String();
-		unsigned int DecodeUTF8(const char*& src) const;
-		unsigned int ByteOffsetUTF8(unsigned int index) const;
-		unsigned int NextUTF8Char(unsigned& byteOffset) const;
-		unsigned int AtUTF8(unsigned index) const;
-
-	};
+namespace NSG {
+class UTF8String : std::string {
+public:
+    UTF8String(const char* str);
+    ~UTF8String();
+    unsigned int DecodeUTF8(const char*& src) const;
+    unsigned int ByteOffsetUTF8(unsigned int index) const;
+    unsigned int NextUTF8Char(unsigned& byteOffset) const;
+    unsigned int AtUTF8(unsigned index) const;
+};
 }

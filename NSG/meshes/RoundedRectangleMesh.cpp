@@ -24,118 +24,106 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "RoundedRectangleMesh.h"
-#include "Types.h"
 #include "Check.h"
 #include "Maths.h"
+#include "Types.h"
 #include <algorithm>
 
-namespace NSG
-{
-    RoundedRectangleMesh::RoundedRectangleMesh(const std::string& name)
-        : ProceduralMesh(name)
-    {
-        Set();
-        SetSerializable(false);
-    }
+namespace NSG {
+RoundedRectangleMesh::RoundedRectangleMesh(const std::string& name)
+    : ProceduralMesh(name) {
+    Set();
+    SetSerializable(false);
+}
 
-    RoundedRectangleMesh::~RoundedRectangleMesh()
-    {
-    }
+RoundedRectangleMesh::~RoundedRectangleMesh() {}
 
-    void RoundedRectangleMesh::Set(float radius, float width, float height, int res)
-    {
-        if (radius_ != radius || width_ != width || height_ != height || res_ != res)
-        {
-            radius_ = radius;
-            width_ = width;
-            height_ = height;
-            res_ = res;
-            Invalidate();
-        }
-    }
-
-    GLenum RoundedRectangleMesh::GetWireFrameDrawMode() const
-    {
-        return GL_LINE_LOOP;
-    }
-
-    GLenum RoundedRectangleMesh::GetSolidDrawMode() const
-    {
-        return GL_TRIANGLE_FAN;
-    }
-
-    size_t RoundedRectangleMesh::GetNumberOfTriangles() const
-    {
-        return vertexsData_.size() - 2;
-    }
-
-    void RoundedRectangleMesh::AllocateResources()
-    {
-        vertexsData_.clear();
-        indexes_.clear();
-
-        VertexsData& data = vertexsData_;
-
-        float halfX = width_ * 0.5f;
-        float halfY = height_ * 0.5f;
-
-        float angle = 0.0f;
-
-        float radius1 = std::min(radius_, std::min(halfX, halfY));
-
-        float totalSizeX = width_ + 2 * radius1;
-        float totalSizeY = height_ + 2 * radius1;
-
-        halfX -= (totalSizeX - width_) / 2;
-        halfY -= (totalSizeY - height_) / 2;
-        float coordXFactor = (2 * halfX) / totalSizeX;
-        float coordYFactor = (2 * halfY) / totalSizeY;
-
-        const float angleAdder = TWO_PI / (float)res_;
-
-        for (int i = 0; i < res_; i++)
-        {
-            VertexData vertexData;
-            vertexData.normal_ = Vertex3(0, 0, 1); // always facing forward
-            vertexData.position_.x = cos(angle);
-            vertexData.position_.y = sin(angle);
-            vertexData.position_.z = 0;
-			vertexData.uv_[0] = Vertex2(vertexData.position_.x, vertexData.position_.y);
-
-            vertexData.position_ = vertexData.position_ * radius1;
-
-            if (angle < PI / 2 || angle > 3 * PI / 2)
-            {
-                vertexData.position_.x += halfX;
-				vertexData.uv_[0].x = coordXFactor + 0.5f * (1 - coordXFactor) * vertexData.uv_[0].x;
-            }
-            else if (angle > PI / 2)
-            {
-                vertexData.position_.x -= halfX;
-				vertexData.uv_[0].x = -coordXFactor + 0.5f * (1 - coordXFactor) * vertexData.uv_[0].x;
-            }
-
-            if (angle >= 0 && angle < PI)
-            {
-                vertexData.position_.y += halfY;
-				vertexData.uv_[0].y = coordYFactor + 0.5f * (1 - coordYFactor) * vertexData.uv_[0].y;
-            }
-            else if (angle >= PI)
-            {
-                vertexData.position_.y -= halfY;
-				vertexData.uv_[0].y = -coordYFactor + 0.5f * (1 - coordYFactor) * vertexData.uv_[0].y;
-            }
-
-			vertexData.uv_[0].x = (vertexData.uv_[0].x + 1) / 2.0f;
-			vertexData.uv_[0].y = 1 - (vertexData.uv_[0].y + 1) / 2.0f;
-
-            data.push_back(vertexData);
-
-            angle += angleAdder;
-        }
-
-        Mesh::AllocateResources();
+void RoundedRectangleMesh::Set(float radius, float width, float height,
+                               int res) {
+    if (radius_ != radius || width_ != width || height_ != height ||
+        res_ != res) {
+        radius_ = radius;
+        width_ = width;
+        height_ = height;
+        res_ = res;
+        Invalidate();
     }
 }
 
+GLenum RoundedRectangleMesh::GetWireFrameDrawMode() const {
+    return GL_LINE_LOOP;
+}
 
+GLenum RoundedRectangleMesh::GetSolidDrawMode() const {
+    return GL_TRIANGLE_FAN;
+}
+
+size_t RoundedRectangleMesh::GetNumberOfTriangles() const {
+    return vertexsData_.size() - 2;
+}
+
+void RoundedRectangleMesh::AllocateResources() {
+    vertexsData_.clear();
+    indexes_.clear();
+
+    VertexsData& data = vertexsData_;
+
+    float halfX = width_ * 0.5f;
+    float halfY = height_ * 0.5f;
+
+    float angle = 0.0f;
+
+    float radius1 = std::min(radius_, std::min(halfX, halfY));
+
+    float totalSizeX = width_ + 2 * radius1;
+    float totalSizeY = height_ + 2 * radius1;
+
+    halfX -= (totalSizeX - width_) / 2;
+    halfY -= (totalSizeY - height_) / 2;
+    float coordXFactor = (2 * halfX) / totalSizeX;
+    float coordYFactor = (2 * halfY) / totalSizeY;
+
+    const float angleAdder = TWO_PI / (float)res_;
+
+    for (int i = 0; i < res_; i++) {
+        VertexData vertexData;
+        vertexData.normal_ = Vertex3(0, 0, 1); // always facing forward
+        vertexData.position_.x = cos(angle);
+        vertexData.position_.y = sin(angle);
+        vertexData.position_.z = 0;
+        vertexData.uv_[0] =
+            Vertex2(vertexData.position_.x, vertexData.position_.y);
+
+        vertexData.position_ = vertexData.position_ * radius1;
+
+        if (angle < PI / 2 || angle > 3 * PI / 2) {
+            vertexData.position_.x += halfX;
+            vertexData.uv_[0].x =
+                coordXFactor + 0.5f * (1 - coordXFactor) * vertexData.uv_[0].x;
+        } else if (angle > PI / 2) {
+            vertexData.position_.x -= halfX;
+            vertexData.uv_[0].x =
+                -coordXFactor + 0.5f * (1 - coordXFactor) * vertexData.uv_[0].x;
+        }
+
+        if (angle >= 0 && angle < PI) {
+            vertexData.position_.y += halfY;
+            vertexData.uv_[0].y =
+                coordYFactor + 0.5f * (1 - coordYFactor) * vertexData.uv_[0].y;
+        } else if (angle >= PI) {
+            vertexData.position_.y -= halfY;
+            vertexData.uv_[0].y =
+                -coordYFactor + 0.5f * (1 - coordYFactor) * vertexData.uv_[0].y;
+        }
+
+        vertexData.uv_[0].x = (vertexData.uv_[0].x + 1) / 2.0f;
+        vertexData.uv_[0].y = 1 - (vertexData.uv_[0].y + 1) / 2.0f;
+
+        data.push_back(vertexData);
+
+        angle += angleAdder;
+    }
+
+    Mesh::AllocateResources();
+}
+}

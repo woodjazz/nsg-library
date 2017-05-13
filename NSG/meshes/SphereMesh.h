@@ -26,22 +26,21 @@ misrepresented as being the original software.
 #pragma once
 #include "ProceduralMesh.h"
 
-namespace NSG
-{
-	class SphereMesh : public ProceduralMesh
-	{
-	public:
-		SphereMesh(const std::string& name);
-		void Set(float radius = 1, int rings = 8);
-		~SphereMesh();
-		GLenum GetWireFrameDrawMode() const override;
-		GLenum GetSolidDrawMode() const override;
-		size_t GetNumberOfTriangles() const override;
-        void AllocateResources() override;
-        PhysicsShape GetShapeType() const override { return SH_SPHERE; }
-	private:
-		float radius_;
-		int rings_;
-		friend class App;
-	};
+namespace NSG {
+class SphereMesh : public ProceduralMesh {
+public:
+    SphereMesh(const std::string& name);
+    void Set(float radius = 1, int rings = 8);
+    ~SphereMesh();
+    GLenum GetWireFrameDrawMode() const override;
+    GLenum GetSolidDrawMode() const override;
+    size_t GetNumberOfTriangles() const override;
+    void AllocateResources() override;
+    PhysicsShape GetShapeType() const override { return SH_SPHERE; }
+
+private:
+    float radius_;
+    int rings_;
+    friend class App;
+};
 }

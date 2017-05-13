@@ -24,73 +24,55 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "TriangleMesh.h"
-#include "Types.h"
 #include "Check.h"
+#include "Types.h"
 
-namespace NSG
-{
-    TriangleMesh::TriangleMesh(const std::string& name)
-        : ProceduralMesh(name)
-    {
-        Set();
-        SetSerializable(false);
-    }
+namespace NSG {
+TriangleMesh::TriangleMesh(const std::string& name) : ProceduralMesh(name) {
+    Set();
+    SetSerializable(false);
+}
 
-    TriangleMesh::~TriangleMesh()
-    {
-    }
+TriangleMesh::~TriangleMesh() {}
 
-    void TriangleMesh::Set(float width, float height)
-    {
-        if (width_ != width || height_ != height)
-        {
-            width_ = width;
-            height_ = height;
-            Invalidate();
-        }
-    }
-
-    GLenum TriangleMesh::GetWireFrameDrawMode() const
-    {
-        return GL_LINE_LOOP;
-    }
-
-    GLenum TriangleMesh::GetSolidDrawMode() const
-    {
-        return GL_TRIANGLE_FAN;
-    }
-
-    size_t TriangleMesh::GetNumberOfTriangles() const
-    {
-        return 1;
-    }
-
-    void TriangleMesh::AllocateResources()
-    {
-        vertexsData_.clear();
-        indexes_.clear();
-
-        VertexsData& data = vertexsData_;
-
-        float halfX = width_ * 0.5f;
-        float halfY = height_ * 0.5f;
-
-        VertexData vertexData;
-        vertexData.normal_ = Vertex3(0, 0, 1); // always facing forward
-
-        vertexData.position_ = Vertex3(-halfX, -halfY, 0);
-		vertexData.uv_[0] = Vertex2(0, 1);
-        data.push_back(vertexData);
-
-        vertexData.position_ = Vertex3(halfX, -halfY, 0);
-		vertexData.uv_[0] = Vertex2(1, 1);
-        data.push_back(vertexData);
-
-        vertexData.position_ = Vertex3(0, halfY, 0);
-		vertexData.uv_[0] = Vertex2(0.5f, 0);
-        data.push_back(vertexData);
-
-        Mesh::AllocateResources();
+void TriangleMesh::Set(float width, float height) {
+    if (width_ != width || height_ != height) {
+        width_ = width;
+        height_ = height;
+        Invalidate();
     }
 }
 
+GLenum TriangleMesh::GetWireFrameDrawMode() const { return GL_LINE_LOOP; }
+
+GLenum TriangleMesh::GetSolidDrawMode() const { return GL_TRIANGLE_FAN; }
+
+size_t TriangleMesh::GetNumberOfTriangles() const { return 1; }
+
+void TriangleMesh::AllocateResources() {
+    vertexsData_.clear();
+    indexes_.clear();
+
+    VertexsData& data = vertexsData_;
+
+    float halfX = width_ * 0.5f;
+    float halfY = height_ * 0.5f;
+
+    VertexData vertexData;
+    vertexData.normal_ = Vertex3(0, 0, 1); // always facing forward
+
+    vertexData.position_ = Vertex3(-halfX, -halfY, 0);
+    vertexData.uv_[0] = Vertex2(0, 1);
+    data.push_back(vertexData);
+
+    vertexData.position_ = Vertex3(halfX, -halfY, 0);
+    vertexData.uv_[0] = Vertex2(1, 1);
+    data.push_back(vertexData);
+
+    vertexData.position_ = Vertex3(0, halfY, 0);
+    vertexData.uv_[0] = Vertex2(0.5f, 0);
+    data.push_back(vertexData);
+
+    Mesh::AllocateResources();
+}
+}

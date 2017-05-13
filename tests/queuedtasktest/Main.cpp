@@ -28,8 +28,7 @@ misrepresented as being the original software.
 
 extern void QueuedTaskTest();
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     QueuedTaskTest();
 
     return 0;

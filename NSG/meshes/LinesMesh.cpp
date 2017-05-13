@@ -24,67 +24,46 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "LinesMesh.h"
-#include "Types.h"
 #include "Check.h"
+#include "Types.h"
 
-namespace NSG
-{
-    LinesMesh::LinesMesh(const std::string& name)
-        : ProceduralMesh(name, true)
-    {
-        SetSerializable(false);
-    }
-
-    LinesMesh::~LinesMesh()
-    {
-    }
-
-    void LinesMesh::Add(const Vector3& start, const Vector3& end, const Color& color)
-    {
-        Data data{ start, end, color };
-        lines_.push_back(data);
-        Invalidate();
-    }
-
-    void LinesMesh::Clear()
-    {
-		lines_.clear();
-    }
-
-    GLenum LinesMesh::GetWireFrameDrawMode() const
-    {
-        return GL_LINES;
-    }
-
-    GLenum LinesMesh::GetSolidDrawMode() const
-    {
-        return GL_LINES;
-    }
-
-    size_t LinesMesh::GetNumberOfTriangles() const
-    {
-        return 0;
-    }
-
-    void LinesMesh::AllocateResources()
-    {
-        vertexsData_.clear();
-        indexes_.clear();
-        indexesWireframe_.clear();
-
-        VertexsData& data = vertexsData_;
-        for (auto& line : lines_)
-        {
-            VertexData vertexData;
-            vertexData.position_ = line.start;
-            vertexData.color_ = line.color;
-            data.push_back(vertexData);
-            vertexData.position_ = line.end;
-            data.push_back(vertexData);
-        }
-
-        Mesh::AllocateResources();
-    }
-
+namespace NSG {
+LinesMesh::LinesMesh(const std::string& name) : ProceduralMesh(name, true) {
+    SetSerializable(false);
 }
 
+LinesMesh::~LinesMesh() {}
+
+void LinesMesh::Add(const Vector3& start, const Vector3& end,
+                    const Color& color) {
+    Data data{start, end, color};
+    lines_.push_back(data);
+    Invalidate();
+}
+
+void LinesMesh::Clear() { lines_.clear(); }
+
+GLenum LinesMesh::GetWireFrameDrawMode() const { return GL_LINES; }
+
+GLenum LinesMesh::GetSolidDrawMode() const { return GL_LINES; }
+
+size_t LinesMesh::GetNumberOfTriangles() const { return 0; }
+
+void LinesMesh::AllocateResources() {
+    vertexsData_.clear();
+    indexes_.clear();
+    indexesWireframe_.clear();
+
+    VertexsData& data = vertexsData_;
+    for (auto& line : lines_) {
+        VertexData vertexData;
+        vertexData.position_ = line.start;
+        vertexData.color_ = line.color;
+        data.push_back(vertexData);
+        vertexData.position_ = line.end;
+        data.push_back(vertexData);
+    }
+
+    Mesh::AllocateResources();
+}
+}

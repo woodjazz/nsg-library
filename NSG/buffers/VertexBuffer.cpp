@@ -24,79 +24,58 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "VertexBuffer.h"
-#include "RenderingContext.h"
 #include "Check.h"
 #include "Log.h"
+#include "RenderingContext.h"
 
-namespace NSG
-{
-    static VertexsData emptyVertexes;
-    VertexBuffer::VertexBuffer(GLenum usage)
-        : Buffer(GL_ARRAY_BUFFER, usage),
-          vertexes_(emptyVertexes)
-    {
+namespace NSG {
+static VertexsData emptyVertexes;
+VertexBuffer::VertexBuffer(GLenum usage)
+    : Buffer(GL_ARRAY_BUFFER, usage), vertexes_(emptyVertexes) {}
 
+VertexBuffer::VertexBuffer(const VertexsData& vertexes, GLenum usage)
+    : Buffer(GL_ARRAY_BUFFER, usage), vertexes_(vertexes) {}
+
+VertexBuffer::~VertexBuffer() {}
+
+void VertexBuffer::AllocateResources() {
+    CHECK_GL_STATUS();
+    auto ctx = RenderingContext::GetSharedPtr();
+    CHECK_ASSERT(ctx);
+    Buffer::AllocateResources();
+    ctx->SetVertexBuffer(this);
+    if (vertexes_.size()) {
+        auto bytesNeeded = vertexes_.size() * sizeof(VertexData);
+        glBufferData(type_, bytesNeeded, &vertexes_[0], usage_);
     }
+    CHECK_GL_STATUS();
+}
 
-    VertexBuffer::VertexBuffer(const VertexsData& vertexes, GLenum usage)
-        : Buffer(GL_ARRAY_BUFFER, usage),
-          vertexes_(vertexes)
-    {
+void VertexBuffer::ReleaseResources() {
+    auto ctx = RenderingContext::GetSharedPtr();
+    if (ctx) {
+        if (ctx->GetVertexBuffer() == this)
+            ctx->SetVertexBuffer(nullptr);
+        Buffer::ReleaseResources();
     }
+}
 
-    VertexBuffer::~VertexBuffer()
-    {
-    }
+void VertexBuffer::Unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
-    void VertexBuffer::AllocateResources()
-    {
+void VertexBuffer::UpdateData() {
+    if (IsReady()) {
         CHECK_GL_STATUS();
-        auto ctx = RenderingContext::GetSharedPtr();
-        CHECK_ASSERT(ctx);
-        Buffer::AllocateResources();
-        ctx->SetVertexBuffer(this);
-        if (vertexes_.size())
-        {
-            auto bytesNeeded = vertexes_.size() * sizeof(VertexData);
-            glBufferData(type_, bytesNeeded, &vertexes_[0], usage_);
-        }
-        CHECK_GL_STATUS();
-    }
-
-    void VertexBuffer::ReleaseResources()
-    {
-        auto ctx = RenderingContext::GetSharedPtr();
-        if (ctx)
-        {
-            if (ctx->GetVertexBuffer() == this)
-                ctx->SetVertexBuffer(nullptr);
-            Buffer::ReleaseResources();
-        }
-    }
-
-
-    void VertexBuffer::Unbind()
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    void VertexBuffer::UpdateData()
-    {
-        if (IsReady())
-        {
-            CHECK_GL_STATUS();
-            auto bytesNeeded = vertexes_.size() * sizeof(VertexData);
-            glBufferData(type_, bytesNeeded, &vertexes_[0], usage_);
-            CHECK_GL_STATUS();
-        }
-    }
-
-    void VertexBuffer::SetData(GLsizeiptr size, const GLvoid* data)
-    {
-        auto ctx = RenderingContext::GetSharedPtr();
-        CHECK_GL_STATUS();
-        ctx->SetVertexBuffer(this, true);
-        glBufferData(type_, size, data, usage_);
+        auto bytesNeeded = vertexes_.size() * sizeof(VertexData);
+        glBufferData(type_, bytesNeeded, &vertexes_[0], usage_);
         CHECK_GL_STATUS();
     }
+}
+
+void VertexBuffer::SetData(GLsizeiptr size, const GLvoid* data) {
+    auto ctx = RenderingContext::GetSharedPtr();
+    CHECK_GL_STATUS();
+    ctx->SetVertexBuffer(this, true);
+    glBufferData(type_, size, data, usage_);
+    CHECK_GL_STATUS();
+}
 }

@@ -25,45 +25,47 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-#include <vector>
 #include <map>
+#include <vector>
 
-namespace NSG
-{
-    struct AnimationControl
-    {
-        PAnimation animation_;
-        float targetWeight_;
-        float speed_;
-        float fadeTime_;
-        AnimationControl();
-    };
+namespace NSG {
+struct AnimationControl {
+    PAnimation animation_;
+    float targetWeight_;
+    float speed_;
+    float fadeTime_;
+    AnimationControl();
+};
 
-    class AnimationController
-    {
-    public:
-        AnimationController(PSceneNode sceneNode);
-        ~AnimationController();
-        //Plays an animation without any blending.
-        void Play(const std::string& name, bool looped, float fadeInTime = 0);
-        //Fades the animation with name in over a period of time seconds and fades other animations out.
-        void CrossFade(const std::string& name, bool looped, float fadeTime = 0);
-        void Stop(const std::string& name, float fadeOutTime = 0);
-        // Blends the animation named name towards targetWeight over the next time seconds
-        void Blend(const std::string& name, float targetWeight, float fadeTime);
-        bool IsPlaying(const std::string& name) const;
-        void SetSpeed(const std::string& name, float speed);
-    private:
-		typedef std::map<std::string, PAnimationControl> Animations;
-		Animations::iterator Remove(AnimationController::Animations::iterator it, PAnimationControl control);
-        void FadeOthers(const std::string& name, float targetWeight, float fadeTime);
-        void Update(float deltaTime);
-        PAnimationControl GetAnimationControl(const std::string& name);
-        PAnimationState GetAnimationState(PAnimation animation);
-        Animations animations_;
-        typedef std::vector<PAnimationState> AnimationStates;
-        AnimationStates animationStates_;
-        PWeakSceneNode sceneNode_;
-        SignalUpdate::PSlot slotUpdate_;
-    };
+class AnimationController {
+public:
+    AnimationController(PSceneNode sceneNode);
+    ~AnimationController();
+    // Plays an animation without any blending.
+    void Play(const std::string& name, bool looped, float fadeInTime = 0);
+    // Fades the animation with name in over a period of time seconds and fades
+    // other animations out.
+    void CrossFade(const std::string& name, bool looped, float fadeTime = 0);
+    void Stop(const std::string& name, float fadeOutTime = 0);
+    // Blends the animation named name towards targetWeight over the next time
+    // seconds
+    void Blend(const std::string& name, float targetWeight, float fadeTime);
+    bool IsPlaying(const std::string& name) const;
+    void SetSpeed(const std::string& name, float speed);
+
+private:
+    typedef std::map<std::string, PAnimationControl> Animations;
+    Animations::iterator Remove(AnimationController::Animations::iterator it,
+                                PAnimationControl control);
+    void FadeOthers(const std::string& name, float targetWeight,
+                    float fadeTime);
+    void Update(float deltaTime);
+    PAnimationControl GetAnimationControl(const std::string& name);
+    PAnimationState GetAnimationState(PAnimation animation);
+    Animations animations_;
+    typedef std::vector<PAnimationState> AnimationStates;
+    AnimationStates animationStates_;
+    PWeakSceneNode sceneNode_;
+    SignalUpdate::PSlot slotUpdate_;
+};
 }

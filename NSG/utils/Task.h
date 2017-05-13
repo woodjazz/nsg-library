@@ -26,21 +26,18 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 
-namespace NSG 
-{
-    namespace Task 
-    {
-        struct Task {
-            virtual ~Task() {}
-            virtual void Run() = 0;
-            // OverDue is only used by TimedTask
-            virtual bool OverDue(Milliseconds overDueTime) 
-            { 
-                return true; //Run anyway, otherwise return false
-            }
-            virtual void Exception(const std::exception& e) {}
-        };
-
-        typedef std::shared_ptr<Task> PTask;
+namespace NSG {
+namespace Task {
+struct Task {
+    virtual ~Task() {}
+    virtual void Run() = 0;
+    // OverDue is only used by TimedTask
+    virtual bool OverDue(Milliseconds overDueTime) {
+        return true; // Run anyway, otherwise return false
     }
+    virtual void Exception(const std::exception& e) {}
+};
+
+typedef std::shared_ptr<Task> PTask;
+}
 }

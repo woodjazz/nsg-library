@@ -26,131 +26,124 @@ misrepresented as being the original software.
 #include "MemoryManager.h"
 #include "Log.h"
 #ifdef USE_POOLS
-#include "Pool.h"
 #include "Check.h"
-#include <thread>
-#include <cstdlib>
-#include <vector>
+#include "Pool.h"
 #include <atomic>
+#include <cstdlib>
 #include <new>
+#include <thread>
+#include <vector>
 
-namespace NSG
-{
-    void AtExit();
-    struct PoolData
-    {
-        size_t objSize_;
-        IPool* pool_;
-        PoolData() : objSize_(0), pool_(nullptr) {}
-        PoolData(IPool& pool) : objSize_(pool.GetObjSize()), pool_(&pool) {}
-    };
-    struct Pools;
-    static Pools* poolsObj = nullptr;
+namespace NSG {
+void AtExit();
+struct PoolData {
+    size_t objSize_;
+    IPool* pool_;
+    PoolData() : objSize_(0), pool_(nullptr) {}
+    PoolData(IPool& pool) : objSize_(pool.GetObjSize()), pool_(&pool) {}
+};
+struct Pools;
+static Pools* poolsObj = nullptr;
 
-    void* AllocateMemoryFromHeap(std::size_t count)
-    {
-        size_t newSize = sizeof(MemHeader) + count;
-        //LOGI("Allocating %u from heap.", (unsigned)newSize);
-        void* p = std::malloc(newSize);
-        if (p)
-        {
-            MemHeader* header = (MemHeader*)p;
-			header->poolPointer_ = &AllocateMemoryFromHeap;
-            void* memBlock = (char*)p + sizeof(MemHeader);
-            return memBlock;
-        }
-        LOGE("Allocation of %lu from heap has FAILED.(bad_alloc)", newSize);
-        return nullptr;
+void* AllocateMemoryFromHeap(std::size_t count) {
+    size_t newSize = sizeof(MemHeader) + count;
+    // LOGI("Allocating %u from heap.", (unsigned)newSize);
+    void* p = std::malloc(newSize);
+    if (p) {
+        MemHeader* header = (MemHeader*)p;
+        header->poolPointer_ = &AllocateMemoryFromHeap;
+        void* memBlock = (char*)p + sizeof(MemHeader);
+        return memBlock;
+    }
+    LOGE("Allocation of %lu from heap has FAILED.(bad_alloc)", newSize);
+    return nullptr;
+}
+
+void ReleaseMemoryFromHeap(void* ptr) {
+    void* memObj = (char*)ptr - sizeof(MemHeader);
+    MemHeader* header = (MemHeader*)memObj;
+    if (header->poolPointer_ == &AllocateMemoryFromHeap) {
+        // LOGI("Releasing memory to heap");
+        std::free(memObj);
+    }
+}
+
+struct Pools {
+    friend void AtExit();
+    static const size_t MinPoolSize = 1;
+    Pool<MinPoolSize << 0, 1000> pool1_;
+    Pool<MinPoolSize << 1, 1000> pool2_;
+    Pool<MinPoolSize << 2, 1000> pool4_;
+    Pool<MinPoolSize << 3, 50000> pool8_;
+    Pool<MinPoolSize << 4, 50000> pool16_;
+    Pool<MinPoolSize << 5, 50000> pool32_;
+    Pool<MinPoolSize << 6, 90000> pool64_;
+    Pool<MinPoolSize << 7, 90000> pool128_;
+    Pool<MinPoolSize << 8, 20000> pool256_;
+    Pool<MinPoolSize << 9, 20000> pool512_;
+    Pool<MinPoolSize << 10, 1000> pool1024_;
+    Pool<MinPoolSize << 11, 1000> pool2048_;
+    Pool<MinPoolSize << 12, 100> pool4096_;
+    Pool<MinPoolSize << 13, 100> pool8192_;
+    Pool<MinPoolSize << 14, 50> pool16384_;
+    Pool<MinPoolSize << 15, 2> pool32768_;
+    static const size_t MaxPoolSize = MinPoolSize << 15;
+    static const size_t MaxPools = 16;
+    PoolData* pools_;
+    size_t nPools_;
+    void* begin_;
+    void* end_;
+    Pools() {
+        begin_ = this;
+        end_ = (char*)this + sizeof(Pools);
+
+        PoolData pools[] = {pool1_,    pool2_,    pool4_,     pool8_,
+                            pool16_,   pool32_,   pool64_,    pool128_,
+                            pool256_,  pool512_,  pool1024_,  pool2048_,
+                            pool4096_, pool8192_, pool16384_, pool32768_};
+        static_assert(MaxPools == sizeof(pools) / sizeof(PoolData),
+                      "Number of pools is incorrect");
+        static char memPoolData[sizeof(PoolData) * MaxPools] = {0};
+        pools_ = new (memPoolData) PoolData;
+        int i = 0;
+        for (auto& obj : pools)
+            pools_[i++] = std::move(obj);
+        nPools_ = MaxPools;
+        std::sort(&pools_[0], &pools_[MaxPools],
+                  [](const PoolData& a, const PoolData& b) {
+                      return a.objSize_ < b.objSize_;
+                  });
+        poolsObj = this;
+        //#if !defined(IOS) && !defined(ANDROID) && !defined(IS_TARGET_LINUX)
+        // std::atexit(AtExit);
+        //#endif
     }
 
-    void ReleaseMemoryFromHeap(void* ptr)
-    {
-        void* memObj = (char*)ptr - sizeof(MemHeader);
-        MemHeader* header = (MemHeader*)memObj;
-		if (header->poolPointer_ == &AllocateMemoryFromHeap)
-        {
-            //LOGI("Releasing memory to heap");
-            std::free(memObj);
-        }
+    ~Pools() {
+        poolsObj = nullptr;
+        delete[] pools_;
     }
 
-    struct Pools
-    {
-        friend void AtExit();
-        static const size_t MinPoolSize = 1;
-        Pool < MinPoolSize << 0, 1000 > pool1_;
-        Pool < MinPoolSize << 1, 1000 > pool2_;
-        Pool < MinPoolSize << 2, 1000 > pool4_;
-        Pool < MinPoolSize << 3, 50000 > pool8_;
-        Pool < MinPoolSize << 4, 50000 > pool16_;
-        Pool < MinPoolSize << 5, 50000 > pool32_;
-        Pool < MinPoolSize << 6, 90000 > pool64_;
-        Pool < MinPoolSize << 7, 90000 > pool128_;
-        Pool < MinPoolSize << 8, 20000 > pool256_;
-        Pool < MinPoolSize << 9, 20000 > pool512_;
-        Pool < MinPoolSize << 10, 1000 > pool1024_;
-        Pool < MinPoolSize << 11, 1000 > pool2048_;
-        Pool < MinPoolSize << 12, 100 > pool4096_;
-        Pool < MinPoolSize << 13, 100 > pool8192_;
-        Pool < MinPoolSize << 14, 50 > pool16384_;
-        Pool < MinPoolSize << 15, 2 > pool32768_;
-		static const size_t MaxPoolSize = MinPoolSize << 15;
-        static const size_t MaxPools = 16;
-        PoolData* pools_;
-        size_t nPools_;
-        void* begin_;
-        void* end_;
-        Pools()
-        {
-            begin_ = this;
-            end_ = (char*)this + sizeof(Pools);
-
-            PoolData pools[] = { pool1_, pool2_, pool4_, pool8_, pool16_, pool32_, pool64_, pool128_, pool256_, pool512_, pool1024_, pool2048_, pool4096_, pool8192_, pool16384_, pool32768_ };
-            static_assert(MaxPools == sizeof(pools) / sizeof(PoolData), "Number of pools is incorrect");
-            static char memPoolData[sizeof(PoolData) * MaxPools] = { 0 };
-			pools_ = new(memPoolData)PoolData;
-            int i = 0;
-            for (auto& obj : pools)
-                pools_[i++] = std::move(obj);
-            nPools_ = MaxPools;
-            std::sort(&pools_[0], &pools_[MaxPools], [](const PoolData & a, const PoolData & b) { return a.objSize_ < b.objSize_; });
-            poolsObj = this;
-            //#if !defined(IOS) && !defined(ANDROID) && !defined(IS_TARGET_LINUX)
-            //std::atexit(AtExit);
-            //#endif
-        }
-
-        ~Pools()
-		{
-			poolsObj = nullptr;
-			delete[] pools_;
-		}
-
-        IPool* GetBestPool(std::size_t count)
-        {
-            assert(count >= 0);
-            #if 0
+    IPool* GetBestPool(std::size_t count) {
+        assert(count >= 0);
+#if 0
             size_t slot = (size_t)std::ceil(std::log2(count));
             if (slot < nPools_)
                 return pools_[slot].pool_;
             return nullptr;
-            #else
-			if (count <= Pools::MaxPoolSize)
-				for (size_t i = 0; i < nPools_; i++)
-					if (pools_[i].objSize_ > count)
-						return pools_[i].pool_;
-            return nullptr;
-            #endif
-        }
+#else
+        if (count <= Pools::MaxPoolSize)
+            for (size_t i = 0; i < nPools_; i++)
+                if (pools_[i].objSize_ > count)
+                    return pools_[i].pool_;
+        return nullptr;
+#endif
+    }
 
-        inline bool IsPool(void* p)
-        {
-            return p >= begin_ && p < end_;
-        }
-    };
+    inline bool IsPool(void* p) { return p >= begin_ && p < end_; }
+};
 
-    static void* AllocateMemory(std::size_t count)
-    {
+static void* AllocateMemory(std::size_t count) {
 #if 0
 		static struct Initializer
 		{
@@ -166,61 +159,50 @@ namespace NSG
 			}
 		} initializer;
 #endif
-		if (poolsObj)
-		{
-			IPool* pool = poolsObj->GetBestPool(count);
-			if (pool)
-			{
-				void* p = pool->Allocate(count);
-				if (p) return p;
-			}
-		}
-        return AllocateMemoryFromHeap(count);
-    }
-
-    static void ReleaseMemory(void* ptr, std::size_t count)
-    {
-        if (ptr)
-        {
-			if (poolsObj)
-            {
-                void* memObj = (char*)ptr - sizeof(MemHeader);
-                MemHeader* header = (MemHeader*)memObj;
-				if (header->poolPointer_ != &AllocateMemoryFromHeap)
-                {
-                    IPool* pool = (IPool*)header->poolPointer_;
-					if (poolsObj->IsPool((void*)pool))
-					{
-						pool->DeAllocate(ptr);
-						return;
-					}
-                }
-            }
-			ReleaseMemoryFromHeap(ptr);
+    if (poolsObj) {
+        IPool* pool = poolsObj->GetBestPool(count);
+        if (pool) {
+            void* p = pool->Allocate(count);
+            if (p)
+                return p;
         }
     }
+    return AllocateMemoryFromHeap(count);
+}
 
-	static Pools* memoryPools = nullptr;
-	void InitilizeMemoryManager()
-	{
-		static char memPools[sizeof(Pools)];
-		memoryPools = new(&memPools[0])Pools;
-	}
+static void ReleaseMemory(void* ptr, std::size_t count) {
+    if (ptr) {
+        if (poolsObj) {
+            void* memObj = (char*)ptr - sizeof(MemHeader);
+            MemHeader* header = (MemHeader*)memObj;
+            if (header->poolPointer_ != &AllocateMemoryFromHeap) {
+                IPool* pool = (IPool*)header->poolPointer_;
+                if (poolsObj->IsPool((void*)pool)) {
+                    pool->DeAllocate(ptr);
+                    return;
+                }
+            }
+        }
+        ReleaseMemoryFromHeap(ptr);
+    }
+}
 
-	void DestroyMemoryManager()
-	{
-#if (defined(DEBUG) || defined (_DEBUG)) && !defined(NDEBUG)
-		memoryPools->~Pools();
+static Pools* memoryPools = nullptr;
+void InitilizeMemoryManager() {
+    static char memPools[sizeof(Pools)];
+    memoryPools = new (&memPools[0]) Pools;
+}
+
+void DestroyMemoryManager() {
+#if (defined(DEBUG) || defined(_DEBUG)) && !defined(NDEBUG)
+    memoryPools->~Pools();
 #endif
-	}
+}
 }
 
 using namespace NSG;
 
-void* operator new(std::size_t count)
-{
-    return AllocateMemory(count);
-}
+void* operator new(std::size_t count) { return AllocateMemory(count); }
 
 #if _MSC_VER
 void operator delete(void* ptr)
@@ -240,10 +222,7 @@ void operator delete(void* ptr, std::size_t count) noexcept
     ReleaseMemory(ptr, count);
 }
 
-void* operator new[](size_t count)
-{
-	return AllocateMemory(count);
-}
+void* operator new[](size_t count) { return AllocateMemory(count); }
 
 #if _MSC_VER
 void operator delete[](void* ptr)
@@ -254,19 +233,14 @@ void operator delete[](void* ptr) noexcept
     ReleaseMemory(ptr, 0);
 }
 #else
-//void AtExit()
+// void AtExit()
 //{
 //	LOGI("*** AtExit called ***");
 //}
 
-namespace NSG
-{
-	void InitilizeMemoryManager()
-	{
-	}
+namespace NSG {
+void InitilizeMemoryManager() {}
 
-	void DestroyMemoryManager()
-	{
-	}
+void DestroyMemoryManager() {}
 }
 #endif

@@ -33,16 +33,15 @@ Enemy::Enemy(PScene scene)
       body_(child_->GetOrCreateRigidBody()),
       explo_(std::make_shared<Explo>(child_)),
       collisionGroup_((int)CollisionMask::ENEMY),
-      collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::ENEMY)
-{
+      collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::ENEMY) {
     auto radius = Level::GetFlyDistance();
     child_->SetScale(0.25f);
     child_->SetPosition(Vector3(0, 0, radius));
     child_->SetMesh(Mesh::GetOrCreate<TriangleMesh>("EnemyMesh"));
     auto material(Material::GetOrCreate("EnemyMaterial"));
     material->SetDiffuseColor(Color::Red);
-    //material->SetFillMode(FillMode::WIREFRAME);
-    //material->SetDiffuseColor(COLOR_DODGER_BLUE);
+    // material->SetFillMode(FillMode::WIREFRAME);
+    // material->SetDiffuseColor(COLOR_DODGER_BLUE);
     material->SetRenderPass(RenderPass::UNLIT);
     child_->SetMaterial(material);
     child_->SetUserData(this);
@@ -56,22 +55,21 @@ Enemy::Enemy(PScene scene)
 
     body_->SetKinematic(true);
     body_->HandleCollisions(true);
-    auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, Vector3::One));
+    auto shape =
+        Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, Vector3::One));
     shape->SetBB(child_->GetWorldBoundingBox());
     body_->AddShape(shape);
     body_->SetCollisionMask(collisionGroup_, collisionMask_);
 
-    slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
-    {
-        if (contactInfo.collider_->GetRigidBody()->HandleCollision())
-        {
-            body_->HandleCollisions(false);
-            explo_->Start();
-        }
-    });
+    slotCollision_ = child_->SigCollision()->Connect(
+        [this](const ContactPoint& contactInfo) {
+            if (contactInfo.collider_->GetRigidBody()->HandleCollision()) {
+                body_->HandleCollisions(false);
+                explo_->Start();
+            }
+        });
 
-    updateSlot_ = Engine::SigUpdate()->Connect([this](float dt)
-    {
+    updateSlot_ = Engine::SigUpdate()->Connect([this](float dt) {
         wave0_.x += dt;
         wave0_.y = sin(wave0_.x);
         child_->SetOrientation(Quaternion(wave0_.y, Vector3::Forward));
@@ -81,30 +79,21 @@ Enemy::Enemy(PScene scene)
     });
 }
 
-Enemy::~Enemy()
-{
-    node_->SetParent(nullptr);
-}
+Enemy::~Enemy() { node_->SetParent(nullptr); }
 
-void Enemy::SetPosition(float pitch, float yaw)
-{
+void Enemy::SetPosition(float pitch, float yaw) {
     node_->Pitch(pitch);
     node_->Yaw(yaw);
 }
 
-void Enemy::SetTotal(unsigned total)
-{
-    s_total = total;
-}
+void Enemy::SetTotal(unsigned total) { s_total = total; }
 
-void Enemy::Destroyed()
-{
+void Enemy::Destroyed() {
     CHECK_ASSERT(s_total > 0);
     auto level = Level::GetCurrent();
     level->RemoveObject(this);
-    if (--s_total == 0)
-    {
-        Level::Load(level->GetIndex() + 1, Window::GetMainWindow()->shared_from_this());
+    if (--s_total == 0) {
+        Level::Load(level->GetIndex() + 1,
+                    Window::GetMainWindow()->shared_from_this());
     }
 }
-

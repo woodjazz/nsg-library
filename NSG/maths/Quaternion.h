@@ -25,41 +25,39 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Vector3.h"
-namespace NSG
-{
-    struct Matrix4;
-    struct Matrix3;
-    struct Quaternion
-	{
-		float x, y, z, w;
-        Quaternion();
-        Quaternion(float w, float x, float y, float z);
-        Quaternion(const Vector3& eulerAngle);
-		Quaternion(float angle, const Vector3& axis);
-        Quaternion(const Matrix4& m);
-        Quaternion(const Matrix3& m);
-        Quaternion(const Quaternion& q);
-		Quaternion(const Vector3& direction, const Vector3& upDirection);
-        const Quaternion& operator/=(float s);
-        const Quaternion& operator*=(const Quaternion& q);
-		bool IsNaN() const;
-		float Dot(const Quaternion& q) const;
-		Quaternion Inverse() const;
-		Quaternion Slerp(const Quaternion& b, float t) const;
-		float Roll() const;
-		float Pitch() const;
-		float Yaw() const;
-		Vertex3 EulerAngles() const;
-		Quaternion Normalize() const;
-        static const Quaternion Identity;
-	};
-	bool operator!=(const Quaternion& q1, const Quaternion& q2);
-	Vector3 operator*(const Quaternion& q,	const Vector3& v);
-	Quaternion operator*(const Quaternion& p, const Quaternion& q);
-    Quaternion operator+(const Quaternion& p, const Quaternion& q);
-    Quaternion operator/(const Quaternion& q, float s);
-    Quaternion operator*(const Quaternion&  q, float s);
-    Quaternion operator*(float s, const Quaternion& q);
-    Quaternion operator-(const Quaternion& q);
-	Quaternion Rotation(const Vector3& orig, const Vector3& dest);
+namespace NSG {
+struct Matrix4;
+struct Matrix3;
+struct Quaternion {
+    float x, y, z, w;
+    Quaternion();
+    Quaternion(float w, float x, float y, float z);
+    Quaternion(const Vector3& eulerAngle);
+    Quaternion(float angle, const Vector3& axis);
+    Quaternion(const Matrix4& m);
+    Quaternion(const Matrix3& m);
+    Quaternion(const Quaternion& q);
+    Quaternion(const Vector3& direction, const Vector3& upDirection);
+    const Quaternion& operator/=(float s);
+    const Quaternion& operator*=(const Quaternion& q);
+    bool IsNaN() const;
+    float Dot(const Quaternion& q) const;
+    Quaternion Inverse() const;
+    Quaternion Slerp(const Quaternion& b, float t) const;
+    float Roll() const;
+    float Pitch() const;
+    float Yaw() const;
+    Vertex3 EulerAngles() const;
+    Quaternion Normalize() const;
+    static const Quaternion Identity;
+};
+bool operator!=(const Quaternion& q1, const Quaternion& q2);
+Vector3 operator*(const Quaternion& q, const Vector3& v);
+Quaternion operator*(const Quaternion& p, const Quaternion& q);
+Quaternion operator+(const Quaternion& p, const Quaternion& q);
+Quaternion operator/(const Quaternion& q, float s);
+Quaternion operator*(const Quaternion& q, float s);
+Quaternion operator*(float s, const Quaternion& q);
+Quaternion operator-(const Quaternion& q);
+Quaternion Rotation(const Vector3& orig, const Vector3& dest);
 }

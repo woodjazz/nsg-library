@@ -26,48 +26,39 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-static void Test01()
-{
-	{
-		auto resource = Resource::Create<ResourceFile>("data/frankie_home_col");
-		auto image = std::make_shared<Image>(resource);
-		for (int i = 0; i < 50; i++)
-		{
-			CHECK_CONDITION(image->IsReady());
-			image->Invalidate();
-		}
-		Resource::Clear();
-	}
+static void Test01() {
+    {
+        auto resource = Resource::Create<ResourceFile>("data/frankie_home_col");
+        auto image = std::make_shared<Image>(resource);
+        for (int i = 0; i < 50; i++) {
+            CHECK_CONDITION(image->IsReady());
+            image->Invalidate();
+        }
+        Resource::Clear();
+    }
 }
 
-static void Test02()
-{
-	{
-		auto resource = Resource::Create<ResourceFile>("data/frankie_home_col");
-		auto texture = std::make_shared<Texture2D>(resource);
-		for (int i = 0; i < 1050; i++)
-		{
-			CHECK_CONDITION(texture->IsReady());
-			texture->Invalidate();
-		}
-		Resource::Clear();
-	}
+static void Test02() {
+    {
+        auto resource = Resource::Create<ResourceFile>("data/frankie_home_col");
+        auto texture = std::make_shared<Texture2D>(resource);
+        for (int i = 0; i < 1050; i++) {
+            CHECK_CONDITION(texture->IsReady());
+            texture->Invalidate();
+        }
+        Resource::Clear();
+    }
 }
 
-static void Test03()
-{
-	auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
-	auto slotUpdate = Engine::SigUpdate()->Connect([&](float deltaTime)
-	{
-		Camera cam;
-	});
+static void Test03() {
+    auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
+    auto slotUpdate =
+        Engine::SigUpdate()->Connect([&](float deltaTime) { Camera cam; });
 
-	Engine::Create()->Run();
+    Engine::Create()->Run();
 }
 
-
-void Tests()
-{
+void Tests() {
 #if 0
 	{
 		auto window = Window::Create("window", 0, 0, 1, 1, (int)WindowFlag::HIDDEN);
@@ -75,5 +66,5 @@ void Tests()
 		Test02();
 	}
 #endif
-	//Test03();
+    // Test03();
 }

@@ -22,41 +22,42 @@
 // Updated by Néstor Silveira Gorski for nsg-library
 
 #pragma once
-#include "Types.h"
 #include "Frustum.h"
 #include "Ray.h"
+#include "Types.h"
 #include <vector>
 
-namespace NSG
-{
-    class OctreeQuery
-    {
-    public:
-        OctreeQuery(std::vector<SceneNode*>& result);
-        virtual ~OctreeQuery();
-        virtual Intersection TestOctant(const BoundingBox& box, bool inside) = 0;
-        virtual void Test(const std::vector<SceneNode*>& objs, bool inside) = 0;
-        std::vector<SceneNode*>& result_;
-    };
+namespace NSG {
+class OctreeQuery {
+public:
+    OctreeQuery(std::vector<SceneNode*>& result);
+    virtual ~OctreeQuery();
+    virtual Intersection TestOctant(const BoundingBox& box, bool inside) = 0;
+    virtual void Test(const std::vector<SceneNode*>& objs, bool inside) = 0;
+    std::vector<SceneNode*>& result_;
+};
 
-    class FrustumOctreeQuery : public OctreeQuery
-    {
-    public:
-        FrustumOctreeQuery(std::vector<SceneNode*>& result, const Frustum* frustum);
-        virtual Intersection TestOctant(const BoundingBox& box, bool inside) override;
-        virtual void Test(const std::vector<SceneNode*>& objs, bool inside) override;
-    private:
-        const Frustum* frustum_;
-    };
+class FrustumOctreeQuery : public OctreeQuery {
+public:
+    FrustumOctreeQuery(std::vector<SceneNode*>& result, const Frustum* frustum);
+    virtual Intersection TestOctant(const BoundingBox& box,
+                                    bool inside) override;
+    virtual void Test(const std::vector<SceneNode*>& objs,
+                      bool inside) override;
 
-    class RayOctreeQuery  : public OctreeQuery
-    {
-    public:
-        RayOctreeQuery(std::vector<SceneNode*>& result, const Ray& ray);
-        virtual Intersection TestOctant(const BoundingBox& box, bool inside) override;
-        virtual void Test(const std::vector<SceneNode*>& objs, bool inside) override;
-    private:
-        Ray ray_;
-    };
+private:
+    const Frustum* frustum_;
+};
 
+class RayOctreeQuery : public OctreeQuery {
+public:
+    RayOctreeQuery(std::vector<SceneNode*>& result, const Ray& ray);
+    virtual Intersection TestOctant(const BoundingBox& box,
+                                    bool inside) override;
+    virtual void Test(const std::vector<SceneNode*>& objs,
+                      bool inside) override;
+
+private:
+    Ray ray_;
+};
 }

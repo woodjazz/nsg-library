@@ -26,19 +26,11 @@ misrepresented as being the original software.
 #include "ExternalWindow.h"
 #include "Log.h"
 
-namespace NSG
-{
-    ExternalWindow::ExternalWindow(const std::string& name)
-        : Window(name)
-    {
-        LOGI("External window %s created.", name_.c_str());
-        Window::SetMainWindow(this);
-    }
-
-
-    ExternalWindow::~ExternalWindow()
-    {
-        Close();
-    }
+namespace NSG {
+ExternalWindow::ExternalWindow(const std::string& name) : Window(name) {
+    LOGI("External window %s created.", name_.c_str());
+    Window::SetMainWindow(this);
 }
 
+ExternalWindow::~ExternalWindow() { Close(); }
+}

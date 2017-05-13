@@ -27,17 +27,16 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Vector3.h"
 
-namespace NSG
-{
-	class Sphere
-	{
-	public:
-		Sphere(const Vector3& center, float radius);
-		Sphere(const SceneNode& sceneNode);
-		Intersection IsInside(const Sphere& sphere) const;
-        Intersection IsInside(const BoundingBox& box) const;
-	private:
-		Vector3 center_;
-		float radius_;
-	};
+namespace NSG {
+class Sphere {
+public:
+    Sphere(const Vector3& center, float radius);
+    Sphere(const SceneNode& sceneNode);
+    Intersection IsInside(const Sphere& sphere) const;
+    Intersection IsInside(const BoundingBox& box) const;
+
+private:
+    Vector3 center_;
+    float radius_;
+};
 }

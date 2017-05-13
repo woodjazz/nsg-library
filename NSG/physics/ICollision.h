@@ -24,25 +24,23 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Vector3.h"
 #include "BoundingBox.h"
+#include "Vector3.h"
 
 class btPersistentManifold;
-namespace NSG
-{
-    class SceneNode;
-    struct ContactPoint
-    {
-        SceneNode* collider_;
-        Vector3 normalB_;
-    };
+namespace NSG {
+class SceneNode;
+struct ContactPoint {
+    SceneNode* collider_;
+    Vector3 normalB_;
+};
 
-	struct ICollision
-	{
-		virtual ~ICollision() {}
-		virtual SceneNode* GetSceneNode() const = 0;
-		virtual bool HandleCollision() const = 0;
-		void HandleManifold(btPersistentManifold* manifold, ICollision* collider) const;
-		virtual BoundingBox GetColliderBoundingBox() const = 0;
-	};
+struct ICollision {
+    virtual ~ICollision() {}
+    virtual SceneNode* GetSceneNode() const = 0;
+    virtual bool HandleCollision() const = 0;
+    void HandleManifold(btPersistentManifold* manifold,
+                        ICollision* collider) const;
+    virtual BoundingBox GetColliderBoundingBox() const = 0;
+};
 }

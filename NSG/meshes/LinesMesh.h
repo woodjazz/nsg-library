@@ -24,33 +24,32 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "ProceduralMesh.h"
 #include "Color.h"
+#include "ProceduralMesh.h"
 #include <vector>
 
-namespace NSG
-{
-	class LinesMesh : public ProceduralMesh
-	{
-	public:
-		LinesMesh(const std::string& name);
-		~LinesMesh();
-        void Add(const Vector3& start, const Vector3& end, const Color& color = Color::White);
-		void Clear();
-		GLenum GetWireFrameDrawMode() const override;
-		GLenum GetSolidDrawMode() const override;
-		size_t GetNumberOfTriangles() const override;
-        void AllocateResources() override;
-        PhysicsShape GetShapeType() const override { return SH_EMPTY; }
-		bool IsEmpty() const { return lines_.empty();  }
-	private:
-		struct Data
-		{
-			Vector3 start;
-			Vector3 end;
-			Color color;
-		};
-		std::vector<Data> lines_;
-		friend class App;
-	};
+namespace NSG {
+class LinesMesh : public ProceduralMesh {
+public:
+    LinesMesh(const std::string& name);
+    ~LinesMesh();
+    void Add(const Vector3& start, const Vector3& end,
+             const Color& color = Color::White);
+    void Clear();
+    GLenum GetWireFrameDrawMode() const override;
+    GLenum GetSolidDrawMode() const override;
+    size_t GetNumberOfTriangles() const override;
+    void AllocateResources() override;
+    PhysicsShape GetShapeType() const override { return SH_EMPTY; }
+    bool IsEmpty() const { return lines_.empty(); }
+
+private:
+    struct Data {
+        Vector3 start;
+        Vector3 end;
+        Color color;
+    };
+    std::vector<Data> lines_;
+    friend class App;
+};
 }

@@ -24,47 +24,47 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "Object.h"
 #include "StrongFactory.h"
+#include "Types.h"
 #include "pugixml.hpp"
-#include <string>
 #include <set>
+#include <string>
 
-namespace NSG
-{
-	class LoaderXML : public Object, public StrongFactory<std::string, LoaderXML>
-	{
-	public:
-		LoaderXML(const std::string& name);
-		~LoaderXML();
-		void Set(PResource resource);
-		SignalEmpty::PSignal Load(PResource resource);
-		SignalFloat::PSignal SigProgress() { return signalProgress_; }
-		PScene GetScene(int idx) const;
-		std::vector<PAnimation> GetAnimations() const { return animations_; }
-		const pugi::xml_document& GetDocument() const { return doc_; }
-		pugi::xml_node GetNode(const std::string& type, const std::string& name) const;
-		PResource GetResource() const { return resource_; }
-	private:
-		void Load();
-        bool IsValid() override;
-        void AllocateResources() override;
-        void ReleaseResources() override;
-        bool AreReady();
-		PResource resource_;
-		pugi::xml_document doc_;
-		bool loaded_;
-		SignalUpdate::PSlot slotUpdate_;
-		SignalEmpty::PSignal signalLoaded_;
-		SignalFloat::PSignal signalProgress_;
-		std::vector<PResource> resources_;
-		std::vector<PMesh> meshes_;
-		std::vector<PMaterial> materials_;
-		std::vector<PShape> shapes_;
-		std::vector<PScene> scenes_;
-		std::vector<PSkeleton> skeletons_;
-		std::vector<PAnimation> animations_;
-		std::set<PObject> objects_;
-	};
+namespace NSG {
+class LoaderXML : public Object, public StrongFactory<std::string, LoaderXML> {
+public:
+    LoaderXML(const std::string& name);
+    ~LoaderXML();
+    void Set(PResource resource);
+    SignalEmpty::PSignal Load(PResource resource);
+    SignalFloat::PSignal SigProgress() { return signalProgress_; }
+    PScene GetScene(int idx) const;
+    std::vector<PAnimation> GetAnimations() const { return animations_; }
+    const pugi::xml_document& GetDocument() const { return doc_; }
+    pugi::xml_node GetNode(const std::string& type,
+                           const std::string& name) const;
+    PResource GetResource() const { return resource_; }
+
+private:
+    void Load();
+    bool IsValid() override;
+    void AllocateResources() override;
+    void ReleaseResources() override;
+    bool AreReady();
+    PResource resource_;
+    pugi::xml_document doc_;
+    bool loaded_;
+    SignalUpdate::PSlot slotUpdate_;
+    SignalEmpty::PSignal signalLoaded_;
+    SignalFloat::PSignal signalProgress_;
+    std::vector<PResource> resources_;
+    std::vector<PMesh> meshes_;
+    std::vector<PMaterial> materials_;
+    std::vector<PShape> shapes_;
+    std::vector<PScene> scenes_;
+    std::vector<PSkeleton> skeletons_;
+    std::vector<PAnimation> animations_;
+    std::set<PObject> objects_;
+};
 }

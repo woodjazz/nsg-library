@@ -24,251 +24,203 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "BoundingBox.h"
-#include "Frustum.h"
-#include "Node.h"
 #include "Camera.h"
 #include "DebugRenderer.h"
-#include "Util.h"
+#include "Frustum.h"
 #include "Maths.h"
-namespace NSG
+#include "Node.h"
+#include "Util.h"
+namespace NSG {
+BoundingBox::BoundingBox() : min_(0), max_(0), defined_(false) {}
+
+BoundingBox::BoundingBox(const Vertex3& min, const Vertex3& max)
+    : min_(min), max_(max), defined_(true) {}
+
+BoundingBox::BoundingBox(const Vector3& point)
+    : min_(point), max_(point), defined_(true) {}
+
+BoundingBox::BoundingBox(const Node& node) {
+    Vertex3 pos = node.GetGlobalPosition();
+    Quaternion q = node.GetGlobalOrientation();
+    Vertex3 scale = q * node.GetGlobalScale();
+    min_ = pos - scale;
+    max_ = pos + scale;
+    defined_ = true;
+}
+
+BoundingBox::BoundingBox(const BoundingBox& obj)
+    : min_(obj.min_), max_(obj.max_), defined_(obj.defined_) {}
+
+BoundingBox::BoundingBox(float min, float max)
+    : min_(Vector3(min, min, min)), max_(Vector3(max, max, max)),
+      defined_(true) {}
+
+BoundingBox::BoundingBox(const Frustum& frustum)
+    : min_(0), max_(0), defined_(false)
+
 {
-    BoundingBox::BoundingBox() :
-        min_(0),
-        max_(0),
-        defined_(false)
-    {
-    }
+    const Vertex3* vertices = frustum.GetVertices();
+    for (int i = 0; i < NUM_FRUSTUM_VERTICES; i++)
+        Merge(vertices[i]);
+}
 
-    BoundingBox::BoundingBox(const Vertex3& min, const Vertex3& max)
-        : min_(min),
-          max_(max),
-          defined_(true)
-    {
-    }
+BoundingBox::BoundingBox(const std::vector<Vector3>& vertices)
+    : defined_(false) {
+    for (auto& v : vertices)
+        Merge(v);
+}
 
-    BoundingBox::BoundingBox(const Vector3& point)
-        : min_(point),
-          max_(point),
-          defined_(true)
-    {
-    }
+BoundingBox::~BoundingBox() {}
 
-    BoundingBox::BoundingBox(const Node& node)
-    {
-        Vertex3 pos = node.GetGlobalPosition();
-        Quaternion q = node.GetGlobalOrientation();
-        Vertex3 scale = q * node.GetGlobalScale();
-        min_ = pos - scale;
-        max_ = pos + scale;
-        defined_ = true;
-    }
-
-    BoundingBox::BoundingBox(const BoundingBox& obj)
-        : min_(obj.min_),
-          max_(obj.max_),
-          defined_(obj.defined_)
-    {
-
-    }
-
-    BoundingBox::BoundingBox(float min, float max)
-        : min_(Vector3(min, min, min)),
-          max_(Vector3(max, max, max)),
-          defined_(true)
-    {
-    }
-
-    BoundingBox::BoundingBox(const Frustum& frustum)
-        : min_(0),
-          max_(0),
-          defined_(false)
-
-    {
-        const Vertex3* vertices = frustum.GetVertices();
-        for (int i = 0; i < NUM_FRUSTUM_VERTICES; i++)
-            Merge(vertices[i]);
-    }
-
-    BoundingBox::BoundingBox(const std::vector<Vector3>& vertices)
-        : defined_(false)
-    {
-        for (auto& v : vertices)
-            Merge(v);
-    }
-
-    BoundingBox::~BoundingBox()
-    {
-    }
-
-    const BoundingBox& BoundingBox::operator = (const BoundingBox& obj)
-    {
-        if (this != &obj)
-        {
-            min_ = obj.min_;
-            max_ = obj.max_;
-            defined_ = obj.defined_;
-        }
-        return *this;
-    }
-
-    bool BoundingBox::operator == (const BoundingBox& obj) const
-    {
-        if (this != &obj)
-            return max_ == obj.max_ && min_ == obj.min_;
-        return true;
-    }
-
-    void BoundingBox::Transform(const Node& node)
-    {
-        const Matrix4& transform = node.GetGlobalModelMatrix();
-        Transform(transform);
-    }
-
-    void BoundingBox::Transform(const Matrix4& m)
-    {
-        Vector3 newCenter = Vector3(m * Vector4(Center(), 1));
-        Vector3 oldEdge = Size() * 0.5f;
-
-        Vector3 newEdge(Abs(m[0][0]) * oldEdge.x + Abs(m[1][0]) * oldEdge.y + Abs(m[2][0]) * oldEdge.z,
-                        Abs(m[0][1]) * oldEdge.x + Abs(m[1][1]) * oldEdge.y + Abs(m[2][1]) * oldEdge.z,
-                        Abs(m[0][2]) * oldEdge.x + Abs(m[1][2]) * oldEdge.y + Abs(m[2][2]) * oldEdge.z
-                       );
-
-        BoundingBox obj(newCenter - newEdge, newCenter + newEdge);
+const BoundingBox& BoundingBox::operator=(const BoundingBox& obj) {
+    if (this != &obj) {
         min_ = obj.min_;
         max_ = obj.max_;
+        defined_ = obj.defined_;
+    }
+    return *this;
+}
+
+bool BoundingBox::operator==(const BoundingBox& obj) const {
+    if (this != &obj)
+        return max_ == obj.max_ && min_ == obj.min_;
+    return true;
+}
+
+void BoundingBox::Transform(const Node& node) {
+    const Matrix4& transform = node.GetGlobalModelMatrix();
+    Transform(transform);
+}
+
+void BoundingBox::Transform(const Matrix4& m) {
+    Vector3 newCenter = Vector3(m * Vector4(Center(), 1));
+    Vector3 oldEdge = Size() * 0.5f;
+
+    Vector3 newEdge(Abs(m[0][0]) * oldEdge.x + Abs(m[1][0]) * oldEdge.y +
+                        Abs(m[2][0]) * oldEdge.z,
+                    Abs(m[0][1]) * oldEdge.x + Abs(m[1][1]) * oldEdge.y +
+                        Abs(m[2][1]) * oldEdge.z,
+                    Abs(m[0][2]) * oldEdge.x + Abs(m[1][2]) * oldEdge.y +
+                        Abs(m[2][2]) * oldEdge.z);
+
+    BoundingBox obj(newCenter - newEdge, newCenter + newEdge);
+    min_ = obj.min_;
+    max_ = obj.max_;
+}
+
+void BoundingBox::Merge(const Vector3& point) {
+    if (!defined_) {
+        min_ = max_ = point;
+        defined_ = true;
+        return;
     }
 
-    void BoundingBox::Merge(const Vector3& point)
-    {
-        if (!defined_)
-        {
-            min_ = max_ = point;
-            defined_ = true;
-            return;
-        }
+    if (point.x < min_.x)
+        min_.x = point.x;
+    if (point.y < min_.y)
+        min_.y = point.y;
+    if (point.z < min_.z)
+        min_.z = point.z;
+    if (point.x > max_.x)
+        max_.x = point.x;
+    if (point.y > max_.y)
+        max_.y = point.y;
+    if (point.z > max_.z)
+        max_.z = point.z;
+}
 
-        if (point.x < min_.x)
-            min_.x = point.x;
-        if (point.y < min_.y)
-            min_.y = point.y;
-        if (point.z < min_.z)
-            min_.z = point.z;
-        if (point.x > max_.x)
-            max_.x = point.x;
-        if (point.y > max_.y)
-            max_.y = point.y;
-        if (point.z > max_.z)
-            max_.z = point.z;
+void BoundingBox::Merge(const std::vector<Vector3>& points) {
+    for (auto& point : points)
+        Merge(point);
+}
+
+void BoundingBox::Merge(const BoundingBox& box) {
+    if (!defined_) {
+        min_ = box.min_;
+        max_ = box.max_;
+        defined_ = box.defined_;
+        return;
     }
 
-    void BoundingBox::Merge(const std::vector<Vector3>& points)
-    {
-        for (auto& point : points)
-            Merge(point);
+    if (box.min_.x < min_.x)
+        min_.x = box.min_.x;
+    if (box.min_.y < min_.y)
+        min_.y = box.min_.y;
+    if (box.min_.z < min_.z)
+        min_.z = box.min_.z;
+    if (box.max_.x > max_.x)
+        max_.x = box.max_.x;
+    if (box.max_.y > max_.y)
+        max_.y = box.max_.y;
+    if (box.max_.z > max_.z)
+        max_.z = box.max_.z;
+}
+
+Intersection BoundingBox::IsInside(const BoundingBox& box) const {
+    if (box.max_.x < min_.x || box.min_.x > max_.x || box.max_.y < min_.y ||
+        box.min_.y > max_.y || box.max_.z < min_.z || box.min_.z > max_.z) {
+        return Intersection::OUTSIDE;
+    } else if (box.min_.x < min_.x || box.max_.x > max_.x ||
+               box.min_.y < min_.y || box.max_.y > max_.y ||
+               box.min_.z < min_.z || box.max_.z > max_.z) {
+        return Intersection::INTERSECTS;
+    } else {
+        return Intersection::INSIDE;
     }
+}
 
-    void BoundingBox::Merge(const BoundingBox& box)
-    {
-        if (!defined_)
-        {
-            min_ = box.min_;
-            max_ = box.max_;
-            defined_ = box.defined_;
-            return;
-        }
+bool BoundingBox::IsInside(const Vertex3& point) const {
+    return !(point.x < min_.x || point.x > max_.x || point.y < min_.y ||
+             point.y > max_.y || point.z < min_.z || point.z > max_.z);
+}
 
-        if (box.min_.x < min_.x)
-            min_.x = box.min_.x;
-        if (box.min_.y < min_.y)
-            min_.y = box.min_.y;
-        if (box.min_.z < min_.z)
-            min_.z = box.min_.z;
-        if (box.max_.x > max_.x)
-            max_.x = box.max_.x;
-        if (box.max_.y > max_.y)
-            max_.y = box.max_.y;
-        if (box.max_.z > max_.z)
-            max_.z = box.max_.z;
-    }
+void BoundingBox::Clip(const BoundingBox& box) {
+    if (box.min_.x > min_.x)
+        min_.x = box.min_.x;
+    if (box.max_.x < max_.x)
+        max_.x = box.max_.x;
+    if (box.min_.y > min_.y)
+        min_.y = box.min_.y;
+    if (box.max_.y < max_.y)
+        max_.y = box.max_.y;
+    if (box.min_.z > min_.z)
+        min_.z = box.min_.z;
+    if (box.max_.z < max_.z)
+        max_.z = box.max_.z;
 
-    Intersection BoundingBox::IsInside(const BoundingBox& box) const
-    {
-        if (box.max_.x < min_.x || box.min_.x > max_.x ||
-                box.max_.y < min_.y || box.min_.y > max_.y ||
-                box.max_.z < min_.z || box.min_.z > max_.z)
-        {
-            return Intersection::OUTSIDE;
-        }
-        else if (box.min_.x < min_.x || box.max_.x > max_.x ||
-                 box.min_.y < min_.y || box.max_.y > max_.y ||
-                 box.min_.z < min_.z || box.max_.z > max_.z)
-        {
-            return Intersection::INTERSECTS;
-        }
-        else
-        {
-            return Intersection::INSIDE;
-        }
-    }
+    if (min_.x > max_.x)
+        std::swap(min_.x, max_.x);
+    if (min_.y > max_.y)
+        std::swap(min_.y, max_.y);
+    if (min_.z > max_.z)
+        std::swap(min_.z, max_.z);
+}
 
-    bool BoundingBox::IsInside(const Vertex3& point) const
-    {
-        return !(point.x < min_.x || point.x > max_.x ||
-                 point.y < min_.y || point.y > max_.y ||
-                 point.z < min_.z || point.z > max_.z);
-    }
+void BoundingBox::GetVertices(Vertex3 vertices[8]) const {
+    vertices[0] = min_;
+    vertices[1] = Vertex3(min_.x, min_.y, max_.z);
+    vertices[2] = Vertex3(min_.x, max_.y, min_.z);
+    vertices[3] = Vertex3(max_.x, min_.y, min_.z);
+    vertices[4] = max_;
+    vertices[5] = Vertex3(max_.x, max_.y, min_.z);
+    vertices[6] = Vertex3(max_.x, min_.y, max_.z);
+    vertices[7] = Vertex3(min_.x, max_.y, max_.z);
+}
 
-    void BoundingBox::Clip(const BoundingBox& box)
-    {
-        if (box.min_.x > min_.x)
-            min_.x = box.min_.x;
-        if (box.max_.x < max_.x)
-            max_.x = box.max_.x;
-        if (box.min_.y > min_.y)
-            min_.y = box.min_.y;
-        if (box.max_.y < max_.y)
-            max_.y = box.max_.y;
-        if (box.min_.z > min_.z)
-            min_.z = box.min_.z;
-        if (box.max_.z < max_.z)
-            max_.z = box.max_.z;
-
-        if (min_.x > max_.x)
-            std::swap(min_.x, max_.x);
-        if (min_.y > max_.y)
-            std::swap(min_.y, max_.y);
-        if (min_.z > max_.z)
-            std::swap(min_.z, max_.z);
-    }
-
-    void BoundingBox::GetVertices(Vertex3 vertices[8]) const
-    {
-        vertices[0] = min_;
-        vertices[1] = Vertex3(min_.x, min_.y, max_.z);
-        vertices[2] = Vertex3(min_.x, max_.y, min_.z);
-        vertices[3] = Vertex3(max_.x, min_.y, min_.z);
-        vertices[4] = max_;
-        vertices[5] = Vertex3(max_.x, max_.y, min_.z);
-        vertices[6] = Vertex3(max_.x, min_.y, max_.z);
-        vertices[7] = Vertex3(min_.x, max_.y, max_.z);
-    }
-
-    void BoundingBox::Debug(DebugRenderer* debugRenderer, const Color& color)
-    {
-        Vertex3 vertices[8];
-        GetVertices(vertices);
-        debugRenderer->AddLine(vertices[0], vertices[1], color);
-        debugRenderer->AddLine(vertices[0], vertices[2], color);
-        debugRenderer->AddLine(vertices[0], vertices[3], color);
-        debugRenderer->AddLine(vertices[1], vertices[6], color);
-        debugRenderer->AddLine(vertices[1], vertices[7], color);
-        debugRenderer->AddLine(vertices[2], vertices[7], color);
-        debugRenderer->AddLine(vertices[2], vertices[5], color);
-        debugRenderer->AddLine(vertices[3], vertices[6], color);
-        debugRenderer->AddLine(vertices[3], vertices[5], color);
-        debugRenderer->AddLine(vertices[4], vertices[5], color);
-        debugRenderer->AddLine(vertices[4], vertices[6], color);
-        debugRenderer->AddLine(vertices[4], vertices[7], color);
-    }
+void BoundingBox::Debug(DebugRenderer* debugRenderer, const Color& color) {
+    Vertex3 vertices[8];
+    GetVertices(vertices);
+    debugRenderer->AddLine(vertices[0], vertices[1], color);
+    debugRenderer->AddLine(vertices[0], vertices[2], color);
+    debugRenderer->AddLine(vertices[0], vertices[3], color);
+    debugRenderer->AddLine(vertices[1], vertices[6], color);
+    debugRenderer->AddLine(vertices[1], vertices[7], color);
+    debugRenderer->AddLine(vertices[2], vertices[7], color);
+    debugRenderer->AddLine(vertices[2], vertices[5], color);
+    debugRenderer->AddLine(vertices[3], vertices[6], color);
+    debugRenderer->AddLine(vertices[3], vertices[5], color);
+    debugRenderer->AddLine(vertices[4], vertices[5], color);
+    debugRenderer->AddLine(vertices[4], vertices[6], color);
+    debugRenderer->AddLine(vertices[4], vertices[7], color);
+}
 }

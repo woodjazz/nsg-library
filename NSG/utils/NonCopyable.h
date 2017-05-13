@@ -25,16 +25,14 @@ misrepresented as being the original software.
 */
 #pragma once
 
-namespace NSG 
-{
-    class NonCopyable 
-    {
-    protected:
-        NonCopyable(){};
-        ~NonCopyable(){};
+namespace NSG {
+class NonCopyable {
+protected:
+    NonCopyable(){};
+    ~NonCopyable(){};
 
-    private:  
-        NonCopyable(const NonCopyable&);
-        NonCopyable& operator=(const NonCopyable&);
-    }; 
+private:
+    NonCopyable(const NonCopyable&);
+    NonCopyable& operator=(const NonCopyable&);
+};
 }

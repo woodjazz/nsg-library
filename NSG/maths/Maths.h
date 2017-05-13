@@ -25,38 +25,39 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <cmath>
-namespace NSG
-{
-    static constexpr float DEG2RAD = 0.01745329251994329576923690768489f;
-    static constexpr float RAD2DEG = 57.295779513082320876798154814105f;
-    static constexpr float PI = 3.1415926535897932384626433832795028f;
-    static constexpr float TWO_PI = 2 * PI;
-    static constexpr float PI90 = PI / 2.f;
-    static constexpr float PI45 = PI90 / 2.f;
-    static constexpr float PI5 = PI45 / 9.f;
-    static constexpr float PI10 = PI5 * 2.f;
-    static constexpr float PI15 = PI10 + PI5;
-    static constexpr float PI20 = PI10 * 2.f;
-    static constexpr float PI30 = PI10 * 3.f;
-    static constexpr float EPSILON = 0.000001f;
-    static constexpr float PRECISION = 0.01f;
-    static constexpr float PHI = (1.f + 2.236067977f) * 0.5f; //golden ratio
+namespace NSG {
+static constexpr float DEG2RAD = 0.01745329251994329576923690768489f;
+static constexpr float RAD2DEG = 57.295779513082320876798154814105f;
+static constexpr float PI = 3.1415926535897932384626433832795028f;
+static constexpr float TWO_PI = 2 * PI;
+static constexpr float PI90 = PI / 2.f;
+static constexpr float PI45 = PI90 / 2.f;
+static constexpr float PI5 = PI45 / 9.f;
+static constexpr float PI10 = PI5 * 2.f;
+static constexpr float PI15 = PI10 + PI5;
+static constexpr float PI20 = PI10 * 2.f;
+static constexpr float PI30 = PI10 * 3.f;
+static constexpr float EPSILON = 0.000001f;
+static constexpr float PRECISION = 0.01f;
+static constexpr float PHI = (1.f + 2.236067977f) * 0.5f; // golden ratio
 
-	inline bool Equals(float lhs, float rhs) { return lhs + EPSILON >= rhs && lhs - EPSILON <= rhs; }
-	unsigned NextPowerOfTwo(unsigned value);
-	void GetPowerOfTwoValues(int& width, int& height);
-	bool IsPowerOfTwo(int value);
-	float Clamp(float value, float minVal, float maxVal);
-	int Clamp(int value, int minVal, int maxVal);
-	float Radians(float degrees);
-	float Degrees(float radians);
-	float Distance(float a, float b);
-	float Min(float a, float b);
-	float Lerp(float a, float b, float t);
-    float Mix(float a, float b, float t);
-    float Abs(float value);
-    float Cos(float value);
-    float Floor(float value);
-	float Pow2(float x);
-	float Pow3(float x);
+inline bool Equals(float lhs, float rhs) {
+    return lhs + EPSILON >= rhs && lhs - EPSILON <= rhs;
+}
+unsigned NextPowerOfTwo(unsigned value);
+void GetPowerOfTwoValues(int& width, int& height);
+bool IsPowerOfTwo(int value);
+float Clamp(float value, float minVal, float maxVal);
+int Clamp(int value, int minVal, int maxVal);
+float Radians(float degrees);
+float Degrees(float radians);
+float Distance(float a, float b);
+float Min(float a, float b);
+float Lerp(float a, float b, float t);
+float Mix(float a, float b, float t);
+float Abs(float value);
+float Cos(float value);
+float Floor(float value);
+float Pow2(float x);
+float Pow3(float x);
 }

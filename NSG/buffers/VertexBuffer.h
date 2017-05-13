@@ -28,20 +28,19 @@ misrepresented as being the original software.
 #include "Buffer.h"
 #include "VertexData.h"
 
-namespace NSG 
-{
-	class VertexBuffer : public Buffer
-	{
-	public:
-		VertexBuffer(GLenum usage);
-        VertexBuffer(const VertexsData& vertexes, GLenum usage);
-		~VertexBuffer();
-        void UpdateData();
-		static void Unbind();
-        void SetData(GLsizeiptr size, const GLvoid* data);
-    private:
-        void AllocateResources() override;
-        void ReleaseResources() override;
-        const VertexsData& vertexes_;
-	};
+namespace NSG {
+class VertexBuffer : public Buffer {
+public:
+    VertexBuffer(GLenum usage);
+    VertexBuffer(const VertexsData& vertexes, GLenum usage);
+    ~VertexBuffer();
+    void UpdateData();
+    static void Unbind();
+    void SetData(GLsizeiptr size, const GLvoid* data);
+
+private:
+    void AllocateResources() override;
+    void ReleaseResources() override;
+    const VertexsData& vertexes_;
+};
 }

@@ -24,32 +24,31 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "Tick.h"
-#include "Singleton.h"
 #include "AppConfiguration.h"
+#include "Singleton.h"
+#include "Tick.h"
+#include "Types.h"
 
-namespace NSG
-{
-    class Engine : public Tick, public Singleton<Engine>
-    {
-    public:
-        ~Engine();
-        int Run();
-        void RenderFrame();
-        float GetDeltaTime() const { return deltaTime_; }
-        static const AppConfiguration& GetAppConfiguration() { return conf_; }
-        static SignalEmpty::PSignal SigBeginFrame();
-        static SignalUpdate::PSignal SigUpdate();
-        static void ReleaseMemory();
-    private:
-        Engine();
-        void InitializeTicks() override;
-        void BeginTicks() override;
-        void DoTick(float delta) override;
-        void EndTicks() override;
-        float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
-        static AppConfiguration conf_;
-        friend class Singleton <Engine>;
-    };
+namespace NSG {
+class Engine : public Tick, public Singleton<Engine> {
+public:
+    ~Engine();
+    int Run();
+    void RenderFrame();
+    float GetDeltaTime() const { return deltaTime_; }
+    static AppConfiguration& GetAppConfiguration() { return conf_; }
+    static SignalEmpty::PSignal SigBeginFrame();
+    static SignalUpdate::PSignal SigUpdate();
+    static void ReleaseMemory();
+
+private:
+    Engine();
+    void InitializeTicks() override;
+    void BeginTicks() override;
+    void DoTick(float delta) override;
+    void EndTicks() override;
+    float deltaTime_; // Fixed time in seconds (1/AppConfiguration::fps_)
+    static AppConfiguration conf_;
+    friend class Singleton<Engine>;
+};
 }

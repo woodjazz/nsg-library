@@ -24,42 +24,42 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "Quaternion.h"
 #include "Types.h"
 #include "Vector3.h"
-#include "Quaternion.h"
 
-namespace NSG
-{
-	class PointOnSphere
-	{
-	public:
-		PointOnSphere();
-		PointOnSphere(const Vertex3& center, float radius);
-		PointOnSphere(const Vertex3& center, const Vertex3& pointInSphere);
-		~PointOnSphere();
-		bool SetCenter(const Vertex3& center);
-		bool SetPoint(const Vertex3& pointInSphere);
-		bool SetCenterAndPoint(const Vertex3& center, const Vertex3& pointInSphere);
-		void IncAngles(float incTheta, float incPhi);
-		void SetAngles(float theta, float phi);
-		const Vector3& GetPoint() const { return point_; }
-		const Vector3& GetUp() const { return up_; } // world up vector
-		const Vertex3& GetCenter() const { return center_; }
-		float GetTheta() const { return theta_; }
-		float GetPhi() const { return phi_; }
-		float GetRadius() const { return radius_; }
-		Quaternion GetOrientation() const;
-	private:
-		Vector3 CalculatePoint();
-		void CalculateUpVector(); // world up vector
-		void CalculateAnglesAndRadius();
-	private:
-		Vertex3 center_;
-		float radius_;
-		float theta_;
-		float phi_;
-		Vertex3 point_; // point in the sphere's surface
-		Vertex3 initialPoint_;
-		Vector3 up_; //up vector for the camera
-	};
+namespace NSG {
+class PointOnSphere {
+public:
+    PointOnSphere();
+    PointOnSphere(const Vertex3& center, float radius);
+    PointOnSphere(const Vertex3& center, const Vertex3& pointInSphere);
+    ~PointOnSphere();
+    bool SetCenter(const Vertex3& center);
+    bool SetPoint(const Vertex3& pointInSphere);
+    bool SetCenterAndPoint(const Vertex3& center, const Vertex3& pointInSphere);
+    void IncAngles(float incTheta, float incPhi);
+    void SetAngles(float theta, float phi);
+    const Vector3& GetPoint() const { return point_; }
+    const Vector3& GetUp() const { return up_; } // world up vector
+    const Vertex3& GetCenter() const { return center_; }
+    float GetTheta() const { return theta_; }
+    float GetPhi() const { return phi_; }
+    float GetRadius() const { return radius_; }
+    Quaternion GetOrientation() const;
+
+private:
+    Vector3 CalculatePoint();
+    void CalculateUpVector(); // world up vector
+    void CalculateAnglesAndRadius();
+
+private:
+    Vertex3 center_;
+    float radius_;
+    float theta_;
+    float phi_;
+    Vertex3 point_; // point in the sphere's surface
+    Vertex3 initialPoint_;
+    Vector3 up_; // up vector for the camera
+};
 }

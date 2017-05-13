@@ -27,42 +27,37 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-static int Test0()
-{
+static int Test0() {
     auto prefPath = FileSystem::GetPreferencesPath();
     Path filePath;
     filePath.SetPath(prefPath);
     filePath.SetFileName("data.txt");
     LOGI("%s\n", filePath.GetFullAbsoluteFilePath().c_str());
-    auto fsSlot = FileSystem::SigReady()->Connect([&]()
-    {
-		int counter = 0;
-		{
-			std::ifstream ifs(filePath.GetFullAbsoluteFilePath().c_str());
-			if (ifs.is_open())
-				ifs >> counter;
-		}
-		LOGI("Counter = %d\n", counter);
-		{
-			std::ofstream ofs(filePath.GetFullAbsoluteFilePath().c_str(), std::ios::out);
-			ofs << counter + 1;
-		}
-		//FileSystem::Save();
+    auto fsSlot = FileSystem::SigReady()->Connect([&]() {
+        int counter = 0;
+        {
+            std::ifstream ifs(filePath.GetFullAbsoluteFilePath().c_str());
+            if (ifs.is_open())
+                ifs >> counter;
+        }
+        LOGI("Counter = %d\n", counter);
+        {
+            std::ofstream ofs(filePath.GetFullAbsoluteFilePath().c_str(),
+                              std::ios::out);
+            ofs << counter + 1;
+        }
+        // FileSystem::Save();
     });
 
     bool saved = false;
-    auto saveSlot = FileSystem::SigSaved()->Connect([&]()
-    {
-    	saved = true;
-    });
-    
-	Engine::Create()->Run();
+    auto saveSlot = FileSystem::SigSaved()->Connect([&]() { saved = true; });
+
+    Engine::Create()->Run();
     CHECK_CONDITION(saved);
     return 0;
 }
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     Test0();
     return 0;
 }

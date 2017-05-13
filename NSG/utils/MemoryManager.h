@@ -27,21 +27,13 @@ misrepresented as being the original software.
 #if !defined(EMSCRIPTEN)
 //#define USE_POOLS
 #endif
-namespace NSG
-{
-	extern void InitilizeMemoryManager();
-	extern void DestroyMemoryManager();
-	
-    struct MemoryManager
-    {
-    	MemoryManager()
-    	{
-    		InitilizeMemoryManager();
-    	}
+namespace NSG {
+extern void InitilizeMemoryManager();
+extern void DestroyMemoryManager();
 
-    	~MemoryManager()
-    	{
-    		DestroyMemoryManager();
-    	}
-    };
+struct MemoryManager {
+    MemoryManager() { InitilizeMemoryManager(); }
+
+    ~MemoryManager() { DestroyMemoryManager(); }
+};
 }

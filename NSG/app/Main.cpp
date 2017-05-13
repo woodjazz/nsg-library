@@ -28,30 +28,27 @@ misrepresented as being the original software.
 
 #if defined(IS_TARGET_ANDROID)
 
-namespace NSG
-{
-    struct android_app* androidApp = nullptr;
+namespace NSG {
+struct android_app* androidApp = nullptr;
 }
 
 extern int NSG_main(int argc, char* argv[]);
-void android_main(struct android_app* app)
-{
+void android_main(struct android_app* app) {
     LOGI("android_main");
     NSG::androidApp = app;
     NSG_main(0, nullptr);
 }
 
 #elif defined(IS_TARGET_OSX)
-#import <Cocoa/Cocoa.h>
 #include "FileSystem.h"
 #include "Path.h"
+#import <Cocoa/Cocoa.h>
 extern int NSG_main(int argc, char* argv[]);
-int main(int argc, char* argv[])
-{	
-    struct AutoreleasePoolHolder
-    {
+int main(int argc, char* argv[]) {
+    struct AutoreleasePoolHolder {
         AutoreleasePoolHolder() : pool_([[NSAutoreleasePool alloc] init]) {}
         ~AutoreleasePoolHolder() { [pool_ release]; }
+
     private:
         NSAutoreleasePool* const pool_;
     } pool;
@@ -62,18 +59,17 @@ int main(int argc, char* argv[])
     [NSApp finishLaunching];
 
     [[NSNotificationCenter defaultCenter]
-     postNotificationName:NSApplicationWillFinishLaunchingNotification
-     object:NSApp];
+        postNotificationName:NSApplicationWillFinishLaunchingNotification
+                      object:NSApp];
 
     [[NSNotificationCenter defaultCenter]
-     postNotificationName:NSApplicationDidFinishLaunchingNotification
-     object:NSApp];
+        postNotificationName:NSApplicationDidFinishLaunchingNotification
+                      object:NSApp];
 
     id quitMenuItem = [NSMenuItem new];
-    [quitMenuItem
-     initWithTitle:@"Quit"
-     action:@selector(terminate:)
-     keyEquivalent:@"q"];
+    [quitMenuItem initWithTitle:@"Quit"
+                         action:@selector(terminate:)
+                  keyEquivalent:@"q"];
 
     id appMenu = [NSMenu new];
     [appMenu addItem:quitMenuItem];
@@ -87,9 +83,9 @@ int main(int argc, char* argv[])
 
     NSBundle* bundle = [NSBundle mainBundle];
 
-    NSWorkspace *sharedWorkspace = [NSWorkspace sharedWorkspace];
-    BOOL isPackage = [sharedWorkspace isFilePackageAtPath: [bundle bundlePath]];
-    if(!isPackage)
+    NSWorkspace* sharedWorkspace = [NSWorkspace sharedWorkspace];
+    BOOL isPackage = [sharedWorkspace isFilePackageAtPath:[bundle bundlePath]];
+    if (!isPackage)
         NSG::FileSystem::SetCurrentDir(NSG::Path::GetCurrentDir());
 
     NSG_main(argc, argv);

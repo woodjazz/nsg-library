@@ -24,15 +24,21 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Resource.h"
+#include "FontAtlas.h"
+#include <string>
 
-namespace NSG
-{
-	class ResourceConverter : public Resource
-	{
-	public:
-		ResourceConverter(const std::string& name);
-		~ResourceConverter();
-		void SetData(const char* buffer, size_t bytes);
-	};
+namespace NSG {
+class FontXMLAtlas : public FontAtlas {
+public:
+    FontXMLAtlas(const std::string& name = GetUniqueName("FontXMLAtlas"));
+    ~FontXMLAtlas();
+    void SetXML(PResourceFile xmlResource);
+    void SetTexture(PTexture texture);
+
+private:
+    bool IsValid() override;
+    void AllocateResources() override;
+    void ParseXML();
+    PResourceFile xmlResource_;
+};
 }

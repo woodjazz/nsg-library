@@ -24,17 +24,17 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "NSG.h"
 #include "GameObject.h"
+#include "NSG.h"
 using namespace NSG;
 class Explo;
-class Player : public GameObject
-{
+class Player : public GameObject {
 public:
     Player(PScene scene, PWindow window);
     ~Player();
     PNode GetCameraNode() const { return node_; }
     void Destroyed() override;
+
 private:
     PNode node_;
     PSceneNode child_;
@@ -49,9 +49,9 @@ private:
     shared_ptr<Explo> explo_;
     int collisionGroup_;
     int collisionMask_;
-	bool shot_;
+    bool shot_;
     bool buttonADown_;
-	float lastShotTime_;
+    float lastShotTime_;
     float totalSpawningTime_;
     Quaternion lastShotOrientation_;
     bool spawning_;

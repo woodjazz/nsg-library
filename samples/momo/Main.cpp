@@ -25,16 +25,14 @@ misrepresented as being the original software.
 */
 #include "NSG.h"
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
 
     auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
     LoaderXML loader("loader");
     PCameraControl control;
-    auto slotLoaded = loader.Load(resource)->Connect([&]()
-    {
+    auto slotLoaded = loader.Load(resource)->Connect([&]() {
         auto scene = loader.GetScene(0);
         auto camera = scene->GetOrCreateChild<Camera>("Camera");
         camera->SetWindow(window);

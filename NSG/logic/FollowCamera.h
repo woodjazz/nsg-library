@@ -27,25 +27,24 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Vector3.h"
 
-namespace NSG
-{
-	struct ICollision;
-	class FollowCamera
-	{
-	public:
-		FollowCamera(PCamera camera);
-		~FollowCamera();
-		void Track(ICollision* track, float distance);
-		void SetAngle(float angle); // degrees
-	private:
-		void OnUpdate(float deltaTime);
-		bool Obstruction(const Vector3& origin, const Vector3& targetPos, float radius) const;
-		Vector3 GetBestTargetPoint(const Vector3& center, float radius) const;
-		PCamera camera_;
-		ICollision* track_;
-		float distance_;
-        SignalUpdate::PSlot slotUpdate_;
-        float angle_;
-        PWeakPhysicsWorld world_;
-	};
+namespace NSG {
+struct ICollision;
+class FollowCamera {
+public:
+    FollowCamera(PCamera camera);
+    ~FollowCamera();
+    void Track(ICollision* track, float distance);
+    void SetAngle(float angle); // degrees
+private:
+    void OnUpdate(float deltaTime);
+    bool Obstruction(const Vector3& origin, const Vector3& targetPos,
+                     float radius) const;
+    Vector3 GetBestTargetPoint(const Vector3& center, float radius) const;
+    PCamera camera_;
+    ICollision* track_;
+    float distance_;
+    SignalUpdate::PSlot slotUpdate_;
+    float angle_;
+    PWeakPhysicsWorld world_;
+};
 }

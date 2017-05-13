@@ -26,26 +26,26 @@ misrepresented as being the original software.
 #pragma once
 #include "ProceduralMesh.h"
 
-namespace NSG
-{
-    class BoxMesh : public ProceduralMesh
-    {
-    public:
-        BoxMesh(const std::string& name);
-        ~BoxMesh();
-        void Set(float width = 2, float height = 2, float depth = 2, int resX = 2, int resY = 2, int resZ = 2);
-        GLenum GetWireFrameDrawMode() const override;
-        GLenum GetSolidDrawMode() const override;
-        size_t GetNumberOfTriangles() const override;
-        void AllocateResources() override;
-        PhysicsShape GetShapeType() const override { return SH_BOX; }
-    private:
-        float width_;
-        float height_;
-        float depth_;
-        int resX_;
-        int resY_;
-        int resZ_;
-        friend class App;
-    };
+namespace NSG {
+class BoxMesh : public ProceduralMesh {
+public:
+    BoxMesh(const std::string& name);
+    ~BoxMesh();
+    void Set(float width = 2, float height = 2, float depth = 2, int resX = 2,
+             int resY = 2, int resZ = 2);
+    GLenum GetWireFrameDrawMode() const override;
+    GLenum GetSolidDrawMode() const override;
+    size_t GetNumberOfTriangles() const override;
+    void AllocateResources() override;
+    PhysicsShape GetShapeType() const override { return SH_BOX; }
+
+private:
+    float width_;
+    float height_;
+    float depth_;
+    int resX_;
+    int resY_;
+    int resZ_;
+    friend class App;
+};
 }

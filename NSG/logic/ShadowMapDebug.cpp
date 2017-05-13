@@ -24,75 +24,60 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "ShadowMapDebug.h"
-#include "Light.h"
-#include "ShadowCamera.h"
-#include "Keys.h"
-#include "Window.h"
-#include "Renderer.h"
-#include "DebugRenderer.h"
 #include "Check.h"
-#include "SharedFromPointer.h"
 #include "Color.h"
+#include "DebugRenderer.h"
+#include "Keys.h"
+#include "Light.h"
+#include "Renderer.h"
+#include "ShadowCamera.h"
+#include "SharedFromPointer.h"
+#include "Window.h"
 
-namespace NSG
-{
-    ShadowMapDebug::ShadowMapDebug(PWindow window, PLight light)
-        : light_(light),
-          debugRendererEnabled_(false)
-    {
-        CHECK_ASSERT(light_);
+namespace NSG {
+ShadowMapDebug::ShadowMapDebug(PWindow window, PLight light)
+    : light_(light), debugRendererEnabled_(false) {
+    CHECK_ASSERT(light_);
 
-        SetWindow(window);
+    SetWindow(window);
 
-        slotDebugRenderer_ = Renderer::GetPtr()->SigDebugRenderer()->Connect([&](DebugRenderer * renderer)
-        {
-            if (debugRendererEnabled_)
-            {
-                auto splits = light_->GetShadowSplits();
-                light_->GetShadowCamera(0)->Debug(renderer, Color::Red);
-                if (splits > 1)
-                {
-                    light_->GetShadowCamera(1)->Debug(renderer, Color::Green);
-                    if (splits > 2)
-                    {
-                        light_->GetShadowCamera(2)->Debug(renderer, Color::Blue);
-                        if (splits > 3)
-                        {
-                            light_->GetShadowCamera(3)->Debug(renderer, Color::Yellow);
-                        }
+    slotDebugRenderer_ = Renderer::GetPtr()->SigDebugRenderer()->Connect([&](
+        DebugRenderer* renderer) {
+        if (debugRendererEnabled_) {
+            auto splits = light_->GetShadowSplits();
+            light_->GetShadowCamera(0)->Debug(renderer, Color::Red);
+            if (splits > 1) {
+                light_->GetShadowCamera(1)->Debug(renderer, Color::Green);
+                if (splits > 2) {
+                    light_->GetShadowCamera(2)->Debug(renderer, Color::Blue);
+                    if (splits > 3) {
+                        light_->GetShadowCamera(3)->Debug(renderer,
+                                                          Color::Yellow);
                     }
                 }
             }
-        });
-    }
+        }
+    });
+}
 
-    ShadowMapDebug::~ShadowMapDebug()
-    {
+ShadowMapDebug::~ShadowMapDebug() {}
 
-    }
+void ShadowMapDebug::SetWindow(PWindow window) {
+    if (window_.lock() != window) {
+        window_ = window;
 
-    void ShadowMapDebug::SetWindow(PWindow window)
-    {
-        if (window_.lock() != window)
-        {
-            window_ = window;
-
-            if (window)
-            {
-                slotKey_ = window->SigKey()->Connect([&](int key, int action, int modifier)
-                {
+        if (window) {
+            slotKey_ = window->SigKey()->Connect(
+                [&](int key, int action, int modifier) {
                     OnKey(key, action, modifier);
                 });
-            }
-            else
-            {
-                slotKey_ = nullptr;
-            }
+        } else {
+            slotKey_ = nullptr;
         }
     }
+}
 
-    void ShadowMapDebug::OnKey(int key, int action, int modifier)
-    {
+void ShadowMapDebug::OnKey(int key, int action, int modifier) {
 #if 0
         if(modifier)
             return;
@@ -126,5 +111,5 @@ namespace NSG
 		else if (NSG_KEY_M == key && action)
 			debugRendererEnabled_ = !debugRendererEnabled_;
 #endif
-    }
+}
 }

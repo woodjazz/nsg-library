@@ -25,33 +25,27 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Vector3.h"
-namespace NSG
-{
-    struct Matrix4;
-    struct Quaternion;
-    struct Matrix3
-	{
-		Vector3 value[4];
-        Matrix3();
-        Matrix3(float s);
-        Matrix3(const Matrix3& m);
-        Matrix3(const Matrix4& m);
-        Matrix3(const Vector3& v0, const Vector3& v1, const Vector3& v2);
-        Matrix3
-        (
-            float x1, float y1, float z1,
-            float x2, float y2, float z2,
-            float x3, float y3, float z3
-        );
-        Matrix3(const Quaternion& q);
-        const Vector3& operator[](int i) const;
-        Vector3& operator[](int i);
-        Quaternion QuatCast() const;
-        Matrix3 Transpose() const;
-        Matrix3 Inverse() const;
-		Vector3 Row(int index) const;
-		const Vector3& Column(int index) const;
-		inline const float* GetPointer() const { return &(value[0].x); }
-	};
-    Matrix3 operator*(const Matrix3& m1, const Matrix3& m2);
+namespace NSG {
+struct Matrix4;
+struct Quaternion;
+struct Matrix3 {
+    Vector3 value[4];
+    Matrix3();
+    Matrix3(float s);
+    Matrix3(const Matrix3& m);
+    Matrix3(const Matrix4& m);
+    Matrix3(const Vector3& v0, const Vector3& v1, const Vector3& v2);
+    Matrix3(float x1, float y1, float z1, float x2, float y2, float z2,
+            float x3, float y3, float z3);
+    Matrix3(const Quaternion& q);
+    const Vector3& operator[](int i) const;
+    Vector3& operator[](int i);
+    Quaternion QuatCast() const;
+    Matrix3 Transpose() const;
+    Matrix3 Inverse() const;
+    Vector3 Row(int index) const;
+    const Vector3& Column(int index) const;
+    inline const float* GetPointer() const { return &(value[0].x); }
+};
+Matrix3 operator*(const Matrix3& m1, const Matrix3& m2);
 }

@@ -30,29 +30,29 @@ misrepresented as being the original software.
 #include <string>
 #include <windows.h>
 
-namespace NSG
-{
-    class WinWindow : public Window
-    {
-    public:
-        WinWindow(const std::string& name, WindowFlags flags);
-        WinWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-        ~WinWindow();
-        void SwapWindowBuffers() override;
-        void Destroy() override;
-        void HandleEvents() override;
-		HWND GetHWND() const { return hwnd_; }
-    private:
-        void SetContext() override;
-        void Show() override;
-        void Hide() override;
-        void Raise() override;
-        void SetupImgui() override;
-        void BeginImguiRender() override;
-        void Initialize(int x, int y, int width, int height, WindowFlags flags);
-        void Close() override;
-        int flags_;
-		HWND hwnd_;
-    };
+namespace NSG {
+class WinWindow : public Window {
+public:
+    WinWindow(const std::string& name, WindowFlags flags);
+    WinWindow(const std::string& name, int x, int y, int width, int height,
+              WindowFlags flags);
+    ~WinWindow();
+    void SwapWindowBuffers() override;
+    void Destroy() override;
+    void HandleEvents() override;
+    HWND GetHWND() const { return hwnd_; }
+
+private:
+    void SetContext() override;
+    void Show() override;
+    void Hide() override;
+    void Raise() override;
+    void SetupImgui() override;
+    void BeginImguiRender() override;
+    void Initialize(int x, int y, int width, int height, WindowFlags flags);
+    void Close() override;
+    int flags_;
+    HWND hwnd_;
+};
 }
 #endif

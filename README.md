@@ -71,6 +71,8 @@ apt-get install xorg-dev
 
 apt-get install libglu1-mesa-dev
 
+For EGL you need: sudo apt-get install libgles2-mesa-dev
+
 You can add installed compiler as selectable alternatives with:
 
 sudo update-alternatives --install /usr/bin/cc cc /usr/bin/clang-3.5 100

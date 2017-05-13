@@ -1,4 +1,4 @@
-	/*
+/*
 -------------------------------------------------------------------------------
 This file is part of nsg-library.
 http://github.com/woodjazz/nsg-library
@@ -24,30 +24,29 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "HTTPRequest.h"
+#include "Path.h"
 #include "Resource.h"
 #include "SharedPointers.h"
-#include "Path.h"
 #include "WeakFactory.h"
-#include "HTTPRequest.h"
 
-namespace NSG
-{
-	class ResourceFile : public Resource
-	{
-	public:
-		ResourceFile(const Path& path);
-		~ResourceFile();
-		const Path& GetPath() const { return path_; }
-		void SetPath(const Path& path) { path_ = path; }
-	private:
-		bool IsValid() override;
-        void AllocateResources() override;
-        void ReleaseResources() override;
-		Path path_;
-		PHTTPRequest get_;
-        HTTPRequest::OnLoadFunction onLoad_;
-        HTTPRequest::OnErrorFunction onError_;
-        HTTPRequest::OnProgressFunction onProgress_;
-		bool isLocal_;
-	};
+namespace NSG {
+class ResourceFile : public Resource {
+public:
+    ResourceFile(const Path& path);
+    ~ResourceFile();
+    const Path& GetPath() const { return path_; }
+    void SetPath(const Path& path) { path_ = path; }
+
+private:
+    bool IsValid() override;
+    void AllocateResources() override;
+    void ReleaseResources() override;
+    Path path_;
+    PHTTPRequest get_;
+    HTTPRequest::OnLoadFunction onLoad_;
+    HTTPRequest::OnErrorFunction onError_;
+    HTTPRequest::OnProgressFunction onProgress_;
+    bool isLocal_;
+};
 }

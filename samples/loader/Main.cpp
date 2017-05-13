@@ -26,76 +26,63 @@ misrepresented as being the original software.
 #include "NSG.h"
 
 using namespace NSG;
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     auto window = Window::Create();
     PCameraControl control;
     PLoaderXML loader;
     PShadowMapDebug shadowDebug;
 
     std::string status;
-    auto load = [&](const std::string & file)
-    {
+    auto load = [&](const std::string& file) {
         Engine::ReleaseMemory();
         control = nullptr;
         shadowDebug = nullptr;
         auto path = Path(file);
-        auto resource = Resource::GetOrCreateClass<ResourceFile>(path.GetFilePath());
+        auto resource =
+            Resource::GetOrCreateClass<ResourceFile>(path.GetFilePath());
         loader = LoaderXML::Create("loader");
         static SignalEmpty::PSlot slotLoaded;
-        slotLoaded = loader->Load(resource)->Connect([&]()
-        {
+        slotLoaded = loader->Load(resource)->Connect([&]() {
             auto scene = loader->GetScene(0);
-            if (scene)
-            {
+            if (scene) {
                 window->SetScene(scene);
                 auto camera = scene->GetMainCamera();
-                if (camera)
-                {
+                if (camera) {
                     camera->SetWindow(window);
                     control = std::make_shared<CameraControl>(camera);
                 }
                 auto light = scene->GetChild<Light>("Sun", true);
                 if (light)
-                    shadowDebug = std::make_shared<ShadowMapDebug>(window, light);
+                    shadowDebug =
+                        std::make_shared<ShadowMapDebug>(window, light);
             }
             status = "";
         });
 
         static SignalFloat::PSlot slotProgress;
-        slotProgress = loader->SigProgress()->Connect([&](float percentage)
-        {
+        slotProgress = loader->SigProgress()->Connect([&](float percentage) {
             status = "Loading " + ToString((int)percentage) + "%";
         });
     };
 
-    auto slotButtonClicked = window->SigDropFile()->Connect([&](const std::string & file)
-    {
-        load(file);
-    });
+    auto slotButtonClicked = window->SigDropFile()->Connect(
+        [&](const std::string& file) { load(file); });
 
-    auto drawGUISlot = window->SigDrawIMGUI()->Connect([&]()
-    {
+    auto drawGUISlot = window->SigDrawIMGUI()->Connect([&]() {
         using namespace ImGui;
 
-        const char* items[] =
-        {
-            "physics",
-            "shadowdir",
-            "shadowpoint",
-            "shadowspot",
-            "transparency"
-        };
+        const char* items[] = {"physics", "shadowdir", "shadowpoint",
+                               "shadowspot", "transparency"};
 
         ImGui::Text("Scenes:");
         static int selection = -1;
-        if (ImGui::ListBox(status.c_str(), &selection, items, sizeof(items) / sizeof(char*)))
-        {
-            std::string file = "data/" + std::string(items[selection]) + "/scene.xml";
+        if (ImGui::ListBox(status.c_str(), &selection, items,
+                           sizeof(items) / sizeof(char*))) {
+            std::string file =
+                "data/" + std::string(items[selection]) + "/scene.xml";
             load(file);
         }
     });
 
     return Engine::Create()->Run();
-
 }

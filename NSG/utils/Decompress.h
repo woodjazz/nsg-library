@@ -25,9 +25,11 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Types.h"
-namespace NSG
-{
-	void DecompressImageDXT(unsigned char* dest, const void* blocks, int width, int height, int depth, TextureFormat format);
-	void DecompressImageETC(unsigned char* dest, const void* blocks, int width, int height);
-	void DecompressImagePVRTC(unsigned char* dest, const void* blocks, int width, int height, TextureFormat format);
+namespace NSG {
+void DecompressImageDXT(unsigned char* dest, const void* blocks, int width,
+                        int height, int depth, TextureFormat format);
+void DecompressImageETC(unsigned char* dest, const void* blocks, int width,
+                        int height);
+void DecompressImagePVRTC(unsigned char* dest, const void* blocks, int width,
+                          int height, TextureFormat format);
 }

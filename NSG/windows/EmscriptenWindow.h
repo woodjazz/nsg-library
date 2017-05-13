@@ -27,45 +27,46 @@ misrepresented as being the original software.
 #if EMSCRIPTEN
 #include "Types.h"
 #include "Window.h"
-#include <string>
 #include <map>
+#include <string>
 
-namespace NSG
-{
-    class EmscriptenWindow : public Window
-    {
-    public:
-		EmscriptenWindow(const std::string& name, WindowFlags flags);
-		EmscriptenWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-		~EmscriptenWindow();
-        void HandleEvents() override;
-        void EnterBackground() override;
-    private:
-        static void HandleGamepad();
-        static void HandleTouchUpEvent();
-        void SetupImgui() override;
-        void BeginImguiRender() override;
-        static JoystickAxis ConvertAxis(int axis);
-        static JoystickButton ConvertButton(int button);
-        void OpenJoystick(int index);
-        void CloseJoystick(int index);
-        void OpenJoysticks();
-        static EmscriptenWindow* GetWindowFromID(uint32_t windowID);
-        static EmscriptenWindow* GetCurrentWindow();
-        void Initialize(int x, int y, int width, int height, WindowFlags flags);
-        void Close() override;
-        void ViewChanged(int width, int height) override;
-        uint32_t windowID_;
-        struct JoystickState
-        {
-            int deviceIndex;
-            void* joystick_;
-            void* pad_;
-            int instanceID_;
-            JoystickState() : deviceIndex(-1), joystick_(nullptr), pad_(nullptr), instanceID_(-1) {};
-        };
-        std::map<int, JoystickState> joysticks_;
-        int flags_;
+namespace NSG {
+class EmscriptenWindow : public Window {
+public:
+    EmscriptenWindow(const std::string& name, WindowFlags flags);
+    EmscriptenWindow(const std::string& name, int x, int y, int width,
+                     int height, WindowFlags flags);
+    ~EmscriptenWindow();
+    void HandleEvents() override;
+    void EnterBackground() override;
+
+private:
+    static void HandleGamepad();
+    static void HandleTouchUpEvent();
+    void SetupImgui() override;
+    void BeginImguiRender() override;
+    static JoystickAxis ConvertAxis(int axis);
+    static JoystickButton ConvertButton(int button);
+    void OpenJoystick(int index);
+    void CloseJoystick(int index);
+    void OpenJoysticks();
+    static EmscriptenWindow* GetWindowFromID(uint32_t windowID);
+    static EmscriptenWindow* GetCurrentWindow();
+    void Initialize(int x, int y, int width, int height, WindowFlags flags);
+    void Close() override;
+    void ViewChanged(int width, int height) override;
+    uint32_t windowID_;
+    struct JoystickState {
+        int deviceIndex;
+        void* joystick_;
+        void* pad_;
+        int instanceID_;
+        JoystickState()
+            : deviceIndex(-1), joystick_(nullptr), pad_(nullptr),
+              instanceID_(-1){};
     };
+    std::map<int, JoystickState> joysticks_;
+    int flags_;
+};
 }
 #endif

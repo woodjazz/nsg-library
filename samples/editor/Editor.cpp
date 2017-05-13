@@ -29,14 +29,18 @@ misrepresented as being the original software.
 
 Editor::Editor()
     : scenePreview_(std::make_shared<Scene>("NSGEditorPreview")),
-    isSceneHovered_(false),
-    editorCamera_(std::make_shared<Camera>("NSGEditorCamera"))
-{
-	const FrameBuffer::Flags frameBufferFlags((unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE | FrameBuffer::DEPTH));
-	previewFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("PreviewFrameBuffer"), frameBufferFlags));
-	previewFrameBuffer_->SetSize(128, 128);
-	sceneFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("SceneFrameBuffer"), frameBufferFlags));
-	gameFrameBuffer_ = PFrameBuffer(new FrameBuffer(GetUniqueName("GameFrameBuffer"), frameBufferFlags));
+      isSceneHovered_(false),
+      editorCamera_(std::make_shared<Camera>("NSGEditorCamera")) {
+    const FrameBuffer::Flags frameBufferFlags(
+        (unsigned int)(FrameBuffer::COLOR | FrameBuffer::COLOR_USE_TEXTURE |
+                       FrameBuffer::DEPTH));
+    previewFrameBuffer_ = PFrameBuffer(
+        new FrameBuffer(GetUniqueName("PreviewFrameBuffer"), frameBufferFlags));
+    previewFrameBuffer_->SetSize(128, 128);
+    sceneFrameBuffer_ = PFrameBuffer(
+        new FrameBuffer(GetUniqueName("SceneFrameBuffer"), frameBufferFlags));
+    gameFrameBuffer_ = PFrameBuffer(
+        new FrameBuffer(GetUniqueName("GameFrameBuffer"), frameBufferFlags));
 
     scenePreview_->CreateChild<Camera>();
     auto light = scenePreview_->CreateChild<Light>();
@@ -52,26 +56,21 @@ Editor::Editor()
     SetCamera(editorCamera_);
 }
 
-Editor::~Editor()
-{
+Editor::~Editor() {
     auto window = window_.lock();
     if (window)
         window->RemoveRender(this);
 }
 
-void Editor::SetScene(PScene scene)
-{
-    if (scene_.lock() != scene)
-    {
+void Editor::SetScene(PScene scene) {
+    if (scene_.lock() != scene) {
         scene_ = scene;
         SetControl();
     }
 }
 
-void Editor::SetCamera(PCamera camera)
-{
-    if (camera_.lock() != camera)
-    {
+void Editor::SetCamera(PCamera camera) {
+    if (camera_.lock() != camera) {
         if (camera)
             camera_ = camera;
         else
@@ -80,39 +79,28 @@ void Editor::SetCamera(PCamera camera)
     }
 }
 
-void Editor::SetControl()
-{
+void Editor::SetControl() {
     auto camera = camera_.lock();
     auto scene = scene_.lock();
-	if (camera && scene)
-	{
-		control_ = std::make_shared<CameraControl>(camera, scene);
-		control_->SetSelectionContext(RendererContext::EDITOR);
-	}
-    else
+    if (camera && scene) {
+        control_ = std::make_shared<CameraControl>(camera, scene);
+        control_->SetSelectionContext(RendererContext::EDITOR);
+    } else
         control_ = nullptr;
 }
 
-void Editor::SetWindow(PWindow window)
-{
-    if (window != window_.lock())
-    {
+void Editor::SetWindow(PWindow window) {
+    if (window != window_.lock()) {
         auto oldWindow = window_.lock();
-        if (oldWindow)
-        {
+        if (oldWindow) {
             oldWindow->RemoveRender(this);
         }
         window_ = window;
-        if (window)
-        {
-			window->SetRender(this);
-            slotMouseDown_ = window->SigMouseDown()->Connect([this](int button, float x, float y)
-            {
-                OnMouseDown(button, x, y);
-            });
-        }
-        else
-        {
+        if (window) {
+            window->SetRender(this);
+            slotMouseDown_ = window->SigMouseDown()->Connect([this](
+                int button, float x, float y) { OnMouseDown(button, x, y); });
+        } else {
             slotMouseDown_ = nullptr;
         }
         scenePreview_->SetWindow((window));
@@ -120,33 +108,32 @@ void Editor::SetWindow(PWindow window)
     }
 }
 
-void Editor::Render()
-{
+void Editor::Render() {
     auto window = window_.lock();
     auto context = RenderingContext::GetPtr();
     context->SetFrameBuffer(nullptr);
     context->SetViewport(*window);
-	editorGUI_.Render(window, [this](){ShowWindows(); });
-	RenderGame();
+    editorGUI_.Render(window, [this]() { ShowWindows(); });
+    RenderGame();
 }
 
-void Editor::ShowWindows()
-{
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+void Editor::ShowWindows() {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
 
     const ImGuiIO& io = ImGui::GetIO();
     auto mainWindowSize = io.DisplaySize;
     auto mainRectMin = ImGui::GetItemRectMin();
 
-    const ImGuiWindowFlags hierarchyFlags = ImGuiWindowFlags_ShowBorders |
-                                    ImGuiWindowFlags_NoMove |
-                                    ImGuiWindowFlags_NoCollapse |
-                                    ImGuiWindowFlags_NoTitleBar;
+    const ImGuiWindowFlags hierarchyFlags =
+        ImGuiWindowFlags_ShowBorders | ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
 
-	const float bg_alpha = -1;// 0.65f;
+    const float bg_alpha = -1; // 0.65f;
 
-	if (ImGui::Begin("Hierarchy", nullptr, ImVec2(std::min(mainWindowSize.x * 0.5f, 320.f), mainWindowSize.y * 0.5f), bg_alpha, hierarchyFlags))
-    {
+    if (ImGui::Begin("Hierarchy", nullptr,
+                     ImVec2(std::min(mainWindowSize.x * 0.5f, 320.f),
+                            mainWindowSize.y * 0.5f),
+                     bg_alpha, hierarchyFlags)) {
         ImGui::SetWindowPos(mainRectMin);
         ShowHierachy();
     }
@@ -154,14 +141,13 @@ void Editor::ShowWindows()
     auto hierarchyWindowSize = ImGui::GetWindowSize();
     ImGui::End();
 
-	const ImGuiWindowFlags inspectorFlags = ImGuiWindowFlags_ShowBorders |
-		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoCollapse |
-		ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_NoTitleBar;
+    const ImGuiWindowFlags inspectorFlags =
+        ImGuiWindowFlags_ShowBorders | ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoTitleBar;
 
-	if (ImGui::Begin("Inspector", nullptr, ImVec2(0, 0), bg_alpha, inspectorFlags))
-    {
+    if (ImGui::Begin("Inspector", nullptr, ImVec2(0, 0), bg_alpha,
+                     inspectorFlags)) {
         auto windowPos = hierarchyWindowPos;
         auto windowSize = hierarchyWindowSize;
         windowPos.y += windowSize.y;
@@ -173,13 +159,12 @@ void Editor::ShowWindows()
     ImGui::End();
 
     {
-		const ImGuiWindowFlags sceneFlags = ImGuiWindowFlags_ShowBorders |
-			ImGuiWindowFlags_NoMove |
-			ImGuiWindowFlags_NoCollapse |
-			ImGuiWindowFlags_NoTitleBar;
+        const ImGuiWindowFlags sceneFlags =
+            ImGuiWindowFlags_ShowBorders | ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar;
 
-		if (ImGui::Begin("Scene", nullptr, ImVec2(0, mainWindowSize.y * 0.5f), bg_alpha, sceneFlags))
-        {
+        if (ImGui::Begin("Scene", nullptr, ImVec2(0, mainWindowSize.y * 0.5f),
+                         bg_alpha, sceneFlags)) {
             auto windowPos = hierarchyWindowPos;
             auto windowSize = hierarchyWindowSize;
             windowPos.x += windowSize.x;
@@ -194,22 +179,21 @@ void Editor::ShowWindows()
         ImGui::End();
 
         {
-			const ImGuiWindowFlags gameFlags = ImGuiWindowFlags_ShowBorders |
-				ImGuiWindowFlags_NoMove |
-				ImGuiWindowFlags_NoCollapse |
-				ImGuiWindowFlags_NoResize |
-				ImGuiWindowFlags_NoTitleBar;
-				//ImGuiWindowFlags_NoInputs; //(do not set this)
+            const ImGuiWindowFlags gameFlags =
+                ImGuiWindowFlags_ShowBorders | ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                ImGuiWindowFlags_NoTitleBar;
+            // ImGuiWindowFlags_NoInputs; //(do not set this)
 
-			if (ImGui::Begin("G", nullptr, ImVec2(0, 0), bg_alpha, gameFlags))
-            {
+            if (ImGui::Begin("G", nullptr, ImVec2(0, 0), bg_alpha, gameFlags)) {
                 auto windowPos = sceneWindowPos;
                 auto windowSize = sceneWindowSize;
                 windowPos.y += windowSize.y;
                 ImGui::SetWindowPos(windowPos);
                 windowSize.y = mainWindowSize.y - windowPos.y;
                 ImGui::SetWindowSize(windowSize);
-                gameGUI_.SetArea(NSG::Rect{ windowPos.x, windowPos.y, windowSize.x, windowSize.y });
+                gameGUI_.SetArea(NSG::Rect{windowPos.x, windowPos.y,
+                                           windowSize.x, windowSize.y});
                 ShowGame();
             }
             ImGui::End();
@@ -218,31 +202,24 @@ void Editor::ShowWindows()
     ImGui::PopStyleVar();
 }
 
-void Editor::SetNode(PNode node)
-{
-    node_ = node;
-}
+void Editor::SetNode(PNode node) { node_ = node; }
 
-Node* Editor::GetNode() const
-{
+Node* Editor::GetNode() const {
     auto p = node_.lock();
     if (p)
         return p.get();
     return nullptr;
 }
 
-void Editor::OnMouseDown(int button, float x, float y)
-{
-    if (isSceneHovered_ && button == NSG_BUTTON_LEFT && control_)
-    {
+void Editor::OnMouseDown(int button, float x, float y) {
+    if (isSceneHovered_ && button == NSG_BUTTON_LEFT && control_) {
         auto node = control_->SelectObject(x, y);
         if (node)
             SetNode(node);
     }
 }
 
-void Editor::ShowScene()
-{
+void Editor::ShowScene() {
     auto scene = scene_.lock();
     if (!scene)
         return;
@@ -252,28 +229,35 @@ void Editor::ShowScene()
 
     isSceneHovered_ = false;
 
-    #if 1
-    if (ImGui::TreeNode("Help"))
-    {
-		ImGui::BulletText("Click to select an object.\n");
-		ImGui::BulletText("Press the F key over object.\nThis will set the pivot point on the selected point\nand center the Scene View.\n");
-		ImGui::BulletText("Press the C key over object.\nThis will set the pivot point on the object's center\nand center the Scene View.\n");
-		ImGui::BulletText("Hold Alt to orbit the camera around the current pivot point.\n");
-		ImGui::BulletText("Hold Alt and Shift to zoom the Scene View.\nThis is the same as scrolling with your mouse wheel.\n");
-		ImGui::BulletText("Hold Shift to drag camera around.\n");
-		ImGui::BulletText("Press R to reset the camera.\n");
+#if 1
+    if (ImGui::TreeNode("Help")) {
+        ImGui::BulletText("Click to select an object.\n");
+        ImGui::BulletText("Press the F key over object.\nThis will set the "
+                          "pivot point on the selected point\nand center the "
+                          "Scene View.\n");
+        ImGui::BulletText("Press the C key over object.\nThis will set the "
+                          "pivot point on the object's center\nand center the "
+                          "Scene View.\n");
+        ImGui::BulletText(
+            "Hold Alt to orbit the camera around the current pivot point.\n");
+        ImGui::BulletText("Hold Alt and Shift to zoom the Scene View.\nThis is "
+                          "the same as scrolling with your mouse wheel.\n");
+        ImGui::BulletText("Hold Shift to drag camera around.\n");
+        ImGui::BulletText("Press R to reset the camera.\n");
         ImGui::TreePop();
     }
-    #endif
+#endif
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
 
     ImGui::BeginChild("", ImVec2(0, 0), true, ImGuiWindowFlags_NoScrollbar);
     auto texture = GetScenePreview(scene.get(), camera.get());
     Vector4 viewRect;
-    if (texture && texture->IsReady())
-    {
-        ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
+    if (texture && texture->IsReady()) {
+        ImGui::Image(
+            (void*)(intptr_t)texture->GetID(),
+            ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()),
+            ImVec2(0, 1), ImVec2(1, 0));
 
         auto vMin = ImGui::GetItemRectMin();
         viewRect[0] = vMin.x;
@@ -289,68 +273,63 @@ void Editor::ShowScene()
 
     ImGui::PopStyleVar();
 
-    if (control_)
-    {
+    if (control_) {
         control_->Enable(isSceneHovered_);
         control_->SetViewRect(viewRect);
     }
 }
 
-void Editor::ShowGame()
-{
+void Editor::ShowGame() {
     auto scene = window_.lock()->GetScene();
     auto camera = scene.lock()->GetMainCamera();
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
-	auto size = ImGui::GetContentRegionAvail();
-	if (size.x <= 0 || size.y <= 0)
-		size = ImVec2{ 128, 128 };
-	gameFrameBuffer_->SetSize((int)size.x, (int)size.y);
+    auto size = ImGui::GetContentRegionAvail();
+    if (size.x <= 0 || size.y <= 0)
+        size = ImVec2{128, 128};
+    gameFrameBuffer_->SetSize((int)size.x, (int)size.y);
 
-	if (gTexture_ && gTexture_->IsReady())
-		ImGui::Image((void*)(intptr_t)gTexture_->GetID(), ImVec2((float)gTexture_->GetWidth(), (float)gTexture_->GetHeight()), ImVec2(0, 1), ImVec2(1, 0));
+    if (gTexture_ && gTexture_->IsReady())
+        ImGui::Image(
+            (void*)(intptr_t)gTexture_->GetID(),
+            ImVec2((float)gTexture_->GetWidth(), (float)gTexture_->GetHeight()),
+            ImVec2(0, 1), ImVec2(1, 0));
     ImGui::PopStyleVar();
 }
 
-void Editor::RenderGame()
-{
+void Editor::RenderGame() {
     auto currentWindow = window_.lock();
     auto scene = currentWindow->GetScene().lock();
-	auto camera = scene->GetMainCamera();
+    auto camera = scene->GetMainCamera();
     gTexture_ = GetGamePreview(scene.get(), camera.get());
 }
 
-void Editor::ShowInspector()
-{
-    //if (ImGui::CollapsingHeader("Inspector"))
+void Editor::ShowInspector() {
+    // if (ImGui::CollapsingHeader("Inspector"))
     {
         auto node = node_.lock();
-		if (node)
-		{
-			auto p = dynamic_cast<Camera*>(node.get());
-			if(p)
-				ShowGUIProperties(p);
-			else
-			{
-				auto p = dynamic_cast<Light*>(node.get());
-				if (p)
-					ShowGUIProperties(p);
-				else
-				{
-					auto p = dynamic_cast<SceneNode*>(node.get());
-					if (p)
-						ShowGUIProperties(p);
-					else
-						ShowGUIProperties(node.get());
-				}
-			}
-		}
+        if (node) {
+            auto p = dynamic_cast<Camera*>(node.get());
+            if (p)
+                ShowGUIProperties(p);
+            else {
+                auto p = dynamic_cast<Light*>(node.get());
+                if (p)
+                    ShowGUIProperties(p);
+                else {
+                    auto p = dynamic_cast<SceneNode*>(node.get());
+                    if (p)
+                        ShowGUIProperties(p);
+                    else
+                        ShowGUIProperties(node.get());
+                }
+            }
+        }
     }
 }
 
-void Editor::ShowHierachy()
-{
-    //if (ImGui::CollapsingHeader("Hierachy"))
+void Editor::ShowHierachy() {
+    // if (ImGui::CollapsingHeader("Hierachy"))
     {
         auto scene = scene_.lock();
         if (scene)
@@ -358,30 +337,27 @@ void Editor::ShowHierachy()
     }
 }
 
-PTexture Editor::GetMaterialPreview(PMaterial material)
-{
-    if (previewFrameBuffer_->IsReady())
-    {
+PTexture Editor::GetMaterialPreview(PMaterial material) {
+    if (previewFrameBuffer_->IsReady()) {
         auto graphics = RenderingContext::GetPtr();
         auto angle = 0.2f * Engine::GetPtr()->GetDeltaTime();
         auto q = Quaternion(angle, Vertex3(0, 1, 0));
         auto rot = previewNode_->GetOrientation();
         previewNode_->SetOrientation(q * rot);
         previewNode_->SetMaterial(material);
-        Renderer::GetPtr()->Render(previewFrameBuffer_.get(), scenePreview_.get());
+        Renderer::GetPtr()->Render(previewFrameBuffer_.get(),
+                                   scenePreview_.get());
         return previewFrameBuffer_->GetColorTexture();
     }
     return nullptr;
 }
 
-PTexture Editor::GetScenePreview(Scene* scene, Camera* camera)
-{
+PTexture Editor::GetScenePreview(Scene* scene, Camera* camera) {
     auto size = ImGui::GetContentRegionAvail();
     if (size.x <= 0 || size.y <= 0)
-        size = ImVec2{ 128, 128 };
+        size = ImVec2{128, 128};
     sceneFrameBuffer_->SetSize((int)size.x, (int)size.y);
-    if (sceneFrameBuffer_->IsReady())
-    {
+    if (sceneFrameBuffer_->IsReady()) {
         auto graphics = RenderingContext::GetPtr();
         auto renderer = Renderer::GetPtr();
         auto context = renderer->SetContextType(RendererContext::EDITOR);
@@ -392,17 +368,15 @@ PTexture Editor::GetScenePreview(Scene* scene, Camera* camera)
     return nullptr;
 }
 
-PTexture Editor::GetGamePreview(Scene* scene, Camera* camera)
-{
-    if (gameFrameBuffer_->IsReady())
-    {
+PTexture Editor::GetGamePreview(Scene* scene, Camera* camera) {
+    if (gameFrameBuffer_->IsReady()) {
         auto ctx = RenderingContext::GetPtr();
         auto renderer = Renderer::GetPtr();
         auto context = renderer->SetContextType(RendererContext::DEFAULT);
         renderer->Render(gameFrameBuffer_.get(), scene, camera);
         auto window = window_.lock();
         auto oldFrameBuffer = ctx->SetFrameBuffer(gameFrameBuffer_.get());
-		gameGUI_.Render(window, [&](){window->SigDrawIMGUI()->Run(); });
+        gameGUI_.Render(window, [&]() { window->SigDrawIMGUI()->Run(); });
         renderer->SetContextType(context);
         ctx->SetFrameBuffer(oldFrameBuffer);
         return gameFrameBuffer_->GetColorTexture();
@@ -410,283 +384,274 @@ PTexture Editor::GetGamePreview(Scene* scene, Camera* camera)
     return nullptr;
 }
 
-void Editor::ShowGUIHierarchy(Node* node)
-{
-	if (dynamic_cast<EditorSceneNode*>(node))
-		return;
-	auto selectedNode = GetNode();
-	auto name = node->GetName();
-	if (selectedNode == node)
-		name = "*" + name;
-	if (GetSceneChildren(node) > 0)
-	{
-		if (ImGui::TreeNode(("##" + node->GetName()).c_str()))
-		{
-			ImGui::SameLine();
-			if (ImGui::SmallButton(name.c_str()))
-				SetNode(SharedFromPointerNode(node));
+void Editor::ShowGUIHierarchy(Node* node) {
+    if (dynamic_cast<EditorSceneNode*>(node))
+        return;
+    auto selectedNode = GetNode();
+    auto name = node->GetName();
+    if (selectedNode == node)
+        name = "*" + name;
+    if (GetSceneChildren(node) > 0) {
+        if (ImGui::TreeNode(("##" + node->GetName()).c_str())) {
+            ImGui::SameLine();
+            if (ImGui::SmallButton(name.c_str()))
+                SetNode(SharedFromPointerNode(node));
 
-			auto& children = node->GetChildren();
-			for (auto child : children)
-				ShowGUIHierarchy(child.get());
-			ImGui::TreePop();
-		}
-		else
-		{
-			ImGui::SameLine();
-			if (ImGui::SmallButton(name.c_str()))
-				SetNode(SharedFromPointerNode(node));
-		}
-	}
-	else
-	{
-		if (ImGui::SmallButton(name.c_str()))
-			SetNode(SharedFromPointerNode(node));
-	}
+            auto& children = node->GetChildren();
+            for (auto child : children)
+                ShowGUIHierarchy(child.get());
+            ImGui::TreePop();
+        } else {
+            ImGui::SameLine();
+            if (ImGui::SmallButton(name.c_str()))
+                SetNode(SharedFromPointerNode(node));
+        }
+    } else {
+        if (ImGui::SmallButton(name.c_str()))
+            SetNode(SharedFromPointerNode(node));
+    }
 }
 
-int Editor::GetSceneChildren(Node* node) const
-{
-	int n = 0;
-	auto& children = node->GetChildren();
-	for (auto child : children)
-	{
-		if (!dynamic_cast<EditorSceneNode*>(child.get()))
-			++n;
-	}
-	return n;
+int Editor::GetSceneChildren(Node* node) const {
+    int n = 0;
+    auto& children = node->GetChildren();
+    for (auto child : children) {
+        if (!dynamic_cast<EditorSceneNode*>(child.get()))
+            ++n;
+    }
+    return n;
 }
 
+void Editor::ShowGUIProperties(Node* node) {
+    std::string header = "Transform:" + node->GetName();
+    if (ImGui::TreeNode(header.c_str())) {
+        auto position = node->GetPosition();
+        ImGui::DragFloat3("Position", &position[0], 0.1f);
+        node->SetPosition(position);
 
-void Editor::ShowGUIProperties(Node* node)
-{
-	std::string header = "Transform:" + node->GetName();
-	if (ImGui::TreeNode(header.c_str()))
-	{
-		auto position = node->GetPosition();
-		ImGui::DragFloat3("Position", &position[0], 0.1f);
-		node->SetPosition(position);
+        auto guiRotation = node->GetGUIRotation();
+        auto oldRotation = guiRotation.Radians();
+        ImGui::DragFloat3("Rotation", &guiRotation[0], 1, 0, 360);
+        auto rad = guiRotation.Radians();
+        auto q = node->GetOrientation();
+        q *= Quaternion(oldRotation).Inverse() * Quaternion(rad);
+        node->SetOrientation(q);
+        node->SetGUIRotation(guiRotation);
 
-		auto guiRotation = node->GetGUIRotation();
-		auto oldRotation = guiRotation.Radians();
-		ImGui::DragFloat3("Rotation", &guiRotation[0], 1, 0, 360);
-		auto rad = guiRotation.Radians();
-		auto q = node->GetOrientation();
-		q *= Quaternion(oldRotation).Inverse() * Quaternion(rad);
-		node->SetOrientation(q);
-		node->SetGUIRotation(guiRotation);
+        auto scale = node->GetScale();
+        ImGui::DragFloat3("Scale", &scale[0], 0.1f);
+        node->SetScale(scale);
 
-		auto scale = node->GetScale();
-		ImGui::DragFloat3("Scale", &scale[0], 0.1f);
-		node->SetScale(scale);
-
-		ImGui::TreePop();
-	}
+        ImGui::TreePop();
+    }
 }
 
-
-void Editor::ShowGUIProperties(SceneNode* node)
-{
-	ShowGUIProperties(static_cast<Node*>(node));
-	if (node->GetMaterial())
-		ShowGUIProperties(node->GetMaterial().get());
+void Editor::ShowGUIProperties(SceneNode* node) {
+    ShowGUIProperties(static_cast<Node*>(node));
+    if (node->GetMaterial())
+        ShowGUIProperties(node->GetMaterial().get());
 }
 
-void Editor::ShowGUIProperties(Material* material)
-{
-	std::string header = "Material:" + material->GetName();
-	if (ImGui::TreeNode(header.c_str()))
-	{
-		if (ImGui::TreeNode("Preview"))
-		{
-			auto texture = GetMaterialPreview(SharedFromPointer(material));
-			if (texture && texture->IsReady())
-				ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2((float)texture->GetWidth(), (float)texture->GetHeight()), ImVec2(0, 1), ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-			ImGui::TreePop();
-		}
+void Editor::ShowGUIProperties(Material* material) {
+    std::string header = "Material:" + material->GetName();
+    if (ImGui::TreeNode(header.c_str())) {
+        if (ImGui::TreeNode("Preview")) {
+            auto texture = GetMaterialPreview(SharedFromPointer(material));
+            if (texture && texture->IsReady())
+                ImGui::Image((void*)(intptr_t)texture->GetID(),
+                             ImVec2((float)texture->GetWidth(),
+                                    (float)texture->GetHeight()),
+                             ImVec2(0, 1), ImVec2(1, 0),
+                             ImColor(255, 255, 255, 255),
+                             ImColor(255, 255, 255, 128));
+            ImGui::TreePop();
+        }
 
-		if (material->HasTextures() && ImGui::TreeNode("Textures"))
-		{
-			for (int i = 0; i < (int)MaterialTexture::MAX_MAPS; i++)
-			{
-				auto texture = material->GetTexture((MaterialTexture)i);
-				if (texture && texture->IsReady())
-				{
-					auto type = texture->GetMapType();
-					if (ImGui::TreeNode(ToString(type)))
-					{
-						auto width = std::min(64.f, (float)texture->GetWidth());
-						auto height = std::min(64.f, (float)texture->GetHeight());
-						ImGui::Image((void*)(intptr_t)texture->GetID(), ImVec2(width, height), ImVec2(0, 1), ImVec2(1, 0), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-						ImGui::TreePop();
-					}
-				}
-			}
-			ImGui::TreePop();
-		}
+        if (material->HasTextures() && ImGui::TreeNode("Textures")) {
+            for (int i = 0; i < (int)MaterialTexture::MAX_MAPS; i++) {
+                auto texture = material->GetTexture((MaterialTexture)i);
+                if (texture && texture->IsReady()) {
+                    auto type = texture->GetMapType();
+                    if (ImGui::TreeNode(ToString(type))) {
+                        auto width = std::min(64.f, (float)texture->GetWidth());
+                        auto height =
+                            std::min(64.f, (float)texture->GetHeight());
+                        ImGui::Image((void*)(intptr_t)texture->GetID(),
+                                     ImVec2(width, height), ImVec2(0, 1),
+                                     ImVec2(1, 0), ImColor(255, 255, 255, 255),
+                                     ImColor(255, 255, 255, 128));
+                        ImGui::TreePop();
+                    }
+                }
+            }
+            ImGui::TreePop();
+        }
 
-		auto shadeless = material->IsShadeless();
-		ImGui::Checkbox("Shadeless", &shadeless);
-		material->SetShadeless(shadeless);
-		ImGui::SameLine();
+        auto shadeless = material->IsShadeless();
+        ImGui::Checkbox("Shadeless", &shadeless);
+        material->SetShadeless(shadeless);
+        ImGui::SameLine();
 
-		auto isTransparent = material->IsTransparent();
-		ImGui::Checkbox("Transparent", &isTransparent);
-		material->EnableTransparent(isTransparent);
+        auto isTransparent = material->IsTransparent();
+        ImGui::Checkbox("Transparent", &isTransparent);
+        material->EnableTransparent(isTransparent);
 
-		ImGui::SameLine();
-		auto isFlipped = material->IsYFlipped();
-		ImGui::Checkbox("Flip Y", &isFlipped);
-		material->FlipYTextureCoords(isFlipped);
+        ImGui::SameLine();
+        auto isFlipped = material->IsYFlipped();
+        ImGui::Checkbox("Flip Y", &isFlipped);
+        material->FlipYTextureCoords(isFlipped);
 
-		auto renderPass = material->GetRenderPass();
-		ImGui::Combo("Render Pass", (int*)&renderPass, "Vertex Color\0Unlit\0Lit\0Text\0Blend\0Blur\0Wave\0Show Diffuse\0\0");
-		material->SetRenderPass(renderPass);
-		auto fillMode = material->GetFillMode();
-		ImGui::Combo("Fill Mode", (int*)&fillMode, "Solid\0Wireframe\0");
-		material->SetFillMode(fillMode);
-		auto cullFaceMode = material->GetCullFaceMode();
-		ImGui::Combo("Culling", (int*)&cullFaceMode, "Back\0Front\0Front and back\0Disabled");
-		material->SetCullFaceMode(cullFaceMode);
-		auto billboardType = material->GetBillboardType();
-		ImGui::Combo("Billboard", (int*)&billboardType, "None\0Spherical\0Cylindrical\0");
-		material->SetBillboardType(billboardType);
+        auto renderPass = material->GetRenderPass();
+        ImGui::Combo("Render Pass", (int*)&renderPass,
+                     "Vertex Color\0Unlit\0Lit\0Text\0Blend\0Blur\0Wave\0Show "
+                     "Diffuse\0\0");
+        material->SetRenderPass(renderPass);
+        auto fillMode = material->GetFillMode();
+        ImGui::Combo("Fill Mode", (int*)&fillMode, "Solid\0Wireframe\0");
+        material->SetFillMode(fillMode);
+        auto cullFaceMode = material->GetCullFaceMode();
+        ImGui::Combo("Culling", (int*)&cullFaceMode,
+                     "Back\0Front\0Front and back\0Disabled");
+        material->SetCullFaceMode(cullFaceMode);
+        auto billboardType = material->GetBillboardType();
+        ImGui::Combo("Billboard", (int*)&billboardType,
+                     "None\0Spherical\0Cylindrical\0");
+        material->SetBillboardType(billboardType);
 
-		auto ambientIntensity = material->GetAmbientIntensity();
-		ImGui::SliderFloat("##ambInt", &ambientIntensity, 0.0f, 1.0f, "Ambient Intensity %.3f");
-		material->SetAmbientIntensity(ambientIntensity);
+        auto ambientIntensity = material->GetAmbientIntensity();
+        ImGui::SliderFloat("##ambInt", &ambientIntensity, 0.0f, 1.0f,
+                           "Ambient Intensity %.3f");
+        material->SetAmbientIntensity(ambientIntensity);
 
-		auto emitIntensity = material->GetEmitIntensity();
-		ImGui::SliderFloat("##emitInt", &emitIntensity, 0.0f, 1.0f, "Emit Intensity %.3f");
-		material->SetEmitIntensity(emitIntensity);
+        auto emitIntensity = material->GetEmitIntensity();
+        ImGui::SliderFloat("##emitInt", &emitIntensity, 0.0f, 1.0f,
+                           "Emit Intensity %.3f");
+        material->SetEmitIntensity(emitIntensity);
 
-		auto diffuseColor = material->GetDiffuseColor();
-		ImGui::ColorEdit4("Diffuse", &diffuseColor[0]);
+        auto diffuseColor = material->GetDiffuseColor();
+        ImGui::ColorEdit4("Diffuse", &diffuseColor[0]);
         material->SetDiffuseColor(Color(diffuseColor));
-		material->SetAlpha(diffuseColor.a);
+        material->SetAlpha(diffuseColor.a);
 
-		auto diffuseIntensity = material->GetDiffuseIntensity();
-		ImGui::SliderFloat("##difInt", &diffuseIntensity, 0.0f, 1.0f, "Diffuse Intensity %.3f");
-		material->SetDiffuseIntensity(diffuseIntensity);
+        auto diffuseIntensity = material->GetDiffuseIntensity();
+        ImGui::SliderFloat("##difInt", &diffuseIntensity, 0.0f, 1.0f,
+                           "Diffuse Intensity %.3f");
+        material->SetDiffuseIntensity(diffuseIntensity);
 
-		auto specularColor = material->GetSpecularColor();
-		ImGui::ColorEdit4("Specular", &specularColor[0]);
+        auto specularColor = material->GetSpecularColor();
+        ImGui::ColorEdit4("Specular", &specularColor[0]);
         material->SetSpecularColor(specularColor);
-		material->SetAlphaForSpecular(specularColor.a);
+        material->SetAlphaForSpecular(specularColor.a);
 
-		auto specularIntensity = material->GetSpecularIntensity();
-		ImGui::SliderFloat("##speInt", &specularIntensity, 0.0f, 1.0f, "Specular Intensity %.3f");
-		material->SetSpecularIntensity(specularIntensity);
+        auto specularIntensity = material->GetSpecularIntensity();
+        ImGui::SliderFloat("##speInt", &specularIntensity, 0.0f, 1.0f,
+                           "Specular Intensity %.3f");
+        material->SetSpecularIntensity(specularIntensity);
 
-		auto shininess = material->GetShininess();
-		ImGui::SliderFloat("##shinin", &shininess, 0.0f, 511.0f, "Specular Shininess %.0f");
-		material->SetShininess(shininess);
+        auto shininess = material->GetShininess();
+        ImGui::SliderFloat("##shinin", &shininess, 0.0f, 511.0f,
+                           "Specular Shininess %.0f");
+        material->SetShininess(shininess);
 
-		auto friction = material->GetFriction();
-		ImGui::SliderFloat("##rbFric", &friction, 0.0f, 100.0f, "Rigbody Friction %.1f");
-		material->SetFriction(friction);
+        auto friction = material->GetFriction();
+        ImGui::SliderFloat("##rbFric", &friction, 0.0f, 100.0f,
+                           "Rigbody Friction %.1f");
+        material->SetFriction(friction);
 
-		auto castShadow = material->CastShadow();
-		ImGui::Checkbox("Cast Shadow", &castShadow);
-		material->CastShadow(castShadow);
-		ImGui::SameLine();
+        auto castShadow = material->CastShadow();
+        ImGui::Checkbox("Cast Shadow", &castShadow);
+        material->CastShadow(castShadow);
+        ImGui::SameLine();
 
-		auto receiveShadows = material->ReceiveShadows();
-		ImGui::Checkbox("Receive Shadows", &receiveShadows);
-		material->ReceiveShadows(receiveShadows);
+        auto receiveShadows = material->ReceiveShadows();
+        ImGui::Checkbox("Receive Shadows", &receiveShadows);
+        material->ReceiveShadows(receiveShadows);
 
-		auto shadowBias = material->GetBias();
-		ImGui::DragFloat("##bias", &shadowBias, 1.f, 0.0f, 10.0f, "Shadow Bias %.3f");
-		material->SetBias(shadowBias);
+        auto shadowBias = material->GetBias();
+        ImGui::DragFloat("##bias", &shadowBias, 1.f, 0.0f, 10.0f,
+                         "Shadow Bias %.3f");
+        material->SetBias(shadowBias);
 
-		ImGui::TreePop();
-	}
+        ImGui::TreePop();
+    }
 }
 
-void Editor::ShowGUIProperties(Light* light)
-{
-	ShowGUIProperties(static_cast<SceneNode*>(light));
-	std::string header = "Light:" + light->GetName();
-	if (ImGui::TreeNode(header.c_str()))
-	{
-		auto type = light->GetType();
-		ImGui::Combo("Type", (int*)&type, "Point\0Directional\0Spot");
-		light->SetType(type);
+void Editor::ShowGUIProperties(Light* light) {
+    ShowGUIProperties(static_cast<SceneNode*>(light));
+    std::string header = "Light:" + light->GetName();
+    if (ImGui::TreeNode(header.c_str())) {
+        auto type = light->GetType();
+        ImGui::Combo("Type", (int*)&type, "Point\0Directional\0Spot");
+        light->SetType(type);
 
-		if (type == LightType::SPOT)
-		{
-			auto cutOff = light->GetSpotCutOff();
-			ImGui::SliderAngle("CutOff", &cutOff, 0.f, 180.f);
-			light->SetSpotCutOff(cutOff);
-		}
+        if (type == LightType::SPOT) {
+            auto cutOff = light->GetSpotCutOff();
+            ImGui::SliderAngle("CutOff", &cutOff, 0.f, 180.f);
+            light->SetSpotCutOff(cutOff);
+        }
 
-		if (type != LightType::DIRECTIONAL)
-		{
-			auto distance = light->GetDistance();
-            ImGui::DragFloat("##distance", &distance, 1.f, 0.f, Scene::MAX_WORLD_SIZE, "Size %.1f");
-			light->SetDistance(distance);
-		}
+        if (type != LightType::DIRECTIONAL) {
+            auto distance = light->GetDistance();
+            ImGui::DragFloat("##distance", &distance, 1.f, 0.f,
+                             Scene::MAX_WORLD_SIZE, "Size %.1f");
+            light->SetDistance(distance);
+        }
 
-		auto energy = light->GetEnergy();
-		ImGui::DragFloat("##energy", &energy, 0.1f, 0.f, 1000.f, "Energy %.1f");
-		light->SetEnergy(energy);
+        auto energy = light->GetEnergy();
+        ImGui::DragFloat("##energy", &energy, 0.1f, 0.f, 1000.f, "Energy %.1f");
+        light->SetEnergy(energy);
 
-		auto color = light->GetColor();
-		ImGui::ColorEdit3("Color", &color[0]);
-		light->SetColor(color);
+        auto color = light->GetColor();
+        ImGui::ColorEdit3("Color", &color[0]);
+        light->SetColor(color);
 
-		auto enableDiffuse = light->IsDiffuseEnabled();
-		ImGui::Checkbox("Diffuse", &enableDiffuse);
-		light->EnableDiffuseColor(enableDiffuse);
+        auto enableDiffuse = light->IsDiffuseEnabled();
+        ImGui::Checkbox("Diffuse", &enableDiffuse);
+        light->EnableDiffuseColor(enableDiffuse);
 
-		auto enableSpecular = light->IsSpecularEnabled();
-		ImGui::Checkbox("Specular", &enableSpecular);
-		light->EnableSpecularColor(enableSpecular);
+        auto enableSpecular = light->IsSpecularEnabled();
+        ImGui::Checkbox("Specular", &enableSpecular);
+        light->EnableSpecularColor(enableSpecular);
 
-		auto shadow = light->DoShadows();
-		ImGui::Checkbox("Shadows", &shadow);
-		light->EnableShadows(shadow);
+        auto shadow = light->DoShadows();
+        ImGui::Checkbox("Shadows", &shadow);
+        light->EnableShadows(shadow);
 
-		if (shadow)
-		{
-			auto bias = light->GetBias();
-			ImGui::DragFloat("##bias", &bias, 1.f, 0.0f, 5.0f, "Bias %.3f");
-			light->SetBias(bias);
-		}
-		ImGui::TreePop();
-	}
+        if (shadow) {
+            auto bias = light->GetBias();
+            ImGui::DragFloat("##bias", &bias, 1.f, 0.0f, 5.0f, "Bias %.3f");
+            light->SetBias(bias);
+        }
+        ImGui::TreePop();
+    }
 }
 
-void Editor::ShowGUIProperties(Camera* camera)
-{
-	ShowGUIProperties(static_cast<SceneNode*>(camera));
-	std::string header = "Camera:" + camera->GetName();
-	if (ImGui::TreeNode(header.c_str()))
-	{
-		auto zNear = camera->GetZNear();
-		ImGui::DragFloat("##zNear", &zNear, 1.f, 0.1f, 10000.0f, "zNear %.1f");
-		camera->SetNearClip(zNear);
+void Editor::ShowGUIProperties(Camera* camera) {
+    ShowGUIProperties(static_cast<SceneNode*>(camera));
+    std::string header = "Camera:" + camera->GetName();
+    if (ImGui::TreeNode(header.c_str())) {
+        auto zNear = camera->GetZNear();
+        ImGui::DragFloat("##zNear", &zNear, 1.f, 0.1f, 10000.0f, "zNear %.1f");
+        camera->SetNearClip(zNear);
 
-		auto zFar = camera->GetZFar();
-		ImGui::DragFloat("##zFar", &zFar, 1.f, 0.1f, 10000.0f, "zFar %.1f");
-		camera->SetFarClip(zFar);
+        auto zFar = camera->GetZFar();
+        ImGui::DragFloat("##zFar", &zFar, 1.f, 0.1f, 10000.0f, "zFar %.1f");
+        camera->SetFarClip(zFar);
 
-		auto isOrtho = camera->IsOrtho();
-		ImGui::Checkbox("Ortho", &isOrtho);
-		isOrtho ? camera->EnableOrtho() : camera->DisableOrtho();
+        auto isOrtho = camera->IsOrtho();
+        ImGui::Checkbox("Ortho", &isOrtho);
+        isOrtho ? camera->EnableOrtho() : camera->DisableOrtho();
 
-		if (!isOrtho)
-		{
-			auto fov = camera->GetFOVRadians();
+        if (!isOrtho) {
+            auto fov = camera->GetFOVRadians();
             ImGui::SliderAngle("FOV", &fov, 0.f, Camera::MaxFOVDegrees);
-			camera->SetFOVRadians(fov);
-		}
-		else
-		{
-			auto orthoScale = camera->GetOrthoScale();
-            ImGui::DragFloat("##orthoScale", &orthoScale, 1.f, 0.f, Scene::MAX_WORLD_SIZE, "Size %.1f");
-			camera->SetOrthoScale(orthoScale);
-		}
-		ImGui::TreePop();
-	}
+            camera->SetFOVRadians(fov);
+        } else {
+            auto orthoScale = camera->GetOrthoScale();
+            ImGui::DragFloat("##orthoScale", &orthoScale, 1.f, 0.f,
+                             Scene::MAX_WORLD_SIZE, "Size %.1f");
+            camera->SetOrthoScale(orthoScale);
+        }
+        ImGui::TreePop();
+    }
 }

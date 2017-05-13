@@ -25,48 +25,40 @@ misrepresented as being the original software.
 */
 
 #include "Shader.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #if !defined(IS_TARGET_APPLE)
 #include <malloc.h>
 #endif
-#include <assert.h>
-#include "Log.h"
 #include "Check.h"
+#include "Log.h"
+#include <assert.h>
 
-namespace NSG 
-{
+namespace NSG {
 
-	Shader::Shader(GLenum type, const char* source)
-	: source_(source)
-	{
-        CHECK_GL_STATUS();
-		id_ = glCreateShader(type);
-		glShaderSource(id_, 1, &source, NULL);
-		glCompileShader(id_);
-		GLint compile_status = GL_FALSE;
-		glGetShaderiv(id_, GL_COMPILE_STATUS, &compile_status);
-		if(compile_status != GL_TRUE)
-		{
-			GLint logLength = 0;
-			glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &logLength);
-			if (logLength > 0)
-			{
-				std::string log;
-				log.resize(logLength);
-				glGetShaderInfoLog(id_, logLength, &logLength, &log[0]);
-				LOGE("Shader creation failed: %s", log.c_str());
-                //LOGE("%s", source);
-                auto e = glGetError();
-                glDeleteShader(id_);
-                throw GLException(e);
-			}
-		}
-        CHECK_GL_STATUS();
-	}
+Shader::Shader(GLenum type, const char* source) : source_(source) {
+    CHECK_GL_STATUS();
+    id_ = glCreateShader(type);
+    glShaderSource(id_, 1, &source, NULL);
+    glCompileShader(id_);
+    GLint compile_status = GL_FALSE;
+    glGetShaderiv(id_, GL_COMPILE_STATUS, &compile_status);
+    if (compile_status != GL_TRUE) {
+        GLint logLength = 0;
+        glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &logLength);
+        if (logLength > 0) {
+            std::string log;
+            log.resize(logLength);
+            glGetShaderInfoLog(id_, logLength, &logLength, &log[0]);
+            LOGE("Shader creation failed: %s", log.c_str());
+            // LOGE("%s", source);
+            auto e = glGetError();
+            glDeleteShader(id_);
+            throw GLException(e);
+        }
+    }
+    CHECK_GL_STATUS();
+}
 
-	Shader::~Shader()
-	{
-		glDeleteShader(id_);
-	}
+Shader::~Shader() { glDeleteShader(id_); }
 }

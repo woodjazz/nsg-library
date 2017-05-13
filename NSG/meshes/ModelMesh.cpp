@@ -24,49 +24,35 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "ModelMesh.h"
-#include "Types.h"
 #include "Check.h"
 #include "RenderingContext.h"
+#include "Types.h"
 #include "pugixml.hpp"
 
-namespace NSG
-{
-    ModelMesh::ModelMesh(const std::string& name)
-        : Mesh(name),
-          face_mode_(GL_TRIANGLES)
-    {
-    }
+namespace NSG {
+ModelMesh::ModelMesh(const std::string& name)
+    : Mesh(name), face_mode_(GL_TRIANGLES) {}
 
-    ModelMesh::~ModelMesh()
-    {
-    }
+ModelMesh::~ModelMesh() {}
 
-    GLenum ModelMesh::GetWireFrameDrawMode() const
-    {
-        return GL_LINES;
-    }
+GLenum ModelMesh::GetWireFrameDrawMode() const { return GL_LINES; }
 
-    GLenum ModelMesh::GetSolidDrawMode() const
-    {
-        return face_mode_;
-    }
+GLenum ModelMesh::GetSolidDrawMode() const { return face_mode_; }
 
-    size_t ModelMesh::GetNumberOfTriangles() const
-    {
-        if (face_mode_ == GL_TRIANGLES)
-            return indexes_.size() / 3;
-        else if (face_mode_ == GL_TRIANGLE_FAN)
-            return vertexsData_.size() - 2;
-        else
-            return 0;
-    }
+size_t ModelMesh::GetNumberOfTriangles() const {
+    if (face_mode_ == GL_TRIANGLES)
+        return indexes_.size() / 3;
+    else if (face_mode_ == GL_TRIANGLE_FAN)
+        return vertexsData_.size() - 2;
+    else
+        return 0;
+}
 
-	void ModelMesh::Load(const pugi::xml_node& node)
-	{
-		//SetFaceMode(node.attribute("wireFrameDrawMode").as_int()); // redundant
-		auto drawModeAtt = node.attribute("solidDrawMode");
-		if (drawModeAtt)
-			SetFaceMode(node.attribute("solidDrawMode").as_int());
-		Mesh::Load(node);
-	}
+void ModelMesh::Load(const pugi::xml_node& node) {
+    // SetFaceMode(node.attribute("wireFrameDrawMode").as_int()); // redundant
+    auto drawModeAtt = node.attribute("solidDrawMode");
+    if (drawModeAtt)
+        SetFaceMode(node.attribute("solidDrawMode").as_int());
+    Mesh::Load(node);
+}
 }

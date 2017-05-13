@@ -26,14 +26,9 @@ misrepresented as being the original software.
 
 #include "VertexShader.h"
 
-namespace NSG 
-{
-	VertexShader::VertexShader(const char* source)
-	: Shader(GL_VERTEX_SHADER, source)
-	{
-	}
+namespace NSG {
+VertexShader::VertexShader(const char* source)
+    : Shader(GL_VERTEX_SHADER, source) {}
 
-	VertexShader::~VertexShader()
-	{
-	}
+VertexShader::~VertexShader() {}
 }

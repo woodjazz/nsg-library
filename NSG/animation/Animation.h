@@ -24,60 +24,60 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "Object.h"
 #include "StrongFactory.h"
+#include "Types.h"
 
-namespace NSG
-{
-    struct AnimationKeyFrame
-    {
-        float time_;
-        Vector3 position_;
-        Quaternion rotation_;
-        Vector3 scale_;
-        AnimationChannelMask mask_;
-        AnimationKeyFrame();
-        AnimationKeyFrame(float time, Node* node);
-        void Save(pugi::xml_node& node);
-        void Load(const pugi::xml_node& node);
-        void SetPose(PBone bone);
-    };
+namespace NSG {
+struct AnimationKeyFrame {
+    float time_;
+    Vector3 position_;
+    Quaternion rotation_;
+    Vector3 scale_;
+    AnimationChannelMask mask_;
+    AnimationKeyFrame();
+    AnimationKeyFrame(float time, Node* node);
+    void Save(pugi::xml_node& node);
+    void Load(const pugi::xml_node& node);
+    void SetPose(PBone bone);
+};
 
-    struct AnimationTrack
-    {
-        std::string nodeName_;
-        PWeakNode node_; //not set till the animation is resolved (see Animation::ResolveFor)
-        AnimationChannelMask channelMask_;
-        std::vector<AnimationKeyFrame> keyFrames_;
-        void GetKeyFrameIndex(float time, size_t& index) const;
-        void Save(pugi::xml_node& node);
-        void Load(const pugi::xml_node& node);
-        void ResolveFor(PBone bone);
-        void ResolveKeyFrameGaps();
-        void ResolvePositionGap(Vector3& position, int frame);
-        void ResolveRotationGap(Quaternion& rotation, int frame);
-        void ResolveScaleGap(Vector3& scale, int frame);
-    };
+struct AnimationTrack {
+    std::string nodeName_;
+    PWeakNode node_; // not set till the animation is resolved (see
+                     // Animation::ResolveFor)
+    AnimationChannelMask channelMask_;
+    std::vector<AnimationKeyFrame> keyFrames_;
+    void GetKeyFrameIndex(float time, size_t& index) const;
+    void Save(pugi::xml_node& node);
+    void Load(const pugi::xml_node& node);
+    void ResolveFor(PBone bone);
+    void ResolveKeyFrameGaps();
+    void ResolvePositionGap(Vector3& position, int frame);
+    void ResolveRotationGap(Quaternion& rotation, int frame);
+    void ResolveScaleGap(Vector3& scale, int frame);
+};
 
-	class Animation : public Object, public std::enable_shared_from_this<Animation>, public StrongFactory<std::string, Animation>
-    {
-    public:
-        Animation(const std::string& name);
-        ~Animation();
-        PAnimation Clone() const;
-        void ResolveFor(PSceneNode node);
-        const std::string& GetName() const { return name_; }
-        void SetLength(float length);
-        float GetLength() const { return length_; }
-        void SetTracks(const std::vector<AnimationTrack>& tracks);
-        const std::vector<AnimationTrack>& GetTracks() const { return tracks_; }
-        void Save(pugi::xml_node& node);
-        void Load(const pugi::xml_node& node) override;
-        void AddTrack(const AnimationTrack& track);
-        static void SaveAnimations(pugi::xml_node& node);
-    private:
-        float length_;
-        std::vector<AnimationTrack> tracks_;
-    };
+class Animation : public Object,
+                  public std::enable_shared_from_this<Animation>,
+                  public StrongFactory<std::string, Animation> {
+public:
+    Animation(const std::string& name);
+    ~Animation();
+    PAnimation Clone() const;
+    void ResolveFor(PSceneNode node);
+    const std::string& GetName() const { return name_; }
+    void SetLength(float length);
+    float GetLength() const { return length_; }
+    void SetTracks(const std::vector<AnimationTrack>& tracks);
+    const std::vector<AnimationTrack>& GetTracks() const { return tracks_; }
+    void Save(pugi::xml_node& node);
+    void Load(const pugi::xml_node& node) override;
+    void AddTrack(const AnimationTrack& track);
+    static void SaveAnimations(pugi::xml_node& node);
+
+private:
+    float length_;
+    std::vector<AnimationTrack> tracks_;
+};
 }

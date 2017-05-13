@@ -26,58 +26,45 @@ misrepresented as being the original software.
 #include "Particle.h"
 #include "RigidBody.h"
 
-namespace NSG
-{
-    Particle::Particle(const std::string& name)
-        : SceneNode(name),
-          age_(0)
-    {
-        DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
-    }
+namespace NSG {
+Particle::Particle(const std::string& name) : SceneNode(name), age_(0) {
+    DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
+}
 
-    Particle::~Particle()
-    {
-    }
+Particle::~Particle() {}
 
-    void Particle::Update(float deltaTime)
-    {
-        age_ += deltaTime;
+void Particle::Update(float deltaTime) {
+    age_ += deltaTime;
 
-        //if (IsReady())
-        {
+    // if (IsReady())
+    {}
+}
 
-        }
-    }
+void Particle::Reset() {
+    age_ = 0;
+    SetPosition(Vector3::Zero);
+    SetOrientation(Quaternion::Identity);
+    auto rb = GetRigidBody();
+    rb->Reset();
+    rb->SyncWithNode();
+}
 
-    void Particle::Reset()
-    {
-        age_ = 0;
-        SetPosition(Vector3::Zero);
-        SetOrientation(Quaternion::Identity);
-        auto rb = GetRigidBody();
-        rb->Reset();
-        rb->SyncWithNode();
-    }
+void Particle::Enable() {
+    Hide(false, false);
+    auto rb = GetRigidBody();
+    rb->SyncWithNode();
+    rb->AddToWorld();
+}
 
-    void Particle::Enable()
-    {
-        Hide(false, false);
-        auto rb = GetRigidBody();
-        rb->SyncWithNode();
-        rb->AddToWorld();
-    }
+void Particle::Disable() {
+    Reset();
+    Hide(true, false);
+    auto rb = GetRigidBody();
+    rb->RemoveFromWorld();
+}
 
-    void Particle::Disable()
-    {
-        Reset();
-        Hide(true, false);
-        auto rb = GetRigidBody();
-        rb->RemoveFromWorld();
-    }
-
-    void Particle::SetVelocity(const Vector3& v)
-    {
-        auto rb = GetRigidBody();
-        rb->SetLinearVelocity(v);
-    }
+void Particle::SetVelocity(const Vector3& v) {
+    auto rb = GetRigidBody();
+    rb->SetLinearVelocity(v);
+}
 }

@@ -32,71 +32,49 @@ misrepresented as being the original software.
 std::shared_ptr<Level> Level::currentLevel_;
 PScene Level::scene_;
 
-Level::Level(PWindow window)
-    : window_(window),
-      levelIndex_(0)
-{
-}
+Level::Level(PWindow window) : window_(window), levelIndex_(0) {}
 
-Level::~Level()
-{
-}
+Level::~Level() {}
 
-void Level::Load(int idx, PWindow window)
-{
+void Level::Load(int idx, PWindow window) {
     Level::currentLevel_ = nullptr;
     std::shared_ptr<Level> level;
 
-    switch (idx)
-    {
-        case -1:
-            level = std::make_shared<LevelResources>(window, std::vector<const char*>
-            {
-                "data/AnonymousPro32.xml",
-                "data/AnonymousPro32.png",
-                "data/earthcolor.jpg",
-                "data/earthspecular.jpg",
-                "data/earthnormal.jpg",
-                "data/clouds.jpg",
-                "data/explo.png",
-                "data/explo.wav"
-            });
-            break;
-        case 0:
-            level = std::make_shared<Level0>(window);
-            break;
-        case 1:
-            level = std::make_shared<Level1>(window);
-            break;
-        case 2:
-            level = std::make_shared<LevelOver>(window);
-            break;
-        default:
-            CHECK_ASSERT(false);
-            break;
+    switch (idx) {
+    case -1:
+        level = std::make_shared<LevelResources>(
+            window, std::vector<const char*>{
+                        "data/AnonymousPro32.xml", "data/AnonymousPro32.png",
+                        "data/earthcolor.jpg", "data/earthspecular.jpg",
+                        "data/earthnormal.jpg", "data/clouds.jpg",
+                        "data/explo.png", "data/explo.wav"});
+        break;
+    case 0:
+        level = std::make_shared<Level0>(window);
+        break;
+    case 1:
+        level = std::make_shared<Level1>(window);
+        break;
+    case 2:
+        level = std::make_shared<LevelOver>(window);
+        break;
+    default:
+        CHECK_ASSERT(false);
+        break;
     }
 
-    //Renderer::GetPtr()->EnableDebugPhysics(true);
+    // Renderer::GetPtr()->EnableDebugPhysics(true);
     level->SetIndex(idx);
 
     Level::currentLevel_ = level;
 }
 
-void Level::AddObject(PGameObject object)
-{
-    objects_[object.get()] = object;
-}
+void Level::AddObject(PGameObject object) { objects_[object.get()] = object; }
 
-void Level::RemoveObject(GameObject* object)
-{
-    objects_.erase(object);
-}
+void Level::RemoveObject(GameObject* object) { objects_.erase(object); }
 
-float Level::GetFlyDistance()
-{
+float Level::GetFlyDistance() {
     auto grid = scene_->GetChild<SceneNode>("Grid", true);
     auto bb = grid->GetWorldBoundingBox();
     return (grid->GetGlobalScale() * 0.6f).Length();
 }
-
-

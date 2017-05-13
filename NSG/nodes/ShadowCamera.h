@@ -20,35 +20,34 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "Camera.h"
 #include "GLIncludes.h"
+#include "Types.h"
 
-namespace NSG
-{
-    class ShadowCamera : public Camera
-    {
-    public:
-        ShadowCamera(Light* light);
-        ~ShadowCamera();
-        void SetupSpot(const Camera* camera);
-        void SetupPoint(const Camera* camera);
-        void SetupDirectional(const Camera* camera, float nearSplit, float farSplit);
-        void SetCurrentCubeShadowMapFace(TextureTarget target);
-        bool GetVisiblesShadowCasters(std::vector<SceneNode*>& result) const;
-        float GetFarSplit() const { return farSplit_; }
-        bool IsDisabled() const { return disabled_; }
-        void Disable() { disabled_ = true; }
-        static const int MAX_SPLITS = 4; // shadow splits
-    private:
-        Light* light_;
-        Node dirPositiveX_;
-        Node dirNegativeX_;
-        Node dirPositiveY_;
-        Node dirNegativeY_;
-        Node dirPositiveZ_;
-        Node dirNegativeZ_;
-        float farSplit_;
-        bool disabled_;
-    };
+namespace NSG {
+class ShadowCamera : public Camera {
+public:
+    ShadowCamera(Light* light);
+    ~ShadowCamera();
+    void SetupSpot(const Camera* camera);
+    void SetupPoint(const Camera* camera);
+    void SetupDirectional(const Camera* camera, float nearSplit,
+                          float farSplit);
+    void SetCurrentCubeShadowMapFace(TextureTarget target);
+    bool GetVisiblesShadowCasters(std::vector<SceneNode*>& result) const;
+    float GetFarSplit() const { return farSplit_; }
+    bool IsDisabled() const { return disabled_; }
+    void Disable() { disabled_ = true; }
+    static const int MAX_SPLITS = 4; // shadow splits
+private:
+    Light* light_;
+    Node dirPositiveX_;
+    Node dirNegativeX_;
+    Node dirPositiveY_;
+    Node dirNegativeY_;
+    Node dirPositiveZ_;
+    Node dirNegativeZ_;
+    float farSplit_;
+    bool disabled_;
+};
 }

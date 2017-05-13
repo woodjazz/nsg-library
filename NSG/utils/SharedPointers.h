@@ -27,278 +27,276 @@ misrepresented as being the original software.
 #include <memory>
 #include <vector>
 
-namespace NSG
-{
-    class Buffer;
+namespace NSG {
+class Buffer;
 
-    class Worker;
-    typedef std::shared_ptr<Worker> PWorker;
+class Worker;
+typedef std::shared_ptr<Worker> PWorker;
 
-    class Window;
-    typedef std::shared_ptr<Window> PWindow;
-    typedef std::weak_ptr<Window> PWeakWindow;
+class Window;
+typedef std::shared_ptr<Window> PWindow;
+typedef std::weak_ptr<Window> PWeakWindow;
 
-    class RigidBody;
-    typedef std::shared_ptr<RigidBody> PRigidBody;
+class RigidBody;
+typedef std::shared_ptr<RigidBody> PRigidBody;
 
-    class Character;
-    typedef std::shared_ptr<Character> PCharacter;
+class Character;
+typedef std::shared_ptr<Character> PCharacter;
 
-    class Shape;
-    typedef std::shared_ptr<Shape> PShape;
-    typedef std::weak_ptr<Shape> PWeakShape;
+class Shape;
+typedef std::shared_ptr<Shape> PShape;
+typedef std::weak_ptr<Shape> PWeakShape;
 
-    class PhysicsWorld;
-    typedef std::shared_ptr<PhysicsWorld> PPhysicsWorld;
-    typedef std::weak_ptr<PhysicsWorld> PWeakPhysicsWorld;
+class PhysicsWorld;
+typedef std::shared_ptr<PhysicsWorld> PPhysicsWorld;
+typedef std::weak_ptr<PhysicsWorld> PWeakPhysicsWorld;
 
-    class Skeleton;
-    typedef std::shared_ptr<Skeleton> PSkeleton;
-    typedef std::weak_ptr<Skeleton> PWeakSkeleton;
+class Skeleton;
+typedef std::shared_ptr<Skeleton> PSkeleton;
+typedef std::weak_ptr<Skeleton> PWeakSkeleton;
 
-    class AnimationState;
-    typedef std::shared_ptr<AnimationState> PAnimationState;
+class AnimationState;
+typedef std::shared_ptr<AnimationState> PAnimationState;
 
-    class Animation;
-    typedef std::shared_ptr<Animation> PAnimation;
-    typedef std::weak_ptr<Animation> PWeakAnimation;
+class Animation;
+typedef std::shared_ptr<Animation> PAnimation;
+typedef std::weak_ptr<Animation> PWeakAnimation;
 
-    class AnimationController;
-    typedef std::shared_ptr<AnimationController> PAnimationController;
+class AnimationController;
+typedef std::shared_ptr<AnimationController> PAnimationController;
 
-    struct AnimationControl;
-    typedef std::shared_ptr<AnimationControl> PAnimationControl;
+struct AnimationControl;
+typedef std::shared_ptr<AnimationControl> PAnimationControl;
 
-    class PointOnSphere;
-    typedef std::shared_ptr<PointOnSphere> PPointOnSphere;
+class PointOnSphere;
+typedef std::shared_ptr<PointOnSphere> PPointOnSphere;
 
-    class Ray;
-    typedef std::shared_ptr<Ray> PRay;
+class Ray;
+typedef std::shared_ptr<Ray> PRay;
 
-    class Octree;
-    typedef std::shared_ptr<Octree> POctree;
+class Octree;
+typedef std::shared_ptr<Octree> POctree;
 
-    struct BoundingBox;
-    typedef std::shared_ptr<BoundingBox> PBoundingBox;
+struct BoundingBox;
+typedef std::shared_ptr<BoundingBox> PBoundingBox;
 
-    class Scene;
-    typedef std::shared_ptr<Scene> PScene;
-    typedef std::weak_ptr<Scene> PWeakScene;
+class Scene;
+typedef std::shared_ptr<Scene> PScene;
+typedef std::weak_ptr<Scene> PWeakScene;
 
-    class RenderingContext;
-    typedef std::shared_ptr<RenderingContext> PRenderingContext;
-	typedef std::weak_ptr<RenderingContext> PWeakRenderingContext;
+class RenderingContext;
+typedef std::shared_ptr<RenderingContext> PRenderingContext;
+typedef std::weak_ptr<RenderingContext> PWeakRenderingContext;
 
-    class Frustum;
-    typedef std::shared_ptr<Frustum> PFrustum;
+class Frustum;
+typedef std::shared_ptr<Frustum> PFrustum;
 
-    struct AppConfiguration;
-    typedef std::shared_ptr<AppConfiguration> PAppConfiguration;
+struct AppConfiguration;
+typedef std::shared_ptr<AppConfiguration> PAppConfiguration;
 
-    namespace FSM
-    {
-        class Machine;
-        typedef std::shared_ptr<Machine> PMachine;
-    }
+namespace FSM {
+class Machine;
+typedef std::shared_ptr<Machine> PMachine;
+}
 
-    class Pass;
-    class Batch;
+class Pass;
+class Batch;
 
-    class ResourceFile;
-    typedef std::shared_ptr<ResourceFile> PResourceFile;
-    typedef std::weak_ptr<ResourceFile> PWeakResourceFile;
+class ResourceFile;
+typedef std::shared_ptr<ResourceFile> PResourceFile;
+typedef std::weak_ptr<ResourceFile> PWeakResourceFile;
 
-    class ResourceXMLNode;
-    typedef std::shared_ptr<ResourceXMLNode> PResourceXMLNode;
-    typedef std::weak_ptr<ResourceXMLNode> PWeakResourceXMLNode;
+class ResourceXMLNode;
+typedef std::shared_ptr<ResourceXMLNode> PResourceXMLNode;
+typedef std::weak_ptr<ResourceXMLNode> PWeakResourceXMLNode;
 
-    class Resource;
-    typedef std::shared_ptr<Resource> PResource;
-    typedef std::weak_ptr<Resource> PWeakResource;
+class Resource;
+typedef std::shared_ptr<Resource> PResource;
+typedef std::weak_ptr<Resource> PWeakResource;
 
-    class Mesh;
-    typedef std::shared_ptr<Mesh> PMesh;
-    typedef std::weak_ptr<Mesh> PWeakMesh;
+class Mesh;
+typedef std::shared_ptr<Mesh> PMesh;
+typedef std::weak_ptr<Mesh> PWeakMesh;
 
-    class Texture;
-    typedef std::shared_ptr<Texture> PTexture;
+class Texture;
+typedef std::shared_ptr<Texture> PTexture;
 
-    class Texture2D;
-    typedef std::shared_ptr<Texture2D> PTexture2D;
+class Texture2D;
+typedef std::shared_ptr<Texture2D> PTexture2D;
 
-    class Material;
-    typedef std::shared_ptr<Material> PMaterial;
-    typedef std::weak_ptr<Material> PWeakMaterial;
+class Material;
+typedef std::shared_ptr<Material> PMaterial;
+typedef std::weak_ptr<Material> PWeakMaterial;
 
-    class FontAtlas;
-    typedef std::shared_ptr<FontAtlas> PFontAtlas;
-    typedef std::weak_ptr<FontAtlas> PWeakFontAtlas;
+class FontAtlas;
+typedef std::shared_ptr<FontAtlas> PFontAtlas;
+typedef std::weak_ptr<FontAtlas> PWeakFontAtlas;
 
-    class FontAtlasTextureManager;
-    typedef std::unique_ptr<FontAtlasTextureManager> PFontAtlasTextureManager;
+class FontAtlasTextureManager;
+typedef std::unique_ptr<FontAtlasTextureManager> PFontAtlasTextureManager;
 
-    class App;
-    typedef std::unique_ptr<App> PApp;
+class App;
+typedef std::unique_ptr<App> PApp;
 
-    class CameraControl;
-    typedef std::shared_ptr<CameraControl> PCameraControl;
+class CameraControl;
+typedef std::shared_ptr<CameraControl> PCameraControl;
 
-    class FollowCamera;
-    typedef std::shared_ptr<FollowCamera> PFollowCamera;
-    
-    class PlayerControl;
-    typedef std::shared_ptr<PlayerControl> PPlayerControl;
+class FollowCamera;
+typedef std::shared_ptr<FollowCamera> PFollowCamera;
 
-    class ShadowCamera;
-    typedef std::shared_ptr<ShadowCamera> PShadowCamera;
+class PlayerControl;
+typedef std::shared_ptr<PlayerControl> PPlayerControl;
 
-    class BoxMesh;
-    typedef std::shared_ptr<BoxMesh> PBoxMesh;
+class ShadowCamera;
+typedef std::shared_ptr<ShadowCamera> PShadowCamera;
 
-    class Camera;
-    typedef std::shared_ptr<Camera> PCamera;
-    typedef std::weak_ptr<Camera> PWeakCamera;
+class BoxMesh;
+typedef std::shared_ptr<BoxMesh> PBoxMesh;
 
-    class CircleMesh;
-    typedef std::shared_ptr<CircleMesh> PCircleMesh;
+class Camera;
+typedef std::shared_ptr<Camera> PCamera;
+typedef std::weak_ptr<Camera> PWeakCamera;
 
-    class LinesMesh;
-    typedef std::shared_ptr<LinesMesh> PLinesMesh;
+class CircleMesh;
+typedef std::shared_ptr<CircleMesh> PCircleMesh;
 
-    class FrustumMesh;
-    typedef std::shared_ptr<FrustumMesh> PFrustumMesh;
+class LinesMesh;
+typedef std::shared_ptr<LinesMesh> PLinesMesh;
 
-    class EllipseMesh;
-    typedef std::shared_ptr<EllipseMesh> PEllipseMesh;
+class FrustumMesh;
+typedef std::shared_ptr<FrustumMesh> PFrustumMesh;
 
-    class FrameBuffer;
-    typedef std::unique_ptr<FrameBuffer> PFrameBuffer;
+class EllipseMesh;
+typedef std::shared_ptr<EllipseMesh> PEllipseMesh;
 
-    class FragmentShader;
-    typedef std::unique_ptr<FragmentShader> PFragmentShader;
+class FrameBuffer;
+typedef std::unique_ptr<FrameBuffer> PFrameBuffer;
 
-    class IndexBuffer;
-    typedef std::unique_ptr<IndexBuffer> PIndexBuffer;
+class FragmentShader;
+typedef std::unique_ptr<FragmentShader> PFragmentShader;
 
-    class VertexArrayObj;
-    typedef std::shared_ptr<VertexArrayObj> PVertexArrayObj;
+class IndexBuffer;
+typedef std::unique_ptr<IndexBuffer> PIndexBuffer;
 
-    class Light;
-    typedef std::shared_ptr<Light> PLight;
-    typedef std::weak_ptr<Light> PWeakLight;
+class VertexArrayObj;
+typedef std::shared_ptr<VertexArrayObj> PVertexArrayObj;
 
-    class PlaneMesh;
-    typedef std::shared_ptr<PlaneMesh> PPlaneMesh;
+class Light;
+typedef std::shared_ptr<Light> PLight;
+typedef std::weak_ptr<Light> PWeakLight;
 
-    class Program;
-    typedef std::shared_ptr<Program> PProgram;
-    typedef std::weak_ptr<Program> PWeakProgram;
+class PlaneMesh;
+typedef std::shared_ptr<PlaneMesh> PPlaneMesh;
 
-    class RectangleMesh;
-    typedef std::shared_ptr<RectangleMesh> PRectangleMesh;
+class Program;
+typedef std::shared_ptr<Program> PProgram;
+typedef std::weak_ptr<Program> PWeakProgram;
 
-    class TriangleMesh;
-    typedef std::shared_ptr<TriangleMesh> PTriangleMesh;
+class RectangleMesh;
+typedef std::shared_ptr<RectangleMesh> PRectangleMesh;
 
-    class RoundedRectangleMesh;
-    typedef std::shared_ptr<RoundedRectangleMesh> PRoundedRectangleMesh;
+class TriangleMesh;
+typedef std::shared_ptr<TriangleMesh> PTriangleMesh;
 
-    class SphereMesh;
-    typedef std::shared_ptr<SphereMesh> PSphereMesh;
+class RoundedRectangleMesh;
+typedef std::shared_ptr<RoundedRectangleMesh> PRoundedRectangleMesh;
 
-    class CylinderMesh;
-    typedef std::shared_ptr<CylinderMesh> PCylinderMesh;
+class SphereMesh;
+typedef std::shared_ptr<SphereMesh> PSphereMesh;
 
-    class IcoSphereMesh;
-    typedef std::shared_ptr<IcoSphereMesh> PIcoSphereMesh;
+class CylinderMesh;
+typedef std::shared_ptr<CylinderMesh> PCylinderMesh;
 
-    class ModelMesh;
-    typedef std::shared_ptr<ModelMesh> PModelMesh;
+class IcoSphereMesh;
+typedef std::shared_ptr<IcoSphereMesh> PIcoSphereMesh;
 
-    class ConverterMesh;
-    typedef std::shared_ptr<ConverterMesh> PConverterMesh;
+class ModelMesh;
+typedef std::shared_ptr<ModelMesh> PModelMesh;
 
-    class StencilMask;
-    typedef std::shared_ptr<StencilMask> PStencilMask;
+class ConverterMesh;
+typedef std::shared_ptr<ConverterMesh> PConverterMesh;
 
-    class TextMesh;
-    typedef std::shared_ptr<TextMesh> PTextMesh;
-    typedef std::weak_ptr<TextMesh> PWeakTextMesh;
+class StencilMask;
+typedef std::shared_ptr<StencilMask> PStencilMask;
 
-    class VertexBuffer;
-    typedef std::unique_ptr<VertexBuffer> PVertexBuffer;
+class TextMesh;
+typedef std::shared_ptr<TextMesh> PTextMesh;
+typedef std::weak_ptr<TextMesh> PWeakTextMesh;
 
-    class InstanceBuffer;
-    typedef std::unique_ptr<InstanceBuffer> PInstanceBuffer;
+class VertexBuffer;
+typedef std::unique_ptr<VertexBuffer> PVertexBuffer;
 
-    class VertexShader;
-    typedef std::unique_ptr<VertexShader> PVertexShader;
+class InstanceBuffer;
+typedef std::unique_ptr<InstanceBuffer> PInstanceBuffer;
 
-    class Node;
-    typedef std::shared_ptr<Node> PNode;
-    typedef std::weak_ptr<Node> PWeakNode;
+class VertexShader;
+typedef std::unique_ptr<VertexShader> PVertexShader;
 
-    class Bone;
-    typedef std::shared_ptr<Bone> PBone;
+class Node;
+typedef std::shared_ptr<Node> PNode;
+typedef std::weak_ptr<Node> PWeakNode;
 
-    class Resource;
-    typedef std::shared_ptr<Resource> PResource;
+class Bone;
+typedef std::shared_ptr<Bone> PBone;
 
-    class SceneNode;
-    typedef std::shared_ptr<SceneNode> PSceneNode;
-    typedef std::weak_ptr<SceneNode> PWeakSceneNode;
+class Resource;
+typedef std::shared_ptr<Resource> PResource;
 
-    class Keyboard;
-    typedef std::unique_ptr<Keyboard> PKeyboard;
+class SceneNode;
+typedef std::shared_ptr<SceneNode> PSceneNode;
+typedef std::weak_ptr<SceneNode> PWeakSceneNode;
 
-    class ParticleSystem;
-    typedef std::shared_ptr<ParticleSystem> PParticleSystem;
-    typedef std::weak_ptr<ParticleSystem> PWeakParticleSystem;
+class Keyboard;
+typedef std::unique_ptr<Keyboard> PKeyboard;
 
-    class Particle;
-    typedef std::shared_ptr<Particle> PParticle;
+class ParticleSystem;
+typedef std::shared_ptr<ParticleSystem> PParticleSystem;
+typedef std::weak_ptr<ParticleSystem> PWeakParticleSystem;
 
-    class QuadMesh;
-    typedef std::shared_ptr<QuadMesh> PQuadMesh;
+class Particle;
+typedef std::shared_ptr<Particle> PParticle;
 
-    class Object;
-    typedef std::shared_ptr<Object> PObject;
-    typedef std::weak_ptr<Object> PWeakObject;
+class QuadMesh;
+typedef std::shared_ptr<QuadMesh> PQuadMesh;
 
-    class Image;
-    typedef std::shared_ptr<Image> PImage;
+class Object;
+typedef std::shared_ptr<Object> PObject;
+typedef std::weak_ptr<Object> PWeakObject;
 
-    class Renderer;
-    typedef std::shared_ptr<Renderer> PRenderer;
+class Image;
+typedef std::shared_ptr<Image> PImage;
 
-    class Plane;
-    typedef std::shared_ptr<Plane> PPlane;
+class Renderer;
+typedef std::shared_ptr<Renderer> PRenderer;
 
-    class LoaderXML;
-    typedef std::shared_ptr<LoaderXML> PLoaderXML;
+class Plane;
+typedef std::shared_ptr<Plane> PPlane;
 
-    class LoaderXMLNode;
-    typedef std::shared_ptr<LoaderXMLNode> PLoaderXMLNode;
+class LoaderXML;
+typedef std::shared_ptr<LoaderXML> PLoaderXML;
 
-    class Engine;
-    typedef std::shared_ptr<Engine> PEngine;
+class LoaderXMLNode;
+typedef std::shared_ptr<LoaderXMLNode> PLoaderXMLNode;
 
-    class HTTPRequest;
-    typedef std::shared_ptr<HTTPRequest> PHTTPRequest;
+class Engine;
+typedef std::shared_ptr<Engine> PEngine;
 
-    class GUI;
-    typedef std::shared_ptr<GUI> PGUI;
+class HTTPRequest;
+typedef std::shared_ptr<HTTPRequest> PHTTPRequest;
 
-    class Font;
-    typedef std::shared_ptr<Font> PFont;
-    typedef std::weak_ptr<Font> PWeakFont;
+class GUI;
+typedef std::shared_ptr<GUI> PGUI;
 
-    class DebugRenderer;
-    typedef std::shared_ptr<DebugRenderer> PDebugRenderer;
+class Font;
+typedef std::shared_ptr<Font> PFont;
+typedef std::weak_ptr<Font> PWeakFont;
 
-    class ShadowMapDebug;
-    typedef std::shared_ptr<ShadowMapDebug> PShadowMapDebug;
+class DebugRenderer;
+typedef std::shared_ptr<DebugRenderer> PDebugRenderer;
 
-    class Overlay;
-    typedef std::shared_ptr<Overlay> POverlay;
+class ShadowMapDebug;
+typedef std::shared_ptr<ShadowMapDebug> PShadowMapDebug;
+
+class Overlay;
+typedef std::shared_ptr<Overlay> POverlay;
 }

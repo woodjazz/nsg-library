@@ -27,30 +27,27 @@ misrepresented as being the original software.
 #include <string>
 #include <thread>
 
-namespace NSG
-{
-    class Worker
-    {
-    public:
-        Worker(const std::string& name);
-        ~Worker();
-        void Start(Worker* worker);
-        void Join();
-        virtual void RunWorker() = 0;
-        #if defined(EMSCRIPTEN)
-        void SetAsFinished() { finish_ = true; }
-        Worker* Get() { return worker_; }
-        #else
-        void WorkerEntryPoint();
-        #endif
-    private:
-        #if defined(EMSCRIPTEN)
-        int handle_;
-        bool finish_;
-        #else
-        std::thread thread_;
-        #endif
-        Worker* worker_;
-    };
+namespace NSG {
+class Worker {
+public:
+    Worker(const std::string& name);
+    ~Worker();
+    void Start(Worker* worker);
+    void Join();
+    virtual void RunWorker() = 0;
+#if defined(EMSCRIPTEN)
+    void SetAsFinished() { finish_ = true; }
+    Worker* Get() { return worker_; }
+#else
+    void WorkerEntryPoint();
+#endif
+private:
+#if defined(EMSCRIPTEN)
+    int handle_;
+    bool finish_;
+#else
+    std::thread thread_;
+#endif
+    Worker* worker_;
+};
 }
-

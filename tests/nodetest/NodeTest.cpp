@@ -30,8 +30,7 @@ static const Vector3 WORLD_X_COORD(1, 0, 0);
 static const Vector3 WORLD_Y_COORD(0, 1, 0);
 static const Vector3 WORLD_Z_COORD(0, 0, 1);
 
-static void Test01()
-{
+static void Test01() {
     PNode pA(new Node("A"));
     PNode pB = pA->GetOrCreateChild<Node>("B");
     pA->SetPosition(Vertex3(1, 0, 0));
@@ -71,8 +70,7 @@ static void Test01()
     CHECK_CONDITION(pB->GetGlobalPosition() == Vertex3(-3, 0, 0));
 }
 
-static void Test02()
-{
+static void Test02() {
     PNode pA(new Node());
     PNode pB = pA->GetOrCreateChild<Node>("B");
     pA->SetPosition(Vertex3(1, 0, 0));
@@ -82,9 +80,7 @@ static void Test02()
     CHECK_CONDITION(pB->GetGlobalPosition() == Vertex3(-2, 0, 0));
 }
 
-
-static void Test03()
-{
+static void Test03() {
 
     {
         Node node;
@@ -93,7 +89,8 @@ static void Test03()
         Vector3 lookAt = -WORLD_X_COORD;
         node.SetGlobalLookAtPosition(lookAt);
 
-        CHECK_CONDITION(node.GetLookAtDirection().Distance(lookAt) < 2 * EPSILON);
+        CHECK_CONDITION(node.GetLookAtDirection().Distance(lookAt) <
+                        2 * EPSILON);
 
         Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
         Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
@@ -111,7 +108,8 @@ static void Test03()
         Vector3 lookAt = -WORLD_Z_COORD;
         node.SetGlobalLookAtPosition(lookAt);
 
-        CHECK_CONDITION(node.GetLookAtDirection().Distance(lookAt) < 2 * EPSILON);
+        CHECK_CONDITION(node.GetLookAtDirection().Distance(lookAt) <
+                        2 * EPSILON);
 
         Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
         Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
@@ -130,7 +128,8 @@ static void Test03()
         node.SetPosition(WORLD_Z_COORD);
         node.SetGlobalLookAtPosition(lookAt);
 
-        CHECK_CONDITION(node.GetLookAtDirection().Distance(lookAt) < 2 * EPSILON);
+        CHECK_CONDITION(node.GetLookAtDirection().Distance(lookAt) <
+                        2 * EPSILON);
 
         Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
         Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
@@ -149,7 +148,8 @@ static void Test03()
         node.SetPosition(-WORLD_Z_COORD);
         node.SetGlobalLookAtPosition(lookAt);
 
-        CHECK_CONDITION(node.GetLookAtDirection().Distance(lookAt) < 2 * EPSILON);
+        CHECK_CONDITION(node.GetLookAtDirection().Distance(lookAt) <
+                        2 * EPSILON);
 
         Vector3 vx = node.GetGlobalOrientation() * WORLD_X_COORD;
         Vector3 vy = node.GetGlobalOrientation() * WORLD_Y_COORD;
@@ -181,8 +181,8 @@ static void Test03()
         Vector3 expectedVx = expectedVy.Cross(expectedVz);
 
         CHECK_CONDITION(vx.Distance(expectedVx) < 0.00001f);
-		CHECK_CONDITION(vy.Distance(expectedVy) < 0.00001f);
-		CHECK_CONDITION(vz.Distance(expectedVz) < 0.00001f);
+        CHECK_CONDITION(vy.Distance(expectedVy) < 0.00001f);
+        CHECK_CONDITION(vz.Distance(expectedVz) < 0.00001f);
     }
 
     {
@@ -240,7 +240,6 @@ static void Test03()
             CHECK_CONDITION(expectedDir.Distance(dir) < 2 * EPSILON);
         }
 
-
         {
             auto q = q0.Slerp(q1, 1.0f);
             Node node;
@@ -249,14 +248,10 @@ static void Test03()
             Vector3 dir = node.GetLookAtDirection();
             CHECK_CONDITION(dir1.Distance(dir) < 2 * EPSILON);
         }
-
     }
-
-
 }
 
-static void Test04()
-{
+static void Test04() {
     Vertex3 v1(1, 0, 0);
 
     PNode pA(new Node());
@@ -273,8 +268,7 @@ static void Test04()
     CHECK_CONDITION(v2.Distance(Vertex3(0, 0, 0)) < 2 * EPSILON);
 }
 
-static void Test05()
-{
+static void Test05() {
     Vertex3 v1(0, 0, 0);
 
     PNode pA(new Node());
@@ -295,8 +289,7 @@ static void Test05()
     CHECK_CONDITION(v2.Distance(Vertex3(4, 0, 0)) < 2 * EPSILON);
 }
 
-static void Test06()
-{
+static void Test06() {
     Vertex3 v1(0, 0, 0);
 
     PNode pA(new Node());
@@ -311,8 +304,7 @@ static void Test06()
     CHECK_CONDITION(v2.Distance(Vertex3(-1, 0, 0)) < 2 * EPSILON);
 }
 
-static void Test07()
-{
+static void Test07() {
     PNode pA(new Node());
     Vertex3 position = Vertex3(2, 1, 3);
     pA->SetPosition(position);
@@ -339,8 +331,7 @@ static void Test07()
     CHECK_CONDITION(scale == scale1);
 }
 
-static void Test08()
-{
+static void Test08() {
     auto parent = std::make_shared<Node>();
     {
         Vertex3 position = Vertex3(2, 1, 3);
@@ -367,26 +358,26 @@ static void Test08()
     Quaternion parent_q;
     Vector3 parent_pos;
     Vector3 parent_scale;
-	parentinv.Decompose(parent_pos, parent_q, parent_scale);
+    parentinv.Decompose(parent_pos, parent_q, parent_scale);
 
     {
         node->SetPosition(parent_pos + parent_q * (parent_scale * pos));
         node->SetOrientation(parent_q * q);
         node->SetScale(parent_scale * scale);
 
-		CHECK_CONDITION(node->GetGlobalPosition().Distance(pos) < 0.0001f);
+        CHECK_CONDITION(node->GetGlobalPosition().Distance(pos) < 0.0001f);
         Vertex3 a1 = node->GetGlobalOrientation() * Vector3::LookAt;
         Vertex3 a2 = q * Vector3::LookAt;
-		CHECK_CONDITION(a1.Distance(a2) < 0.01f);
-		CHECK_CONDITION(node->GetGlobalScale().Distance(scale) < 0.0001f);
+        CHECK_CONDITION(a1.Distance(a2) < 0.01f);
+        CHECK_CONDITION(node->GetGlobalScale().Distance(scale) < 0.0001f);
     }
-    
+
     {
         Matrix4 m1 = parentinv * m;
         Quaternion q1;
         Vector3 pos1;
         Vector3 scale1;
-		m1.Decompose(pos1, q1, scale1);
+        m1.Decompose(pos1, q1, scale1);
         node->SetPosition(pos1);
         node->SetOrientation(q1);
         node->SetScale(scale1);
@@ -394,48 +385,75 @@ static void Test08()
         CHECK_CONDITION(node->GetGlobalPosition() == pos);
         Vertex3 a1 = node->GetGlobalOrientation() * Vector3::LookAt;
         Vertex3 a2 = q * Vector3::LookAt;
-		CHECK_CONDITION(a1.Distance(a2) < 0.01f);
+        CHECK_CONDITION(a1.Distance(a2) < 0.01f);
         CHECK_CONDITION(node->GetGlobalScale().Distance(scale) < 0.01f);
     }
 }
 
-static void Test09()
-{
+static void Test09() {
     Node dirPositiveX;
     Node dirNegativeX;
     Node dirPositiveY;
     Node dirNegativeY;
     Node dirPositiveZ;
     Node dirNegativeZ;
-    dirPositiveX.SetLocalLookAtPosition(Vector3(1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
-    dirNegativeX.SetLocalLookAtPosition(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, -1.0f, 0.0f));
-    dirPositiveY.SetLocalLookAtPosition(Vector3(0.0f, 1.0f, 0.0f), Vector3(0.0f, 0.0f, -1.0f));
-    dirNegativeY.SetLocalLookAtPosition(Vector3(0.0f, -1.0f, 0.0f), Vector3(0.0f, 0.0f, 1.0f));
-    dirPositiveZ.SetLocalLookAtPosition(Vector3(0.0f, 0.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f));
-    dirNegativeZ.SetLocalLookAtPosition(Vector3(0.0f, 0.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f));
+    dirPositiveX.SetLocalLookAtPosition(Vector3(1.0f, 0.0f, 0.0f),
+                                        Vector3(0.0f, -1.0f, 0.0f));
+    dirNegativeX.SetLocalLookAtPosition(Vector3(-1.0f, 0.0f, 0.0f),
+                                        Vector3(0.0f, -1.0f, 0.0f));
+    dirPositiveY.SetLocalLookAtPosition(Vector3(0.0f, 1.0f, 0.0f),
+                                        Vector3(0.0f, 0.0f, -1.0f));
+    dirNegativeY.SetLocalLookAtPosition(Vector3(0.0f, -1.0f, 0.0f),
+                                        Vector3(0.0f, 0.0f, 1.0f));
+    dirPositiveZ.SetLocalLookAtPosition(Vector3(0.0f, 0.0f, 1.0f),
+                                        Vector3(0.0f, -1.0f, 0.0f));
+    dirNegativeZ.SetLocalLookAtPosition(Vector3(0.0f, 0.0f, -1.0f),
+                                        Vector3(0.0f, -1.0f, 0.0f));
 
-    CHECK_CONDITION(Vector3(1.0f, 0.0f, 0.0f).Distance(dirPositiveX.GetLookAtDirection()) < 0.001f);
-    CHECK_CONDITION(Vector3(0.0f, -1.0f, 0.0f).Distance(dirPositiveX.GetUpDirection()) < 0.001f);
+    CHECK_CONDITION(
+        Vector3(1.0f, 0.0f, 0.0f).Distance(dirPositiveX.GetLookAtDirection()) <
+        0.001f);
+    CHECK_CONDITION(
+        Vector3(0.0f, -1.0f, 0.0f).Distance(dirPositiveX.GetUpDirection()) <
+        0.001f);
 
-    CHECK_CONDITION(Vector3(-1.0f, 0.0f, 0.0f).Distance(dirNegativeX.GetLookAtDirection()) < 0.001f);
-    CHECK_CONDITION(Vector3(0.0f, -1.0f, 0.0f).Distance(dirNegativeX.GetUpDirection()) < 0.001f);
+    CHECK_CONDITION(
+        Vector3(-1.0f, 0.0f, 0.0f).Distance(dirNegativeX.GetLookAtDirection()) <
+        0.001f);
+    CHECK_CONDITION(
+        Vector3(0.0f, -1.0f, 0.0f).Distance(dirNegativeX.GetUpDirection()) <
+        0.001f);
 
-    CHECK_CONDITION(Vector3(0.0f, 1.0f, 0.0f).Distance(dirPositiveY.GetLookAtDirection()) < 0.001f);
-    CHECK_CONDITION(Vector3(0.0f, 0.0f, -1.0f).Distance(dirPositiveY.GetUpDirection()) < 0.001f);
+    CHECK_CONDITION(
+        Vector3(0.0f, 1.0f, 0.0f).Distance(dirPositiveY.GetLookAtDirection()) <
+        0.001f);
+    CHECK_CONDITION(
+        Vector3(0.0f, 0.0f, -1.0f).Distance(dirPositiveY.GetUpDirection()) <
+        0.001f);
 
-    CHECK_CONDITION(Vector3(0.0f, -1.0f, 0.0f).Distance(dirNegativeY.GetLookAtDirection()) < 0.001f);
-    CHECK_CONDITION(Vector3(0.0f, 0.0f, 1.0f).Distance(dirNegativeY.GetUpDirection()) < 0.001f);
+    CHECK_CONDITION(
+        Vector3(0.0f, -1.0f, 0.0f).Distance(dirNegativeY.GetLookAtDirection()) <
+        0.001f);
+    CHECK_CONDITION(
+        Vector3(0.0f, 0.0f, 1.0f).Distance(dirNegativeY.GetUpDirection()) <
+        0.001f);
 
-    CHECK_CONDITION(Vector3(0.0f, 0.0f, 1.0f).Distance(dirPositiveZ.GetLookAtDirection()) < 0.001f);
-    CHECK_CONDITION(Vector3(0.0f, -1.0f, 0.0f).Distance(dirPositiveZ.GetUpDirection()) < 0.001f);
+    CHECK_CONDITION(
+        Vector3(0.0f, 0.0f, 1.0f).Distance(dirPositiveZ.GetLookAtDirection()) <
+        0.001f);
+    CHECK_CONDITION(
+        Vector3(0.0f, -1.0f, 0.0f).Distance(dirPositiveZ.GetUpDirection()) <
+        0.001f);
 
-    CHECK_CONDITION(Vector3(0.0f, 0.0f, -1.0f).Distance(dirNegativeZ.GetLookAtDirection()) < 0.001f);
-    CHECK_CONDITION(Vector3(0.0f, -1.0f, 0.0f).Distance(dirNegativeZ.GetUpDirection()) < 0.001f);
-
+    CHECK_CONDITION(
+        Vector3(0.0f, 0.0f, -1.0f).Distance(dirNegativeZ.GetLookAtDirection()) <
+        0.001f);
+    CHECK_CONDITION(
+        Vector3(0.0f, -1.0f, 0.0f).Distance(dirNegativeZ.GetUpDirection()) <
+        0.001f);
 }
 
-void NodeTest()
-{
+void NodeTest() {
     Test01();
     Test02();
     Test03();
@@ -445,5 +463,4 @@ void NodeTest()
     Test07();
     Test08();
     Test09();
-
 }

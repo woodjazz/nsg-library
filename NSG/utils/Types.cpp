@@ -26,17 +26,9 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Maths.h"
 
-namespace NSG
-{
-    RayNodeResult::RayNodeResult()
-        : distance_(0),
-          node_(nullptr)
-    {
-    }
+namespace NSG {
+RayNodeResult::RayNodeResult() : distance_(0), node_(nullptr) {}
 
-    RayNodeResult::RayNodeResult(float distance, SceneNode* node)
-        : distance_(distance),
-          node_(node)
-    {
-    }
+RayNodeResult::RayNodeResult(float distance, SceneNode* node)
+    : distance_(distance), node_(node) {}
 }

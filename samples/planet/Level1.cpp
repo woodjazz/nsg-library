@@ -20,14 +20,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Level1.h"
-#include "Planet.h"
-#include "Sun.h"
 #include "Enemy.h"
+#include "Planet.h"
 #include "Player.h"
+#include "Sun.h"
 
-Level1::Level1(PWindow window)
-    : Level(window)
-{
+Level1::Level1(PWindow window) : Level(window) {
     scene_ = std::make_shared<Scene>("Level1");
     scene_->SetAmbientColor(Color(0.1f));
     AddObject(std::make_shared<Planet>(scene_));
@@ -40,18 +38,12 @@ Level1::Level1(PWindow window)
     window->SetScene(scene_);
 }
 
-Level1::~Level1()
-{
+Level1::~Level1() {}
 
-}
-
-void Level1::GenerateEnemies()
-{
+void Level1::GenerateEnemies() {
     int total = 0;
-    for (int i = 0; i < 20; i++)
-    {
-        for (int j = 0; j < 10; j++)
-        {
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < 10; j++) {
             ++total;
             auto enemy = std::make_shared<Enemy>(scene_);
             enemy->SetPosition(-PI10 * (i + 1), PI10 * j);

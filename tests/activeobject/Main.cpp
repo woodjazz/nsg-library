@@ -23,42 +23,41 @@ misrepresented as being the original software.
 ---------------------------------------------------------------------------
 */
 #include "ActiveObject.h"
-#include <iostream>
-#include <functional>
 #include <assert.h>
+#include <functional>
+#include <iostream>
 using namespace utils;
 
-static void TestCase01()
-{
-    auto task1 = [](int a, int b) 
-    { 
+static void TestCase01() {
+    auto task1 = [](int a, int b) {
         cout << "START task1(" << a << "," << b << ")\n" << std::flush;
-        std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         cout << "END task1(" << a << "," << b << ")\n" << std::flush;
         return a + b;
     };
 
-    auto task2 = [](float a, int b, double c) 
-    { 
-        cout << "START task2(" << a << "," << b << "," << c << ")\n" << std::flush;
-        std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
-        cout << "END task2(" << a << "," << b << "," << c << ")\n" << std::flush;
+    auto task2 = [](float a, int b, double c) {
+        cout << "START task2(" << a << "," << b << "," << c << ")\n"
+             << std::flush;
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        cout << "END task2(" << a << "," << b << "," << c << ")\n"
+             << std::flush;
         return a * b * c;
     };
 
     std::string helloStr = "Hello";
-    auto task3 = [&]() 
-    { 
+    auto task3 = [&]() {
         cout << "START task3()\n" << std::flush;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         cout << "END task3()\n" << std::flush;
         return helloStr + " from test3";
 
     };
-      
+
     ActiveObject obj;
     auto result1 = obj.Enqueue<int, int, int>(task1, 10, 20);
-    auto result2 = obj.Enqueue<double, float, int, double>(task2, 10.5f, 20, -2.5);
+    auto result2 =
+        obj.Enqueue<double, float, int, double>(task2, 10.5f, 20, -2.5);
     auto result3 = obj.Enqueue<std::string>(task3);
 
     //...
@@ -72,47 +71,38 @@ static void TestCase01()
     assert(v3 == "Hello from test3");
 }
 
-static void TestCase02()
-{
-    class MyActiveClass : public ActiveObject
-    {
+static void TestCase02() {
+    class MyActiveClass : public ActiveObject {
     public:
-        MyActiveClass()
-        {
+        MyActiveClass() {}
+        ~MyActiveClass() { Join(); }
+        std::future<float> AsyncDoSlowProcess(float initialValue) {
+            return Enqueue<float>(
+                [this](float value) { return DoSlowProcess(value); },
+                initialValue);
         }
-        ~MyActiveClass() 
-        { 
-            Join(); 
-        }
-        std::future<float> AsyncDoSlowProcess(float initialValue)
-        {
-            return Enqueue<float>([this](float value) { return DoSlowProcess(value); }, initialValue);
-        }
-        struct Result
-        {
+        struct Result {
             int randoNumber;
             int a;
             float b;
             std::string description;
         };
-        std::future<Result> AsyncCalculateBigResult()
-        {
+        std::future<Result> AsyncCalculateBigResult() {
             return Enqueue<Result>([this]() { return CalculateBigResult(); });
         }
+
     private:
-        float DoSlowProcess(float value)
-        {
+        float DoSlowProcess(float value) {
             cout << "START DoSlowProcess(" << value << ")\n" << std::flush;
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
             cout << "END DoSlowProcess(" << value << ")\n" << std::flush;
             return value * 2;
         }
-        Result CalculateBigResult()
-        {
+        Result CalculateBigResult() {
             cout << "START CalculateBigResult()\n" << std::flush;
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
             cout << "END CalculateBigResult()\n" << std::flush;
-            return Result {std::rand(), 123, 200.123f, "I am a big result."};
+            return Result{std::rand(), 123, 200.123f, "I am a big result."};
         }
     };
 
@@ -122,12 +112,17 @@ static void TestCase02()
     auto slowProcessResult2 = activeObj.AsyncDoSlowProcess(200);
     auto bigResult2 = activeObj.AsyncCalculateBigResult();
 
-    assert(slowProcessResult1.wait_for(std::chrono::milliseconds(100)) != future_status::ready);
+    assert(slowProcessResult1.wait_for(std::chrono::milliseconds(100)) !=
+           future_status::ready);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    assert(slowProcessResult1.wait_for(std::chrono::milliseconds(10)) == future_status::ready);
-    assert(bigResult1.wait_for(std::chrono::milliseconds(250)) == future_status::ready);
-    assert(slowProcessResult2.wait_for(std::chrono::milliseconds(10)) != future_status::ready);
-    assert(bigResult2.wait_for(std::chrono::milliseconds(10)) != future_status::ready);
+    assert(slowProcessResult1.wait_for(std::chrono::milliseconds(10)) ==
+           future_status::ready);
+    assert(bigResult1.wait_for(std::chrono::milliseconds(250)) ==
+           future_status::ready);
+    assert(slowProcessResult2.wait_for(std::chrono::milliseconds(10)) !=
+           future_status::ready);
+    assert(bigResult2.wait_for(std::chrono::milliseconds(10)) !=
+           future_status::ready);
 
     //...
 
@@ -139,28 +134,26 @@ static void TestCase02()
     assert(slowProcessResult2.get() == 400);
 }
 
-static void TestCase03()
-{
+static void TestCase03() {
 
-    auto task1 = [](int a, int b) 
-    { 
+    auto task1 = [](int a, int b) {
         cout << "START task1(" << a << "," << b << ")\n" << std::flush;
-        std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
         cout << "END task1(" << a << "," << b << ")\n" << std::flush;
         return a + b;
     };
 
-    auto task2 = [](float a, int b, double c) 
-    { 
-        cout << "START task2(" << a << "," << b << "," << c << ")\n" << std::flush;
-        std::this_thread::sleep_for(std::chrono::milliseconds(300)); 
-        cout << "END task2(" << a << "," << b << "," << c << ")\n" << std::flush;
+    auto task2 = [](float a, int b, double c) {
+        cout << "START task2(" << a << "," << b << "," << c << ")\n"
+             << std::flush;
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
+        cout << "END task2(" << a << "," << b << "," << c << ")\n"
+             << std::flush;
         return a * b * c;
     };
 
     std::string helloStr = "Hello";
-    auto task3 = [&]() 
-    { 
+    auto task3 = [&]() {
         cout << "START task3()\n" << std::flush;
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         cout << "END task3()\n" << std::flush;
@@ -173,13 +166,15 @@ static void TestCase03()
     auto start2 = now + Milliseconds(5000);
     auto start3 = now + Milliseconds(10000);
     auto start4 = now + Milliseconds(10200);
-    
-      
+
     ActiveObject obj;
-    auto result1 = obj.Schedule<int, int, int>(start1, Milliseconds(300), task1, 10, 20);
-    auto result2 = obj.Schedule<double, float, int, double>(start2, Milliseconds(400), task2, 10.5f, 20, -2.5);
+    auto result1 =
+        obj.Schedule<int, int, int>(start1, Milliseconds(300), task1, 10, 20);
+    auto result2 = obj.Schedule<double, float, int, double>(
+        start2, Milliseconds(400), task2, 10.5f, 20, -2.5);
     auto result3 = obj.Schedule<std::string>(start3, Milliseconds(100), task3);
-    auto result4 = obj.Schedule<int, int, int>(start4, Milliseconds(300), task1, 10, 20);
+    auto result4 =
+        obj.Schedule<int, int, int>(start4, Milliseconds(300), task1, 10, 20);
 
     //...
 
@@ -187,16 +182,12 @@ static void TestCase03()
     auto v2 = result2.get();
     auto v3 = result3.get();
     auto v4Exception = false;
-    try
-    {
+    try {
         auto v4 = result4.get();
-    }
-    catch(std::future_error& e)
-    {
+    } catch (std::future_error& e) {
         printf("%s\n", e.what());
         v4Exception = true;
     }
-    
 
     assert(v1 == 30);
     assert(v2 == 10.5f * 20 * -2.5);
@@ -204,10 +195,9 @@ static void TestCase03()
     assert(v4Exception);
 }
 
-int main()
-{
-    //TestCase01();
-    //TestCase02();
+int main() {
+    // TestCase01();
+    // TestCase02();
     TestCase03();
     return 0;
 }

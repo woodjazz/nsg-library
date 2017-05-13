@@ -25,26 +25,19 @@ misrepresented as being the original software.
 */
 #include "VertexData.h"
 
-namespace NSG
-{
-    VertexData::VertexData()
-        : normal_(0, 0, 1),  // always facing forward,
-          color_(1)
+namespace NSG {
+VertexData::VertexData()
+    : normal_(0, 0, 1), // always facing forward,
+      color_(1)
 
-    {
-    }
+{}
 
-    bool VertexData::operator == (const VertexData& obj) const
-    {
-        return position_ == obj.position_ &&
-               normal_ == obj.normal_ &&
-			   uv_[0] == obj.uv_[0] &&
-			   uv_[1] == obj.uv_[1] &&
-               color_ == obj.color_ &&
-               tangent_ == obj.tangent_ &&
-               bonesID_ == obj.bonesID_ &&
-               bonesWeight_ == obj.bonesWeight_;
-    }
+bool VertexData::operator==(const VertexData& obj) const {
+    return position_ == obj.position_ && normal_ == obj.normal_ &&
+           uv_[0] == obj.uv_[0] && uv_[1] == obj.uv_[1] &&
+           color_ == obj.color_ && tangent_ == obj.tangent_ &&
+           bonesID_ == obj.bonesID_ && bonesWeight_ == obj.bonesWeight_;
+}
 
 #if 0
     std::ostream& operator << (std::ostream& s , const VertexData& obj)

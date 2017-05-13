@@ -29,9 +29,8 @@ misrepresented as being the original software.
 extern void FSMExamples();
 extern void FSMTest();
 
-int NSG_MAIN(int argc, char* argv[])
-{
-	FSMExamples();
-	FSMTest();
-	return 0;
+int NSG_MAIN(int argc, char* argv[]) {
+    FSMExamples();
+    FSMTest();
+    return 0;
 };

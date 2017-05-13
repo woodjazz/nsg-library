@@ -26,16 +26,15 @@ misrepresented as being the original software.
 #pragma once
 #include "LinesMesh.h"
 
-namespace NSG
-{
-	class FrustumMesh : public LinesMesh
-	{
-	public:
-		FrustumMesh(const std::string& name);
-		void SetFrustum(PFrustum frustum, const Color& color = Color(1));
-		bool IsValid() override;
-	private:
-		PFrustum frustum_;
-		Color color_;
-	};
+namespace NSG {
+class FrustumMesh : public LinesMesh {
+public:
+    FrustumMesh(const std::string& name);
+    void SetFrustum(PFrustum frustum, const Color& color = Color(1));
+    bool IsValid() override;
+
+private:
+    PFrustum frustum_;
+    Color color_;
+};
 }

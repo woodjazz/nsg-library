@@ -24,46 +24,28 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "TextureCube.h"
-#include "Util.h"
 #include "Check.h"
+#include "Util.h"
 
-namespace NSG
-{
-    TextureCube::TextureCube(const std::string& name)
-        : Texture(name)
-    {
-		SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
+namespace NSG {
+TextureCube::TextureCube(const std::string& name) : Texture(name) {
+    SetWrapMode(TextureWrapMode::CLAMP_TO_EDGE);
+}
+
+TextureCube::~TextureCube() {}
+
+GLenum TextureCube::GetTarget() const { return GL_TEXTURE_CUBE_MAP; }
+
+void TextureCube::Define() {
+    CHECK_GL_STATUS();
+
+    for (unsigned i = 0; i < (unsigned)CubeMapFace::MAX_CUBEMAP_FACES; i++) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format_, width_,
+                     height_, 0, format_, type_, nullptr);
+
+        CHECK_GL_STATUS();
     }
 
-    TextureCube::~TextureCube()
-    {
-    }
-
-    GLenum TextureCube::GetTarget() const
-    {
-        return GL_TEXTURE_CUBE_MAP;
-    }
-
-    void TextureCube::Define()
-    {
-		CHECK_GL_STATUS();
-
-		for (unsigned i = 0; i < (unsigned)CubeMapFace::MAX_CUBEMAP_FACES; i++)
-		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-				0,
-				format_,
-				width_,
-				height_,
-				0,
-				format_,
-				type_,
-				nullptr);
-
-			CHECK_GL_STATUS();
-		}
-
-		CHECK_GL_STATUS();
-    }
-
+    CHECK_GL_STATUS();
+}
 }

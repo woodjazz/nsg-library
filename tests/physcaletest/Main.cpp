@@ -28,8 +28,8 @@ misrepresented as being the original software.
 using namespace NSG;
 PScene scene;
 
-PSceneNode CreateObject(PMesh mesh, Color color, const Vector3& pos, const Vector3& scale, FillMode mode = FillMode::SOLID)
-{
+PSceneNode CreateObject(PMesh mesh, Color color, const Vector3& pos,
+                        const Vector3& scale, FillMode mode = FillMode::SOLID) {
     auto obj = scene->CreateChild<SceneNode>();
     obj->SetGlobalPosition(pos);
     obj->SetGlobalScale(scale);
@@ -41,13 +41,12 @@ PSceneNode CreateObject(PMesh mesh, Color color, const Vector3& pos, const Vecto
     obj->SetMesh(mesh);
     obj->SetMaterial(material);
     auto rb = obj->GetOrCreateRigidBody();
-    auto shape = Shape::Create(ShapeKey{ mesh, scale });
+    auto shape = Shape::Create(ShapeKey{mesh, scale});
     rb->AddShape(shape);
     return obj;
 }
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
     auto window = Window::Create("0", 0, 0, 100, 100, (int)WindowFlag::HIDDEN);
     scene = std::make_shared<Scene>("scene");
@@ -60,7 +59,8 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto mesh = Mesh::Create<BoxMesh>();
         mesh->Set(5, 0.1f, 5);
-        floor = CreateObject(mesh, Color::White, Vector3(0), Vector3(2), FillMode::WIREFRAME);
+        floor = CreateObject(mesh, Color::White, Vector3(0), Vector3(2),
+                             FillMode::WIREFRAME);
     }
 
     PSceneNode sphere;
@@ -68,34 +68,30 @@ int NSG_MAIN(int argc, char* argv[])
     {
         auto mesh = Mesh::Create<SphereMesh>();
         mesh->Set(2);
-        sphere = CreateObject(mesh, Color::White, spherePos, Vector3(1), FillMode::WIREFRAME);
+        sphere = CreateObject(mesh, Color::White, spherePos, Vector3(1),
+                              FillMode::WIREFRAME);
         auto rb = sphere->GetRigidBody();
         rb->SetMass(1);
         rb->HandleCollisions(true);
     }
 
-    auto static slotCollision = sphere->SigCollision()->Connect([&](const ContactPoint & contactInfo)
-    {
-        static int step = 0;
-        if (!step)
-        {
-            sphere->SetGlobalScale(Vector3(2));
-            sphere->SetGlobalPosition(spherePos);
-            sphere->GetRigidBody()->SyncWithNode();
-            ++step;
-        }
-        else if (step == 1)
-        {
-            sphere->SetGlobalScale(Vector3(3));
-            sphere->SetGlobalPosition(spherePos);
-            sphere->GetRigidBody()->SyncWithNode();
-            ++step;
-        }
-        else
-        {
-            window = nullptr; // exit
-        }
-    });
+    auto static slotCollision =
+        sphere->SigCollision()->Connect([&](const ContactPoint& contactInfo) {
+            static int step = 0;
+            if (!step) {
+                sphere->SetGlobalScale(Vector3(2));
+                sphere->SetGlobalPosition(spherePos);
+                sphere->GetRigidBody()->SyncWithNode();
+                ++step;
+            } else if (step == 1) {
+                sphere->SetGlobalScale(Vector3(3));
+                sphere->SetGlobalPosition(spherePos);
+                sphere->GetRigidBody()->SyncWithNode();
+                ++step;
+            } else {
+                window = nullptr; // exit
+            }
+        });
 
     window->SetScene(scene);
     return Engine::Create()->Run();

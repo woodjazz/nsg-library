@@ -28,60 +28,39 @@ misrepresented as being the original software.
 using namespace NSG;
 using namespace NSG::Task;
 
-struct BaseTask : NSG::Task::Task
-{
+struct BaseTask : NSG::Task::Task {
     static std::vector<int> executedTasks_;
 };
 
 std::vector<int> BaseTask::executedTasks_;
 
-struct Task0 : BaseTask 
-{
-    void Run() 
-    {
-        BaseTask::executedTasks_.push_back(0);
-    }
+struct Task0 : BaseTask {
+    void Run() { BaseTask::executedTasks_.push_back(0); }
 };
 
-struct Task1 : BaseTask 
-{
-    void Run() 
-    {
-        BaseTask::executedTasks_.push_back(1);
-    }
+struct Task1 : BaseTask {
+    void Run() { BaseTask::executedTasks_.push_back(1); }
 };
 
-struct Task2 : BaseTask 
-{
-    void Run() 
-    {
+struct Task2 : BaseTask {
+    void Run() {
         BaseTask::executedTasks_.push_back(2);
         std::this_thread::sleep_for(Milliseconds(200));
     }
 };
 
-struct Task3 : BaseTask 
-{
-    void Run() 
-    {
-        BaseTask::executedTasks_.push_back(3);
-    }
+struct Task3 : BaseTask {
+    void Run() { BaseTask::executedTasks_.push_back(3); }
 };
 
-struct Task4 : BaseTask 
-{
-    void Run() 
-    {
-        BaseTask::executedTasks_.push_back(4);
-    }
+struct Task4 : BaseTask {
+    void Run() { BaseTask::executedTasks_.push_back(4); }
 };
 
-
-static void QueuedTaskTest0()
-{
+static void QueuedTaskTest0() {
     {
         QueuedTask tasks("tasks");
-		
+
         Task0* p0(new Task0);
         Task1* p1(new Task1);
         Task2* p2(new Task2);
@@ -101,14 +80,16 @@ static void QueuedTaskTest0()
         tasks.AddTask(pTask1);
     }
 
-    int expectedSequence[] = {0,1,2,0,3,3,1};
-    CHECK_CONDITION(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int));
-    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence));
+    int expectedSequence[] = {0, 1, 2, 0, 3, 3, 1};
+    CHECK_CONDITION(BaseTask::executedTasks_.size() ==
+                    sizeof(expectedSequence) / sizeof(int));
+    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(),
+                               BaseTask::executedTasks_.end(),
+                               expectedSequence));
     BaseTask::executedTasks_.clear();
 }
 
-static void QueuedTaskTest1()
-{
+static void QueuedTaskTest1() {
     {
         QueuedTask tasks("tasks");
 
@@ -137,16 +118,18 @@ static void QueuedTaskTest1()
         tasks.CancelTask(id4);
     }
 
-    int expectedSequence[] = {0,1,2,0,3,3,1};
-    CHECK_CONDITION(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int));
-    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence));
+    int expectedSequence[] = {0, 1, 2, 0, 3, 3, 1};
+    CHECK_CONDITION(BaseTask::executedTasks_.size() ==
+                    sizeof(expectedSequence) / sizeof(int));
+    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(),
+                               BaseTask::executedTasks_.end(),
+                               expectedSequence));
     BaseTask::executedTasks_.clear();
 }
 
-static void QueuedTaskTest2()
-{
+static void QueuedTaskTest2() {
     {
-		QueuedTask tasks("tasks");
+        QueuedTask tasks("tasks");
 
         Task0* p0(new Task0);
         Task1* p1(new Task1);
@@ -177,13 +160,15 @@ static void QueuedTaskTest2()
     }
 
     int expectedSequence[] = {2};
-    CHECK_CONDITION(BaseTask::executedTasks_.size() == sizeof(expectedSequence)/sizeof(int));
-    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(), BaseTask::executedTasks_.end(), expectedSequence));
+    CHECK_CONDITION(BaseTask::executedTasks_.size() ==
+                    sizeof(expectedSequence) / sizeof(int));
+    CHECK_CONDITION(std::equal(BaseTask::executedTasks_.begin(),
+                               BaseTask::executedTasks_.end(),
+                               expectedSequence));
     BaseTask::executedTasks_.clear();
 }
 
-void QueuedTaskTest()
-{
+void QueuedTaskTest() {
     QueuedTaskTest0();
     QueuedTaskTest1();
     QueuedTaskTest2();

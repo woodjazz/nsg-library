@@ -24,25 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "Node.h"
+#include "Types.h"
 
-namespace NSG
-{
-	class Bone : public Node
-	{
-	public:
-		Bone(const std::string& name);
-		~Bone();
-        void SetPose(const Matrix4& pose) { pose_ = pose; }
-        const Matrix4& GetPose() const { return pose_; }
-		void Load(const pugi::xml_node& node) override;
-		void Save(pugi::xml_node& node) const override;
-		PBone Clone() const;
-        static size_t GetMaxPlatformBones(size_t nBones);
-        static const size_t MaxBones = 64;
-        static const size_t MaxBonesPerVertex = 4;
-	private:
-		Matrix4 pose_;
-	};
+namespace NSG {
+class Bone : public Node {
+public:
+    Bone(const std::string& name);
+    ~Bone();
+    void SetPose(const Matrix4& pose) { pose_ = pose; }
+    const Matrix4& GetPose() const { return pose_; }
+    void Load(const pugi::xml_node& node) override;
+    void Save(pugi::xml_node& node) const override;
+    PBone Clone() const;
+    static size_t GetMaxPlatformBones(size_t nBones);
+    static const size_t MaxBones = 64;
+    static const size_t MaxBonesPerVertex = 4;
+
+private:
+    Matrix4 pose_;
+};
 }

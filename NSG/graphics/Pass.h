@@ -24,71 +24,69 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "GLIncludes.h"
+#include "Object.h"
 #include "Types.h"
 #include "UniformsUpdate.h"
-#include "Object.h"
-#include "GLIncludes.h"
 #include <string>
 
-namespace pugi
-{
-    class xml_node;
+namespace pugi {
+class xml_node;
 }
 
-namespace NSG
-{
-    class Pass;
-    struct PassData
-    {
-        bool enableDepthTest_;
-        bool enableStencilTest_;
-        GLuint stencilMask_;
-        GLenum sfailStencilOp_;
-        GLenum dpfailStencilOp_;
-        GLenum dppassStencilOp_;
-        GLenum stencilFunc_;
-        GLint stencilRefValue_;
-        GLuint stencilMaskValue_;
-        bool enableColorBuffer_;
-        bool enableDepthBuffer_;
-        FrontFaceMode frontFaceMode_;
-        DepthFunc depthFunc_;
-		bool enableScissorTest_;
-		int scissorX_;
-		int scissorY_;
-		int scissorWidth_;
-		int scissorHeight_;
-		CullFaceMode cullFaceMode_;
-        PassData();
-    private:
-        BLEND_MODE blendMode_;
-        friend class Pass;
-    };
+namespace NSG {
+class Pass;
+struct PassData {
+    bool enableDepthTest_;
+    bool enableStencilTest_;
+    GLuint stencilMask_;
+    GLenum sfailStencilOp_;
+    GLenum dpfailStencilOp_;
+    GLenum dppassStencilOp_;
+    GLenum stencilFunc_;
+    GLint stencilRefValue_;
+    GLuint stencilMaskValue_;
+    bool enableColorBuffer_;
+    bool enableDepthBuffer_;
+    FrontFaceMode frontFaceMode_;
+    DepthFunc depthFunc_;
+    bool enableScissorTest_;
+    int scissorX_;
+    int scissorY_;
+    int scissorWidth_;
+    int scissorHeight_;
+    CullFaceMode cullFaceMode_;
+    PassData();
 
-    class Pass : UniformsUpdate
-    {
-    public:
-        Pass();
-        virtual ~Pass();
-        void SetType(PassType type);
-        PassType GetType() const { return type_; }
-        void SetBlendMode(BLEND_MODE mode);
-        BLEND_MODE GetBlendMode() const;
-        void EnableColorBuffer(bool enable);
-        void EnableDepthBuffer(bool enable);
-        void EnableDepthTest(bool enable);
-        void EnableStencilTest(bool enable);
-		void EnableScissorTest(bool enable);
-		void SetScissor(int x, int y, int width, int height);
-        void SetDepthFunc(DepthFunc depthFunc);
-        void SetStencilMask(GLuint mask);
-        void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
-        void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
-        void SetFrontFace(FrontFaceMode mode);
-		void SetCullFace(CullFaceMode mode);
-        const PassData& GetData() const { return data_; }
-    private:
-        PassData data_;
-        PassType type_;
-    };
+private:
+    BLEND_MODE blendMode_;
+    friend class Pass;
+};
+
+class Pass : UniformsUpdate {
+public:
+    Pass();
+    virtual ~Pass();
+    void SetType(PassType type);
+    PassType GetType() const { return type_; }
+    void SetBlendMode(BLEND_MODE mode);
+    BLEND_MODE GetBlendMode() const;
+    void EnableColorBuffer(bool enable);
+    void EnableDepthBuffer(bool enable);
+    void EnableDepthTest(bool enable);
+    void EnableStencilTest(bool enable);
+    void EnableScissorTest(bool enable);
+    void SetScissor(int x, int y, int width, int height);
+    void SetDepthFunc(DepthFunc depthFunc);
+    void SetStencilMask(GLuint mask);
+    void SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass);
+    void SetStencilFunc(GLenum func, GLint ref, GLuint mask);
+    void SetFrontFace(FrontFaceMode mode);
+    void SetCullFace(CullFaceMode mode);
+    const PassData& GetData() const { return data_; }
+
+private:
+    PassData data_;
+    PassType type_;
+};
 }

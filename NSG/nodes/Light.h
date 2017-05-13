@@ -24,84 +24,89 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SceneNode.h"
 #include "Color.h"
-#include "ShadowCamera.h"
 #include "GLIncludes.h"
+#include "SceneNode.h"
+#include "ShadowCamera.h"
 
-namespace NSG
-{
-    class Light : public SceneNode
-    {
-    public:
-        Light(const std::string& name);
-        ~Light();
-        void SetEnergy(float energy);
-        float GetEnergy() const;
-        void SetColor(const Color& color);
-        const Color& GetColor() const;
-        void EnableDiffuseColor(bool enable);
-        void EnableSpecularColor(bool enable);
-        void SetSpotCutOff(float spotCutOff); // angle in degrees
-        float GetSpotCutOff() const { return spotCutOff_; } // angle in degrees
-        LightType GetType() const { return type_; }
-        void SetType(LightType type);
-        void Save(pugi::xml_node& node) const override;
-        void Load(const pugi::xml_node& node) override;
-        void FillShaderDefines(std::string& defines, PassType passType, const Material* material) const;
-        SignalLight::PSignal SignalSetType() { return signalSetType_; }
-        const Color& GetDiffuseColor() const { return diffuseColor_; }
-        const Color& GetSpecularColor() const { return specularColor_; }
-        void SetShadowColor(Color color);
-        const Color& GetShadowColor() const { return shadowColor_; }
-        void SetDistance(float distance);
-        float GetDistance() const { return distance_; }
-        void EnableShadows(bool enable) { shadows_ = enable; }
-        bool DoShadows() const;
-        PTexture GetShadowMap(int idx) const;
-        float GetShadowClipStart() const { return shadowClipStart_; }
-        float GetShadowClipEnd() const { return shadowClipEnd_; }
-        void SetShadowClipStart(float value);
-        void SetShadowClipEnd(float value);
-        void SetOnlyShadow(bool onlyShadow) { onlyShadow_ = onlyShadow; }
-        bool GetOnlyShadow() const { return onlyShadow_; }
-        void SetBias(float shadowBias) { shadowBias_ = shadowBias; }
-        float GetBias() const { return shadowBias_; }
-        void SetSlopeScaledBias(float slopeScaledBias) { slopeScaledBias_ = slopeScaledBias; }
-        float GetSlopeScaledBias() const { return slopeScaledBias_; }
-        ShadowCamera* GetShadowCamera(int idx) const;
-        bool HasSpecularColor() const;
-        void SetShadowSplits(int splits) const { shadowSplits_ = splits; }
-        int GetShadowSplits() const {return shadowSplits_; }
-        float GetInvRange() const { return invRange_; }
-		bool IsDiffuseEnabled() const { return diffuse_; }
-        bool IsSpecularEnabled() const { return specular_; }
-        FrameBuffer* GetShadowFrameBuffer(int idx) const;
-    private:
-        void CalculateColor();
-        void CalculateRange();
-    private:
-        LightType type_;
-        float energy_;
-        Color color_;
-        bool diffuse_;
-        bool specular_;
-        float spotCutOff_; // angle in degrees
-        Color diffuseColor_; // calculated
-        Color specularColor_; // calculated
-        Color shadowColor_;
-        float distance_;
-        bool shadows_;
-        float shadowClipStart_;
-        float shadowClipEnd_;
-        bool onlyShadow_;
-        PFrameBuffer shadowFrameBuffer_[ShadowCamera::MAX_SPLITS];
-        // Bias is used to add a slight offset distance between an object and the shadows cast by it.
-        float shadowBias_; // final bias is multiplied by material bias (See Material::shadowBias_)
-        float slopeScaledBias_;
-        PShadowCamera shadowCamera_[ShadowCamera::MAX_SPLITS];
-        mutable int shadowSplits_; //Calculated in the shadow pass
-        float invRange_;
-        SignalLight::PSignal signalSetType_;
-    };
+namespace NSG {
+class Light : public SceneNode {
+public:
+    Light(const std::string& name);
+    ~Light();
+    void SetEnergy(float energy);
+    float GetEnergy() const;
+    void SetColor(const Color& color);
+    const Color& GetColor() const;
+    void EnableDiffuseColor(bool enable);
+    void EnableSpecularColor(bool enable);
+    void SetSpotCutOff(float spotCutOff);               // angle in degrees
+    float GetSpotCutOff() const { return spotCutOff_; } // angle in degrees
+    LightType GetType() const { return type_; }
+    void SetType(LightType type);
+    void Save(pugi::xml_node& node) const override;
+    void Load(const pugi::xml_node& node) override;
+    void FillShaderDefines(std::string& defines, PassType passType,
+                           const Material* material) const;
+    SignalLight::PSignal SignalSetType() { return signalSetType_; }
+    const Color& GetDiffuseColor() const { return diffuseColor_; }
+    const Color& GetSpecularColor() const { return specularColor_; }
+    void SetShadowColor(Color color);
+    const Color& GetShadowColor() const { return shadowColor_; }
+    void SetDistance(float distance);
+    float GetDistance() const { return distance_; }
+    void EnableShadows(bool enable) { shadows_ = enable; }
+    bool DoShadows() const;
+    PTexture GetShadowMap(int idx) const;
+    float GetShadowClipStart() const { return shadowClipStart_; }
+    float GetShadowClipEnd() const { return shadowClipEnd_; }
+    void SetShadowClipStart(float value);
+    void SetShadowClipEnd(float value);
+    void SetOnlyShadow(bool onlyShadow) { onlyShadow_ = onlyShadow; }
+    bool GetOnlyShadow() const { return onlyShadow_; }
+    void SetBias(float shadowBias) { shadowBias_ = shadowBias; }
+    float GetBias() const { return shadowBias_; }
+    void SetSlopeScaledBias(float slopeScaledBias) {
+        slopeScaledBias_ = slopeScaledBias;
+    }
+    float GetSlopeScaledBias() const { return slopeScaledBias_; }
+    ShadowCamera* GetShadowCamera(int idx) const;
+    bool HasSpecularColor() const;
+    void SetShadowSplits(int splits) const { shadowSplits_ = splits; }
+    int GetShadowSplits() const { return shadowSplits_; }
+    float GetInvRange() const { return invRange_; }
+    bool IsDiffuseEnabled() const { return diffuse_; }
+    bool IsSpecularEnabled() const { return specular_; }
+    FrameBuffer* GetShadowFrameBuffer(int idx) const;
+
+private:
+    void CalculateColor();
+    void CalculateRange();
+
+private:
+    LightType type_;
+    float energy_;
+    Color color_;
+    bool diffuse_;
+    bool specular_;
+    float spotCutOff_;    // angle in degrees
+    Color diffuseColor_;  // calculated
+    Color specularColor_; // calculated
+    Color shadowColor_;
+    float distance_;
+    bool shadows_;
+    float shadowClipStart_;
+    float shadowClipEnd_;
+    bool onlyShadow_;
+    PFrameBuffer shadowFrameBuffer_[ShadowCamera::MAX_SPLITS];
+    // Bias is used to add a slight offset distance between an object and the
+    // shadows cast by it.
+    float shadowBias_; // final bias is multiplied by material bias (See
+                       // Material::shadowBias_)
+    float slopeScaledBias_;
+    PShadowCamera shadowCamera_[ShadowCamera::MAX_SPLITS];
+    mutable int shadowSplits_; // Calculated in the shadow pass
+    float invRange_;
+    SignalLight::PSignal signalSetType_;
+};
 }

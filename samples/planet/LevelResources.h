@@ -24,20 +24,20 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "NSG.h"
 #include "Level.h"
-#include <vector>
+#include "NSG.h"
 #include <set>
+#include <vector>
 using namespace NSG;
-class LevelResources : public Level
-{
+class LevelResources : public Level {
 public:
     LevelResources(PWindow window, std::vector<const char*> resourceNames);
     ~LevelResources();
+
 private:
-	SignalEmpty::PSlot slotLoaded_;
-	SignalFloat::PSlot slotPercentage_;
-	PLoaderXML loader_;
-	PScene scene_;
-	POverlay loadingNode_;
+    SignalEmpty::PSlot slotLoaded_;
+    SignalFloat::PSlot slotPercentage_;
+    PLoaderXML loader_;
+    PScene scene_;
+    POverlay loadingNode_;
 };

@@ -24,73 +24,70 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "SceneNode.h"
-#include <vector>
-#include <set>
+#include "Types.h"
 #include <random>
+#include <set>
+#include <vector>
 
-namespace NSG
-{
-    class ParticleSystem : public SceneNode
-    {
-    public:
-        ParticleSystem(const std::string& name);
-        ~ParticleSystem();
-        void Update(float deltaTime);
-        float GetLifeTime() const;
-		void SetParticleMaterial(PMaterial material);
-		PMaterial GetParticleMaterial() { return particleMaterial_; }
-    private:
-		void Invalidate();
-        void Initialize(PParticle particle);
-        float GetParticlesPerFrame(float deltaTime);
-        PParticle GenerateParticle();
-        void Try2GenerateParticles(float deltaTime);
-        void RemoveParticle(PParticle particle);
-        void SetInitialVelocity(PParticle particle);
-        void ReStartLoop();
-        PQuadMesh particleMesh_;
-        PMaterial particleMaterial_;
-        ParticleSystemEmitFrom emitFrom_;
-        size_t amount_;
-        float start_; //secs
-        float end_; //secs
-		float animationEndTime_;
-        float lifetime_; //secs
-        float lifetimeRandom_;
-        float currentTime_;
-        bool loop_;
-        std::vector<PParticle> particles_;
-        std::random_device rd_;
-        mutable std::mt19937 randGenerator_;
-        size_t generated_; // particles generated after one update
-        int collisionGroup_;
-        int collisionMask_;
+namespace NSG {
+class ParticleSystem : public SceneNode {
+public:
+    ParticleSystem(const std::string& name);
+    ~ParticleSystem();
+    void Update(float deltaTime);
+    float GetLifeTime() const;
+    void SetParticleMaterial(PMaterial material);
+    PMaterial GetParticleMaterial() { return particleMaterial_; }
 
-        struct VelocityParams
-        {
-            Vector3 initialSpeed_;
-            float normalSpeed_;
-            float tangetSpeed_;
-            float objectSpeed_;
-            float randomSpeed_;
-            VelocityParams();
-        };
-        VelocityParams velocityParams_;
+private:
+    void Invalidate();
+    void Initialize(PParticle particle);
+    float GetParticlesPerFrame(float deltaTime);
+    PParticle GenerateParticle();
+    void Try2GenerateParticles(float deltaTime);
+    void RemoveParticle(PParticle particle);
+    void SetInitialVelocity(PParticle particle);
+    void ReStartLoop();
+    PQuadMesh particleMesh_;
+    PMaterial particleMaterial_;
+    ParticleSystemEmitFrom emitFrom_;
+    size_t amount_;
+    float start_; // secs
+    float end_;   // secs
+    float animationEndTime_;
+    float lifetime_; // secs
+    float lifetimeRandom_;
+    float currentTime_;
+    bool loop_;
+    std::vector<PParticle> particles_;
+    std::random_device rd_;
+    mutable std::mt19937 randGenerator_;
+    size_t generated_; // particles generated after one update
+    int collisionGroup_;
+    int collisionMask_;
 
-        struct PhysicsParams
-        {
-            float mass_;
-            PhysicsShape shape_;
-            PhysicsParams();
-        };
-        PhysicsParams physicsParams_;
-
-        size_t currentVertex_;
-        float triggerParticles_;
-        std::set<PParticle> disabled_;
-        ParticleSystemDistribution distribution_;
-		Vector3 gravity_;
+    struct VelocityParams {
+        Vector3 initialSpeed_;
+        float normalSpeed_;
+        float tangetSpeed_;
+        float objectSpeed_;
+        float randomSpeed_;
+        VelocityParams();
     };
+    VelocityParams velocityParams_;
+
+    struct PhysicsParams {
+        float mass_;
+        PhysicsShape shape_;
+        PhysicsParams();
+    };
+    PhysicsParams physicsParams_;
+
+    size_t currentVertex_;
+    float triggerParticles_;
+    std::set<PParticle> disabled_;
+    ParticleSystemDistribution distribution_;
+    Vector3 gravity_;
+};
 }

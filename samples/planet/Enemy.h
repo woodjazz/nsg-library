@@ -24,18 +24,18 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "NSG.h"
 #include "GameObject.h"
+#include "NSG.h"
 using namespace NSG;
 class Explo;
-class Enemy : public GameObject
-{
+class Enemy : public GameObject {
 public:
     Enemy(PScene scene);
     ~Enemy();
     void SetPosition(float pitch, float yaw);
     static void SetTotal(unsigned total);
     void Destroyed() override;
+
 private:
     PNode node_;
     PSceneNode child_;

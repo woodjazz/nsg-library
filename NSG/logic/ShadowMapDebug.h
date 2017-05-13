@@ -24,23 +24,22 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "SharedPointers.h"
+#include "Types.h"
 
-namespace NSG
-{
-	class ShadowMapDebug
-	{
-	public:
-        ShadowMapDebug(PWindow window, PLight light);
-		~ShadowMapDebug();
-        void SetWindow(PWindow window);
-    private:
-        void OnKey(int key, int action, int modifier);
-		PLight light_;
-		PWeakWindow window_;
-		SignalKey::PSlot slotKey_;
-		SignalDebugRenderer::PSlot slotDebugRenderer_;
-		bool debugRendererEnabled_;
-	};
+namespace NSG {
+class ShadowMapDebug {
+public:
+    ShadowMapDebug(PWindow window, PLight light);
+    ~ShadowMapDebug();
+    void SetWindow(PWindow window);
+
+private:
+    void OnKey(int key, int action, int modifier);
+    PLight light_;
+    PWeakWindow window_;
+    SignalKey::PSlot slotKey_;
+    SignalDebugRenderer::PSlot slotDebugRenderer_;
+    bool debugRendererEnabled_;
+};
 }

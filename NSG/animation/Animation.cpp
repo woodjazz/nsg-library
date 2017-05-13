@@ -24,82 +24,70 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Animation.h"
-#include "Node.h"
 #include "Bone.h"
+#include "Node.h"
 #include "Scene.h"
-#include "Util.h"
 #include "StringConverter.h"
+#include "Util.h"
 #include "pugixml.hpp"
 #include <algorithm>
 
-namespace NSG
-{
-template<> std::map<std::string, PAnimation> StrongFactory<std::string, Animation>::objsMap_ = std::map<std::string, PAnimation> {};
-
+namespace NSG {
+template <>
+std::map<std::string, PAnimation>
+    StrongFactory<std::string, Animation>::objsMap_ =
+        std::map<std::string, PAnimation>{};
 
 AnimationKeyFrame::AnimationKeyFrame()
-    : time_(0),
-      scale_(Vector3::One),
-      mask_((int)AnimationChannel::NONE)
-{
-}
+    : time_(0), scale_(Vector3::One), mask_((int)AnimationChannel::NONE) {}
 
 AnimationKeyFrame::AnimationKeyFrame(float time, Node* node)
-    : time_(time),
-      position_(node->GetPosition()),
-      rotation_(node->GetOrientation()),
-      scale_(node->GetScale()),
-      mask_((int)AnimationChannel::ALL)
-{
-}
+    : time_(time), position_(node->GetPosition()),
+      rotation_(node->GetOrientation()), scale_(node->GetScale()),
+      mask_((int)AnimationChannel::ALL) {}
 
-void AnimationKeyFrame::Save(pugi::xml_node& node)
-{
+void AnimationKeyFrame::Save(pugi::xml_node& node) {
     pugi::xml_node child = node.append_child("KeyFrame");
 
     child.append_attribute("time").set_value(time_);
-    if(position_ != Vector3::Zero)
-        child.append_attribute("position").set_value(ToString(position_).c_str());
-    if(rotation_ != Quaternion::Identity)
-        child.append_attribute("rotation").set_value(ToString(rotation_).c_str());
-    if(scale_ != Vector3::One)
+    if (position_ != Vector3::Zero)
+        child.append_attribute("position")
+            .set_value(ToString(position_).c_str());
+    if (rotation_ != Quaternion::Identity)
+        child.append_attribute("rotation")
+            .set_value(ToString(rotation_).c_str());
+    if (scale_ != Vector3::One)
         child.append_attribute("scale").set_value(ToString(scale_).c_str());
 }
 
-void AnimationKeyFrame::Load(const pugi::xml_node& node)
-{
+void AnimationKeyFrame::Load(const pugi::xml_node& node) {
     time_ = node.attribute("time").as_float();
     position_ = Vector3::Zero;
     auto posAtt = node.attribute("position");
-    if(posAtt)
-    {
+    if (posAtt) {
         position_ = ToVertex3(posAtt.as_string());
         mask_ |= (int)AnimationChannel::POSITION;
     }
     rotation_ = Quaternion::Identity;
     auto rotAtt = node.attribute("rotation");
-    if(rotAtt)
-    {
+    if (rotAtt) {
         rotation_ = ToQuaternion(rotAtt.as_string());
         mask_ |= (int)AnimationChannel::ROTATION;
     }
     scale_ = Vector3::One;
     auto scaAtt = node.attribute("scale");
-    if(scaAtt)
-    {
+    if (scaAtt) {
         scale_ = ToVertex3(scaAtt.as_string());
         mask_ |= (int)AnimationChannel::SCALE;
     }
 }
 
-void AnimationKeyFrame::SetPose(PBone bone)
-{
+void AnimationKeyFrame::SetPose(PBone bone) {
     Matrix4 m = bone->GetPose() * Matrix4(position_, rotation_, scale_);
     m.Decompose(position_, rotation_, scale_);
 }
 
-void AnimationTrack::GetKeyFrameIndex(float time, size_t& index) const
-{
+void AnimationTrack::GetKeyFrameIndex(float time, size_t& index) const {
     if (time < 0)
         time = 0;
 
@@ -115,30 +103,25 @@ void AnimationTrack::GetKeyFrameIndex(float time, size_t& index) const
         ++index;
 }
 
-void AnimationTrack::Save(pugi::xml_node& node)
-{
+void AnimationTrack::Save(pugi::xml_node& node) {
     pugi::xml_node child = node.append_child("Track");
     child.append_attribute("nodeName") = nodeName_.c_str();
     child.append_attribute("channelMask") = channelMask_.to_string().c_str();
-    if (keyFrames_.size())
-    {
+    if (keyFrames_.size()) {
         pugi::xml_node childFrames = child.append_child("KeyFrames");
         for (auto& obj : keyFrames_)
             obj.Save(childFrames);
     }
 }
 
-void AnimationTrack::Load(const pugi::xml_node& node)
-{
+void AnimationTrack::Load(const pugi::xml_node& node) {
     nodeName_ = node.attribute("nodeName").as_string();
     std::string mask = node.attribute("channelMask").as_string();
     channelMask_ = AnimationChannelMask(mask);
     pugi::xml_node childKeyFrames = node.child("KeyFrames");
-    if (childKeyFrames)
-    {
+    if (childKeyFrames) {
         pugi::xml_node child = childKeyFrames.child("KeyFrame");
-        while (child)
-        {
+        while (child) {
             AnimationKeyFrame keyFrame;
             keyFrame.Load(child);
             keyFrames_.push_back(keyFrame);
@@ -148,34 +131,27 @@ void AnimationTrack::Load(const pugi::xml_node& node)
     }
 }
 
-void AnimationTrack::ResolveKeyFrameGaps()
-{
+void AnimationTrack::ResolveKeyFrameGaps() {
     auto n = keyFrames_.size();
-    if(n > 1)
-    {
-        for(size_t i=0; i<n; i++)
-        {
+    if (n > 1) {
+        for (size_t i = 0; i < n; i++) {
             auto& current = keyFrames_[i];
-            if(!(current.mask_ & (int)AnimationChannel::POSITION))
-                ResolvePositionGap(current.position_, i+1);
-            if(!(current.mask_ & (int)AnimationChannel::ROTATION))
-                ResolveRotationGap(current.rotation_, i+1);
-            if(!(current.mask_ & (int)AnimationChannel::SCALE))
-                ResolveScaleGap(current.scale_, i+1);
+            if (!(current.mask_ & (int)AnimationChannel::POSITION))
+                ResolvePositionGap(current.position_, i + 1);
+            if (!(current.mask_ & (int)AnimationChannel::ROTATION))
+                ResolveRotationGap(current.rotation_, i + 1);
+            if (!(current.mask_ & (int)AnimationChannel::SCALE))
+                ResolveScaleGap(current.scale_, i + 1);
         }
     }
 }
 
-void AnimationTrack::ResolvePositionGap(Vector3& position, int frame)
-{
+void AnimationTrack::ResolvePositionGap(Vector3& position, int frame) {
     auto n = keyFrames_.size();
-    if(n > (size_t)frame)
-    {
-        for(size_t i=frame; i<n; i++)
-        {
+    if (n > (size_t)frame) {
+        for (size_t i = frame; i < n; i++) {
             auto& current = keyFrames_[i];
-            if(current.mask_ & (int)AnimationChannel::POSITION)
-            {
+            if (current.mask_ & (int)AnimationChannel::POSITION) {
                 position = current.position_;
                 break;
             }
@@ -183,16 +159,12 @@ void AnimationTrack::ResolvePositionGap(Vector3& position, int frame)
     }
 }
 
-void AnimationTrack::ResolveRotationGap(Quaternion& rotation, int frame)
-{
+void AnimationTrack::ResolveRotationGap(Quaternion& rotation, int frame) {
     auto n = keyFrames_.size();
-    if(n > (size_t)frame)
-    {
-        for(size_t i=frame; i<n; i++)
-        {
+    if (n > (size_t)frame) {
+        for (size_t i = frame; i < n; i++) {
             auto& current = keyFrames_[i];
-            if(current.mask_ & (int)AnimationChannel::ROTATION)
-            {
+            if (current.mask_ & (int)AnimationChannel::ROTATION) {
                 rotation = current.rotation_;
                 break;
             }
@@ -200,16 +172,12 @@ void AnimationTrack::ResolveRotationGap(Quaternion& rotation, int frame)
     }
 }
 
-void AnimationTrack::ResolveScaleGap(Vector3& scale, int frame)
-{
+void AnimationTrack::ResolveScaleGap(Vector3& scale, int frame) {
     auto n = keyFrames_.size();
-    if(n > (size_t)frame)
-    {
-        for(size_t i=frame; i<n; i++)
-        {
+    if (n > (size_t)frame) {
+        for (size_t i = frame; i < n; i++) {
             auto& current = keyFrames_[i];
-            if(current.mask_ & (int)AnimationChannel::SCALE)
-            {
+            if (current.mask_ & (int)AnimationChannel::SCALE) {
                 scale = current.scale_;
                 break;
             }
@@ -217,75 +185,58 @@ void AnimationTrack::ResolveScaleGap(Vector3& scale, int frame)
     }
 }
 
-void AnimationTrack::ResolveFor(PBone bone)
-{
+void AnimationTrack::ResolveFor(PBone bone) {
     node_ = bone;
     for (auto& kf : keyFrames_)
         kf.SetPose(bone);
 }
 
-Animation::Animation(const std::string& name)
-    : Object(name),
-      length_(0)
-{
-}
+Animation::Animation(const std::string& name) : Object(name), length_(0) {}
 
-Animation::~Animation()
-{
-}
+Animation::~Animation() {}
 
-PAnimation Animation::Clone() const
-{
+PAnimation Animation::Clone() const {
     auto clone = std::make_shared<Animation>(name_);
     clone->length_ = length_;
     clone->tracks_ = tracks_;
     return clone;
 }
 
-void Animation::ResolveFor(PSceneNode node)
-{
-    for (auto& track : tracks_)
-    {
+void Animation::ResolveFor(PSceneNode node) {
+    for (auto& track : tracks_) {
         auto bone = node->GetChild<Bone>(track.nodeName_, true);
         if (bone)
             track.ResolveFor(bone);
     }
 }
 
-void Animation::SetLength(float length)
-{
+void Animation::SetLength(float length) {
     length_ = std::max<float>(length, 0);
 }
 
-void Animation::SetTracks(const std::vector<AnimationTrack>& tracks)
-{
+void Animation::SetTracks(const std::vector<AnimationTrack>& tracks) {
     tracks_ = tracks;
 }
 
-void Animation::Save(pugi::xml_node& node)
-{
+void Animation::Save(pugi::xml_node& node) {
     pugi::xml_node child = node.append_child("Animation");
     child.append_attribute("name").set_value(name_.c_str());
     child.append_attribute("length").set_value(length_);
-    if (tracks_.size())
-    {
+    if (tracks_.size()) {
         pugi::xml_node childTracks = child.append_child("Tracks");
         for (auto& obj : tracks_)
             obj.Save(childTracks);
     }
 }
 
-void Animation::Load(const pugi::xml_node& node)
-{
+void Animation::Load(const pugi::xml_node& node) {
     tracks_.clear();
     length_ = node.attribute("length").as_float();
 
     pugi::xml_node childTracks = node.child("Tracks");
-    if (childTracks)
-    {
+    if (childTracks) {
         pugi::xml_node child = childTracks.child("Track");
-        while (child)
-        {
+        while (child) {
             AnimationTrack track;
             track.Load(child);
             AddTrack(track);
@@ -294,13 +245,11 @@ void Animation::Load(const pugi::xml_node& node)
     }
 }
 
-void Animation::AddTrack(const AnimationTrack& track)
-{
+void Animation::AddTrack(const AnimationTrack& track) {
     tracks_.push_back(track);
 }
 
-void Animation::SaveAnimations(pugi::xml_node& node)
-{
+void Animation::SaveAnimations(pugi::xml_node& node) {
     pugi::xml_node child = node.append_child("Animations");
     auto animations = Animation::GetObjs();
     for (auto& obj : animations)

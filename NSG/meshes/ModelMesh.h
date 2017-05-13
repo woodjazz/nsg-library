@@ -27,20 +27,19 @@ misrepresented as being the original software.
 #include "Mesh.h"
 #include <string>
 
-namespace NSG
-{
-	class ModelMesh : public Mesh
-	{
-	public:
-		ModelMesh(const std::string& name);
-		~ModelMesh();
-		GLenum GetWireFrameDrawMode() const override;
-		GLenum GetSolidDrawMode() const override;
-		size_t GetNumberOfTriangles() const override;
-		void SetFaceMode(GLenum face_mode) { face_mode_ = face_mode; }
-		PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
-		void Load(const pugi::xml_node& node) override;
-	private:
-		GLenum face_mode_;
-	};
+namespace NSG {
+class ModelMesh : public Mesh {
+public:
+    ModelMesh(const std::string& name);
+    ~ModelMesh();
+    GLenum GetWireFrameDrawMode() const override;
+    GLenum GetSolidDrawMode() const override;
+    size_t GetNumberOfTriangles() const override;
+    void SetFaceMode(GLenum face_mode) { face_mode_ = face_mode; }
+    PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
+    void Load(const pugi::xml_node& node) override;
+
+private:
+    GLenum face_mode_;
+};
 }

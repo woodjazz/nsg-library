@@ -24,14 +24,12 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 
-#include "NSG.h"
 #include "Level.h"
+#include "NSG.h"
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
     auto window = Window::Create();
-	Level::Load(-1, window);
-	return Engine::Create()->Run();
+    Level::Load(-1, window);
+    return Engine::Create()->Run();
 }
-

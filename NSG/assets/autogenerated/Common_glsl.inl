@@ -3,7 +3,7 @@ namespace NSG
 {
 static const char* COMMON_GLSL = \
 "//Remember to rebuild with CMake if this file changes\n"\
-"#ifdef GLES2\n"\
+"#if defined(GLES2) || defined(EGL)\n"\
 "	#ifdef GL_FRAGMENT_PRECISION_HIGH\n"\
 "		precision highp float;\n"\
 "		precision highp int;\n"\

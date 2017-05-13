@@ -24,534 +24,448 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Node.h"
-#include "Scene.h"
-#include "Light.h"
-#include "Camera.h"
-#include "ParticleSystem.h"
-#include "Octree.h"
-#include "Log.h"
 #include "BoundingBox.h"
-#include "Util.h"
-#include "StringConverter.h"
+#include "Camera.h"
 #include "Check.h"
+#include "Light.h"
+#include "Log.h"
+#include "Octree.h"
+#include "ParticleSystem.h"
+#include "Scene.h"
 #include "SharedFromPointer.h"
+#include "StringConverter.h"
+#include "Util.h"
 #include "imgui.h"
 #include "pugixml.hpp"
 #include <algorithm>
 #include <iterator>
 
-namespace NSG
-{
-    Node::Node(const std::string& name)
-        : name_(name),
-          signalUpdated_(new SignalEmpty()),
-          scale_(1, 1, 1),
-          globalScale_(1, 1, 1),
-          inheritScale_(true),
-          dirty_(true),
-          hide_(false),
-          isScaleUniform_(true),
-          userData_(nullptr)
-    {
-    }
+namespace NSG {
+Node::Node(const std::string& name)
+    : name_(name), signalUpdated_(new SignalEmpty()), scale_(1, 1, 1),
+      globalScale_(1, 1, 1), inheritScale_(true), dirty_(true), hide_(false),
+      isScaleUniform_(true), userData_(nullptr) {}
 
-    Node::~Node()
-    {
-        ClearAllChildren();
-    }
+Node::~Node() { ClearAllChildren(); }
 
-    void Node::SetParent(PNode parent)
-    {
-        RemoveFromParent();
-        if (parent)
-            parent->AddChild(SharedFromPointerNode(this));
-        MarkAsDirty();
-    }
+void Node::SetParent(PNode parent) {
+    RemoveFromParent();
+    if (parent)
+        parent->AddChild(SharedFromPointerNode(this));
+    MarkAsDirty();
+}
 
-    PNode Node::GetParent() const
-    {
-        return parent_.lock();
-    }
+PNode Node::GetParent() const { return parent_.lock(); }
 
-    void Node::RemoveFromParent()
-    {
-        auto parent = parent_.lock();
-        if (parent)
-            parent->RemoveChild(this);
-    }
+void Node::RemoveFromParent() {
+    auto parent = parent_.lock();
+    if (parent)
+        parent->RemoveChild(this);
+}
 
-    void Node::ClearAllChildren()
-    {
-        childrenHash_.clear();
-        for (auto i = children_.size() - 1; i < children_.size(); --i)
-        {
-            Node* childNode = children_[i].get();
-            childNode->ClearAllChildren();
-            children_.erase(children_.begin() + i);
-        }
+void Node::ClearAllChildren() {
+    childrenHash_.clear();
+    for (auto i = children_.size() - 1; i < children_.size(); --i) {
+        Node* childNode = children_[i].get();
+        childNode->ClearAllChildren();
+        children_.erase(children_.begin() + i);
     }
+}
 
-    void Node::RemoveChild(Node* node)
-    {
-        int idx = 0;
-        for (auto& child : children_)
-        {
-            if (child.get() == node)
-            {
-                children_.erase(children_.begin() + idx);
-                auto range = childrenHash_.equal_range(node->name_);
-                auto it = range.first;
-                while (it != range.second)
-                {
-                    PNode child = it->second.lock();
-                    if (!child)
-                        it = childrenHash_.erase(it);
-                    else if (child.get() == node)
-                        it = childrenHash_.erase(it);
-                    else
-                        ++it;
-                }
-                break;
-            }
-            ++idx;
-        }
-    }
-
-    void Node::AddChild(PNode node)
-    {
-        CHECK_ASSERT(node && node.get() != this);
-        children_.push_back(node);
-        childrenHash_.insert(std::make_pair(node->name_, node));
-        PNode thisNode = SharedFromPointerNode(this);
-        node->parent_ = thisNode;
-        PScene scene = scene_.lock();
-        if (!scene) scene = std::dynamic_pointer_cast<Scene>(thisNode);
-        node->scene_ = scene;
-        if (scene)
-        {
-            PLight light = std::dynamic_pointer_cast<Light>(node);
-            if (light)
-                scene->AddLight(light.get());
-            else
-            {
-                PCamera camera = std::dynamic_pointer_cast<Camera>(node);
-                if (camera) scene->AddCamera(camera.get());
+void Node::RemoveChild(Node* node) {
+    int idx = 0;
+    for (auto& child : children_) {
+        if (child.get() == node) {
+            children_.erase(children_.begin() + idx);
+            auto range = childrenHash_.equal_range(node->name_);
+            auto it = range.first;
+            while (it != range.second) {
+                PNode child = it->second.lock();
+                if (!child)
+                    it = childrenHash_.erase(it);
+                else if (child.get() == node)
+                    it = childrenHash_.erase(it);
                 else
-                {
-                    auto ps = std::dynamic_pointer_cast<ParticleSystem>(node);
-                    if (ps) scene->AddParticleSystem(ps.get());
-                }
+                    ++it;
+            }
+            break;
+        }
+        ++idx;
+    }
+}
+
+void Node::AddChild(PNode node) {
+    CHECK_ASSERT(node && node.get() != this);
+    children_.push_back(node);
+    childrenHash_.insert(std::make_pair(node->name_, node));
+    PNode thisNode = SharedFromPointerNode(this);
+    node->parent_ = thisNode;
+    PScene scene = scene_.lock();
+    if (!scene)
+        scene = std::dynamic_pointer_cast<Scene>(thisNode);
+    node->scene_ = scene;
+    if (scene) {
+        PLight light = std::dynamic_pointer_cast<Light>(node);
+        if (light)
+            scene->AddLight(light.get());
+        else {
+            PCamera camera = std::dynamic_pointer_cast<Camera>(node);
+            if (camera)
+                scene->AddCamera(camera.get());
+            else {
+                auto ps = std::dynamic_pointer_cast<ParticleSystem>(node);
+                if (ps)
+                    scene->AddParticleSystem(ps.get());
             }
         }
-        node->MarkAsDirty();
+    }
+    node->MarkAsDirty();
+}
+
+void Node::Translate(const Vector3& delta, TransformSpace space) {
+    switch (space) {
+    case TS_LOCAL:
+        // Note: local space translation disregards local scale for
+        // scale-independent movement speed
+        position_ = position_ + GetOrientation() * delta;
+        break;
+
+    case TS_PARENT:
+        position_ = position_ + delta;
+        break;
+
+    case TS_WORLD: {
+        PNode parent = parent_.lock();
+        position_ =
+            position_ + ((parent == scene_.lock() || !parent)
+                             ? delta
+                             : Vector3(parent->GetGlobalModelInvMatrix() *
+                                       Vector4(delta, 0.0f)));
+        break;
+    }
     }
 
-    void Node::Translate(const Vector3& delta, TransformSpace space)
-    {
-        switch (space)
-        {
-            case TS_LOCAL:
-                // Note: local space translation disregards local scale for scale-independent movement speed
-                position_ = position_ + GetOrientation() * delta;
-                break;
+    MarkAsDirty();
+}
 
-            case TS_PARENT:
-                position_ = position_ + delta;
-                break;
+void Node::Rotate(const Quaternion& delta, TransformSpace space) {
+    switch (space) {
+    case TS_LOCAL:
+        q_ = (q_ * delta).Normalize();
+        break;
 
-            case TS_WORLD:
-                {
-                    PNode parent = parent_.lock();
-                    position_ = position_ + ((parent == scene_.lock() || !parent) ? delta : Vector3(parent->GetGlobalModelInvMatrix() * Vector4(delta, 0.0f)));
-                    break;
-                }
+    case TS_PARENT:
+        q_ = (delta * q_).Normalize();
+        break;
+
+    case TS_WORLD: {
+        PNode parent = parent_.lock();
+        if (parent == scene_.lock() || !parent)
+            q_ = (delta * q_).Normalize();
+        else {
+            Quaternion worldRotation = GetGlobalOrientation();
+            q_ = q_ * worldRotation.Inverse() * delta * worldRotation;
         }
+        break;
+    }
+    }
 
+    MarkAsDirty();
+}
+
+void Node::Yaw(float angle, TransformSpace space) {
+    Rotate(Quaternion(angle, Vector3::Up), space);
+}
+
+void Node::Pitch(float angle, TransformSpace space) {
+    Rotate(Quaternion(angle, Vector3::Right), space);
+}
+
+void Node::Roll(float angle, TransformSpace space) {
+    Rotate(Quaternion(angle, Vector3::Forward), space);
+}
+
+void Node::SetPosition(const Vertex3& position) {
+    if (position_ != position) {
+        position_ = position;
         MarkAsDirty();
     }
+}
 
-    void Node::Rotate(const Quaternion& delta, TransformSpace space)
-    {
-        switch (space)
-        {
-            case TS_LOCAL:
-                q_ = (q_ * delta).Normalize();
-                break;
-
-            case TS_PARENT:
-                q_ = (delta * q_).Normalize();
-                break;
-
-            case TS_WORLD:
-                {
-                    PNode parent = parent_.lock();
-                    if (parent == scene_.lock() || !parent)
-                        q_ = (delta * q_).Normalize();
-                    else
-                    {
-                        Quaternion worldRotation = GetGlobalOrientation();
-                        q_ = q_ * worldRotation.Inverse() * delta * worldRotation;
-                    }
-                    break;
-                }
-        }
-
+void Node::SetOrientation(const Quaternion& q) {
+    if (q_ != q) {
+        q_ = q;
         MarkAsDirty();
     }
+}
 
-    void Node::Yaw(float angle, TransformSpace space)
-    {
-        Rotate(Quaternion(angle, Vector3::Up), space);
+void Node::SetScale(const Vertex3& scale) {
+    if (scale_ != scale) {
+        scale_ = scale;
+        MarkAsDirty(true, true);
     }
+}
 
-    void Node::Pitch(float angle, TransformSpace space)
-    {
-        Rotate(Quaternion(angle, Vector3::Right), space);
+void Node::SetScale(float scale) { SetScale(Vertex3(scale)); }
+
+void Node::SetGlobalScale(const Vertex3& scale) {
+    PNode parent = parent_.lock();
+
+    if (parent == nullptr) {
+        SetScale(scale);
+    } else {
+        Vertex3 globalScale(parent->GetGlobalScale());
+        globalScale.x = 1 / globalScale.x;
+        globalScale.y = 1 / globalScale.y;
+        globalScale.z = 1 / globalScale.z;
+
+        SetScale(globalScale * scale);
     }
+}
 
-    void Node::Roll(float angle, TransformSpace space)
-    {
-        Rotate(Quaternion(angle, Vector3::Forward), space);
+void Node::SetGlobalPosition(const Vertex3& position) {
+    PNode parent = parent_.lock();
+
+    if (parent == nullptr) {
+        SetPosition(position);
+    } else {
+        SetPosition(
+            Vertex3(parent->GetGlobalModelInvMatrix() * Vertex4(position, 1)));
     }
+}
 
+void Node::SetGlobalOrientation(const Quaternion& q) {
+    PNode parent = parent_.lock();
 
-    void Node::SetPosition(const Vertex3& position)
-    {
-        if (position_ != position)
-        {
-            position_ = position;
-            MarkAsDirty();
-        }
+    if (parent == nullptr) {
+        SetOrientation(q);
+    } else {
+        SetOrientation(
+            (Quaternion(parent->GetGlobalModelInvMatrix()) * q).Normalize());
     }
+}
 
-    void Node::SetOrientation(const Quaternion& q)
-    {
-        if (q_ != q)
-        {
-            q_ = q;
-            MarkAsDirty();
-        }
+const Vertex3& Node::GetGlobalPosition() const {
+    Update();
+    return globalPosition_;
+}
+
+const Quaternion& Node::GetGlobalOrientation() const {
+    Update();
+    return globalOrientation_;
+}
+
+Vertex3 Node::GetGlobalScale() const {
+    Update();
+    return globalScale_;
+}
+
+void Node::SetInheritScale(bool inherit) {
+    if (inheritScale_ != inherit) {
+        inheritScale_ = inherit;
+        MarkAsDirty();
     }
+}
 
-    void Node::SetScale(const Vertex3& scale)
-    {
-        if (scale_ != scale)
-        {
-            scale_ = scale;
-            MarkAsDirty(true, true);
-        }
-    }
-
-    void Node::SetScale(float scale)
-    {
-        SetScale(Vertex3(scale));
-    }
-
-    void Node::SetGlobalScale(const Vertex3& scale)
-    {
+void Node::SetGlobalLookAtDirection(const Vertex3& direction) {
+    float length = direction.Length();
+    if (length > 0) {
+        auto rot = Quaternion(-direction, GetUpDirection());
         PNode parent = parent_.lock();
-
-        if (parent == nullptr)
-        {
-            SetScale(scale);
-        }
-        else
-        {
-            Vertex3 globalScale(parent->GetGlobalScale());
-            globalScale.x = 1 / globalScale.x;
-            globalScale.y = 1 / globalScale.y;
-            globalScale.z = 1 / globalScale.z;
-
-            SetScale(globalScale * scale);
-        }
-    }
-
-
-    void Node::SetGlobalPosition(const Vertex3& position)
-    {
-        PNode parent = parent_.lock();
-
-        if (parent == nullptr)
-        {
-            SetPosition(position);
-        }
-        else
-        {
-            SetPosition(Vertex3(parent->GetGlobalModelInvMatrix() * Vertex4(position, 1)));
-        }
-    }
-
-    void Node::SetGlobalOrientation(const Quaternion& q)
-    {
-        PNode parent = parent_.lock();
-
-        if (parent == nullptr)
-        {
-            SetOrientation(q);
-        }
-        else
-        {
-            SetOrientation((Quaternion(parent->GetGlobalModelInvMatrix()) * q).Normalize());
-        }
-    }
-
-    const Vertex3& Node::GetGlobalPosition() const
-    {
-        Update();
-        return globalPosition_;
-    }
-
-    const Quaternion& Node::GetGlobalOrientation() const
-    {
-        Update();
-        return globalOrientation_;
-    }
-
-    Vertex3 Node::GetGlobalScale() const
-    {
-        Update();
-        return globalScale_;
-    }
-
-
-    void Node::SetInheritScale(bool inherit)
-    {
-        if (inheritScale_ != inherit)
-        {
-            inheritScale_ = inherit;
-            MarkAsDirty();
-        }
-    }
-
-    void Node::SetGlobalLookAtDirection(const Vertex3& direction)
-    {
-        float length = direction.Length();
-        if (length > 0)
-        {
-            auto rot = Quaternion(-direction, GetUpDirection());
-            PNode parent = parent_.lock();
-            if (parent)
-            {
-                Quaternion q = parent->GetGlobalOrientation().Inverse();
-                SetOrientation(q * rot);
-            }
-            else
-            {
-                SetOrientation(rot);
-            }
-        }
-    }
-
-    void Node::SetGlobalLookAtPosition(const Vertex3& lookAtPosition, const Vertex3& up)
-    {
-        const Vertex3& position = GetGlobalPosition();
-        auto direction = lookAtPosition - position;
-        float length = direction.Length();
-        if (length > 0)
-        {
-			Quaternion rot(-direction, up);
-            PNode parent = parent_.lock();
-            if (parent)
-            {
-                Quaternion q = parent->GetGlobalOrientation().Inverse();
-                SetOrientation(q * rot);
-            }
-            else
-            {
-                SetOrientation(rot);
-            }
-        }
-    }
-
-    void Node::SetLocalLookAtPosition(const Vertex3& lookAtPosition, const Vertex3& up)
-    {
-        auto direction = lookAtPosition - position_;
-        float length = direction.Length();
-        if (length > 0)
-        {
-            Quaternion rot(-direction, up);
+        if (parent) {
+            Quaternion q = parent->GetGlobalOrientation().Inverse();
+            SetOrientation(q * rot);
+        } else {
             SetOrientation(rot);
         }
     }
+}
 
-    Quaternion Node::GetLookAtOrientation(const Vertex3& lookAtPosition, const Vertex3& up)
-    {
-        const Vertex3& position = GetGlobalPosition();
-        auto direction = lookAtPosition - position;
-        float length = direction.Length();
-        if (length > 0)
-        {
-            Quaternion rot(-direction, up);
-            PNode parent(parent_.lock());
-            if (parent)
-                return parent->GetGlobalOrientation().Inverse() * rot;
-            else
-                return rot;
-        }
-        return GetOrientation();
-    }
-
-
-    void Node::SetGlobalPositionAndLookAt(const Vertex3& newPosition, const Vertex3& lookAtPosition, const Vertex3& up)
-    {
-        SetGlobalPosition(newPosition);
-        SetGlobalLookAtPosition(lookAtPosition, up);
-    }
-
-    void Node::Update() const
-    {
-        if (!dirty_ || hide_)
-            return;
-
-        dirty_ = false;
-
+void Node::SetGlobalLookAtPosition(const Vertex3& lookAtPosition,
+                                   const Vertex3& up) {
+    const Vertex3& position = GetGlobalPosition();
+    auto direction = lookAtPosition - position;
+    float length = direction.Length();
+    if (length > 0) {
+        Quaternion rot(-direction, up);
         PNode parent = parent_.lock();
+        if (parent) {
+            Quaternion q = parent->GetGlobalOrientation().Inverse();
+            SetOrientation(q * rot);
+        } else {
+            SetOrientation(rot);
+        }
+    }
+}
 
+void Node::SetLocalLookAtPosition(const Vertex3& lookAtPosition,
+                                  const Vertex3& up) {
+    auto direction = lookAtPosition - position_;
+    float length = direction.Length();
+    if (length > 0) {
+        Quaternion rot(-direction, up);
+        SetOrientation(rot);
+    }
+}
+
+Quaternion Node::GetLookAtOrientation(const Vertex3& lookAtPosition,
+                                      const Vertex3& up) {
+    const Vertex3& position = GetGlobalPosition();
+    auto direction = lookAtPosition - position;
+    float length = direction.Length();
+    if (length > 0) {
+        Quaternion rot(-direction, up);
+        PNode parent(parent_.lock());
         if (parent)
-        {
-            globalModel_ = parent->GetGlobalModelMatrix() * GetTransform();
-            globalPosition_ = globalModel_.Translation();
-            globalOrientation_ = parent->GetGlobalOrientation() * q_;
-            globalScale_ = globalModel_.Scale();
-        }
+            return parent->GetGlobalOrientation().Inverse() * rot;
         else
-        {
-            globalModel_ = GetTransform();
-            globalPosition_ = position_;
-            globalOrientation_ = q_;
-            globalScale_ = scale_;
-        }
+            return rot;
+    }
+    return GetOrientation();
+}
 
-        isScaleUniform_ = globalScale_.IsUniform();
-        globalModelInv_ = globalModel_.Inverse();
-        globalModelInvTransp_ = Matrix3(globalModel_).Inverse().Transpose();
-        lookAtDirection_ = globalOrientation_ * Vector3::LookAt;
-        upDirection_ = globalOrientation_ * Vector3::Up;
-        rightDirection_ = globalOrientation_ * Vector3::Right;
-        signalUpdated_->Run();
+void Node::SetGlobalPositionAndLookAt(const Vertex3& newPosition,
+                                      const Vertex3& lookAtPosition,
+                                      const Vertex3& up) {
+    SetGlobalPosition(newPosition);
+    SetGlobalLookAtPosition(lookAtPosition, up);
+}
+
+void Node::Update() const {
+    if (!dirty_ || hide_)
+        return;
+
+    dirty_ = false;
+
+    PNode parent = parent_.lock();
+
+    if (parent) {
+        globalModel_ = parent->GetGlobalModelMatrix() * GetTransform();
+        globalPosition_ = globalModel_.Translation();
+        globalOrientation_ = parent->GetGlobalOrientation() * q_;
+        globalScale_ = globalModel_.Scale();
+    } else {
+        globalModel_ = GetTransform();
+        globalPosition_ = position_;
+        globalOrientation_ = q_;
+        globalScale_ = scale_;
     }
 
-    Matrix4 Node::GetTransform() const
-    {
-        Update();
-        return Matrix4(position_, q_, scale_);
-    }
+    isScaleUniform_ = globalScale_.IsUniform();
+    globalModelInv_ = globalModel_.Inverse();
+    globalModelInvTransp_ = Matrix3(globalModel_).Inverse().Transpose();
+    lookAtDirection_ = globalOrientation_ * Vector3::LookAt;
+    upDirection_ = globalOrientation_ * Vector3::Up;
+    rightDirection_ = globalOrientation_ * Vector3::Right;
+    signalUpdated_->Run();
+}
 
-    void Node::SetTransform(const Matrix4& transform)
-    {
-		transform.Decompose(position_, q_, scale_);
-        MarkAsDirty(true, true);
-    }
+Matrix4 Node::GetTransform() const {
+    Update();
+    return Matrix4(position_, q_, scale_);
+}
 
-    const Matrix4& Node::GetGlobalModelMatrix() const
-    {
-        Update();
-        return globalModel_;
-    }
+void Node::SetTransform(const Matrix4& transform) {
+    transform.Decompose(position_, q_, scale_);
+    MarkAsDirty(true, true);
+}
 
-    const Matrix3& Node::GetGlobalModelInvTranspMatrix() const
-    {
-        Update();
-        return globalModelInvTransp_;
-    }
+const Matrix4& Node::GetGlobalModelMatrix() const {
+    Update();
+    return globalModel_;
+}
 
-    const Matrix4& Node::GetGlobalModelInvMatrix() const
-    {
-        Update();
-        return globalModelInv_;
-    }
+const Matrix3& Node::GetGlobalModelInvTranspMatrix() const {
+    Update();
+    return globalModelInvTransp_;
+}
 
+const Matrix4& Node::GetGlobalModelInvMatrix() const {
+    Update();
+    return globalModelInv_;
+}
 
-    const Vertex3& Node::GetLookAtDirection() const
-    {
-        Update();
-        return lookAtDirection_;
-    }
+const Vertex3& Node::GetLookAtDirection() const {
+    Update();
+    return lookAtDirection_;
+}
 
-    const Vertex3& Node::GetUpDirection() const
-    {
-        Update();
-        return upDirection_;
-    }
+const Vertex3& Node::GetUpDirection() const {
+    Update();
+    return upDirection_;
+}
 
-	const Vertex3& Node::GetRightDirection() const
-	{
-		Update();
-		return rightDirection_;
-	}
+const Vertex3& Node::GetRightDirection() const {
+    Update();
+    return rightDirection_;
+}
 
-    bool Node::IsPointInsideBB(const Vertex3& point) const
-    {
-        Update();
-        BoundingBox box(*this);
-        return box.IsInside(point);
-    }
+bool Node::IsPointInsideBB(const Vertex3& point) const {
+    Update();
+    BoundingBox box(*this);
+    return box.IsInside(point);
+}
 
-    void Node::MarkAsDirty(bool recursive, bool scaleChange)
-    {
-        dirty_ = true;
+void Node::MarkAsDirty(bool recursive, bool scaleChange) {
+    dirty_ = true;
+    SetUniformsNeedUpdate();
+    OnDirty();
+
+    if (scaleChange)
+        OnScaleChange();
+
+    if (recursive)
+        for (auto child : children_)
+            child->MarkAsDirty(recursive, scaleChange);
+}
+
+void Node::Hide(bool hide, bool recursive) {
+    if (hide != hide_) {
+        hide_ = hide;
         SetUniformsNeedUpdate();
-        OnDirty();
-
-        if (scaleChange)
-            OnScaleChange();
-
-        if (recursive)
-            for (auto child : children_)
-                child->MarkAsDirty(recursive, scaleChange);
+        OnHide(hide);
     }
 
-    void Node::Hide(bool hide, bool recursive)
-    {
-        if (hide != hide_)
-        {
-            hide_ = hide;
-            SetUniformsNeedUpdate();
-            OnHide(hide);
-        }
+    if (recursive)
+        for (auto child : children_)
+            child->Hide(hide, recursive);
+}
 
-        if (recursive)
-            for (auto child : children_)
-                child->Hide(hide, recursive);
-    }
+bool Node::IsScaleUniform() const {
+    Update();
+    return isScaleUniform_;
+}
 
-    bool Node::IsScaleUniform() const
-    {
-        Update();
-        return isScaleUniform_;
-    }
+void Node::Load(const pugi::xml_node& node) {
+    CHECK_ASSERT(name_ == node.attribute("name").as_string());
+    Vertex3 position(Vector3::Zero);
+    auto posAtt = node.attribute("position");
+    if (posAtt)
+        position = ToVertex3(posAtt.as_string());
+    SetPosition(position);
+    Quaternion orientation(Quaternion::Identity);
+    auto rotAtt = node.attribute("orientation");
+    if (rotAtt)
+        orientation = ToQuaternion(rotAtt.as_string());
+    SetOrientation(orientation);
+    Vertex3 scale(Vector3::One);
+    auto scaAtt = node.attribute("scale");
+    if (scaAtt)
+        scale = ToVertex3(scaAtt.as_string());
+    SetScale(scale);
+}
 
-    void Node::Load(const pugi::xml_node& node)
-    {
-        CHECK_ASSERT(name_ == node.attribute("name").as_string());
-        Vertex3 position(Vector3::Zero);
-        auto posAtt = node.attribute("position");
-        if (posAtt)
-            position = ToVertex3(posAtt.as_string());
-        SetPosition(position);
-        Quaternion orientation(Quaternion::Identity);
-        auto rotAtt = node.attribute("orientation");
-        if (rotAtt)
-            orientation = ToQuaternion(rotAtt.as_string());
-        SetOrientation(orientation);
-        Vertex3 scale(Vector3::One);
-        auto scaAtt = node.attribute("scale");
-        if (scaAtt)
-            scale = ToVertex3(scaAtt.as_string());
-        SetScale(scale);
-    }
-
-    void Node::Save(pugi::xml_node& node) const
-    {
-        node.append_attribute("name").set_value(GetName().c_str());
-        auto position = GetPosition();
-        if (position != Vector3::Zero)
-            node.append_attribute("position").set_value(ToString(position).c_str());
-        auto orientation = GetOrientation();
-        if (orientation != Quaternion::Identity)
-            node.append_attribute("orientation").set_value(ToString(orientation).c_str());
-        auto scale = GetScale();
-        if (scale != Vector3::One)
-            node.append_attribute("scale").set_value(ToString(scale).c_str());
-    }
+void Node::Save(pugi::xml_node& node) const {
+    node.append_attribute("name").set_value(GetName().c_str());
+    auto position = GetPosition();
+    if (position != Vector3::Zero)
+        node.append_attribute("position").set_value(ToString(position).c_str());
+    auto orientation = GetOrientation();
+    if (orientation != Quaternion::Identity)
+        node.append_attribute("orientation")
+            .set_value(ToString(orientation).c_str());
+    auto scale = GetScale();
+    if (scale != Vector3::One)
+        node.append_attribute("scale").set_value(ToString(scale).c_str());
+}
 }

@@ -24,84 +24,60 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "ParticleSystem.h"
-#include "Particle.h"
-#include "Scene.h"
-#include "Util.h"
-#include "SphereMesh.h"
-#include "QuadMesh.h"
-#include "Material.h"
-#include "Pass.h"
-#include "Program.h"
-#include "RigidBody.h"
-#include "Shape.h"
-#include "PhysicsWorld.h"
 #include "AppConfiguration.h"
 #include "Check.h"
+#include "Material.h"
+#include "Particle.h"
+#include "Pass.h"
+#include "PhysicsWorld.h"
+#include "Program.h"
+#include "QuadMesh.h"
+#include "RigidBody.h"
+#include "Scene.h"
+#include "Shape.h"
+#include "SphereMesh.h"
+#include "Util.h"
 
-namespace NSG
-{
+namespace NSG {
 ParticleSystem::VelocityParams::VelocityParams()
-    : initialSpeed_(0),
-      normalSpeed_(1),
-      tangetSpeed_(0),
-      objectSpeed_(0),
-      randomSpeed_(0)
-{
-};
+    : initialSpeed_(0), normalSpeed_(1), tangetSpeed_(0), objectSpeed_(0),
+      randomSpeed_(0){};
 
-ParticleSystem::PhysicsParams::PhysicsParams()
-    : mass_(1),
-      shape_(SH_EMPTY)
-{
-};
+ParticleSystem::PhysicsParams::PhysicsParams() : mass_(1), shape_(SH_EMPTY){};
 
 ParticleSystem::ParticleSystem(const std::string& name)
-    : SceneNode(name),
-      emitFrom_(PS_EF_VERTS),
-      amount_(1500),
-      start_(0),
-      end_(2),
-      animationEndTime_(5),
-      lifetime_(3),
-      lifetimeRandom_(0.0f),
-      currentTime_(0),
-      loop_(true),
-      randGenerator_(rd_()),
-      generated_(0),
+    : SceneNode(name), emitFrom_(PS_EF_VERTS), amount_(1500), start_(0),
+      end_(2), animationEndTime_(5), lifetime_(3), lifetimeRandom_(0.0f),
+      currentTime_(0), loop_(true), randGenerator_(rd_()), generated_(0),
       collisionGroup_((int)CollisionMask::PARTICLE),
       collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::PARTICLE),
-      currentVertex_(0),
-      triggerParticles_(0),
+      currentVertex_(0), triggerParticles_(0),
       distribution_(ParticleSystemDistribution::RANDOM),
-      gravity_(0, -9.81f, 0)
-{
+      gravity_(0, -9.81f, 0) {
     particleMesh_ = Mesh::CreateClass<QuadMesh>("NSGParticleMesh");
     particleMesh_->Set(1.f);
-    particleMaterial_ = std::make_shared<Material>(GetUniqueName(name + "Particle"));
+    particleMaterial_ =
+        std::make_shared<Material>(GetUniqueName(name + "Particle"));
     particleMaterial_->SetRenderPass(RenderPass::UNLIT);
     particleMaterial_->SetBillboardType(BillboardType::SPHERICAL);
     DisableFlags((int)SceneNodeFlag::ALLOW_RAY_QUERY);
     particles_.reserve(amount_);
 }
 
-ParticleSystem::~ParticleSystem()
-{
+ParticleSystem::~ParticleSystem() {
     auto scene = GetScene();
-    if(scene)
+    if (scene)
         scene->RemoveParticleSystem(this);
 }
 
-void ParticleSystem::SetParticleMaterial(PMaterial material)
-{
-    if (particleMaterial_ != material)
-    {
+void ParticleSystem::SetParticleMaterial(PMaterial material) {
+    if (particleMaterial_ != material) {
         particleMaterial_ = material;
         Invalidate();
     }
 }
 
-float ParticleSystem::GetParticlesPerFrame(float deltaTime)
-{
+float ParticleSystem::GetParticlesPerFrame(float deltaTime) {
     auto remainingTime = end_ - start_ - currentTime_;
     auto remainingFrames = remainingTime / deltaTime;
     auto remainingParticles = amount_ - generated_;
@@ -111,13 +87,10 @@ float ParticleSystem::GetParticlesPerFrame(float deltaTime)
     return remainingParticles / remainingFrames;
 }
 
-void ParticleSystem::Try2GenerateParticles(float deltaTime)
-{
-    if (currentTime_ >= start_ && currentTime_ < end_ && generated_ < amount_)
-    {
+void ParticleSystem::Try2GenerateParticles(float deltaTime) {
+    if (currentTime_ >= start_ && currentTime_ < end_ && generated_ < amount_) {
         triggerParticles_ += GetParticlesPerFrame(deltaTime);
-        while (triggerParticles_ >= 1)
-        {
+        while (triggerParticles_ >= 1) {
             GenerateParticle();
             ++generated_;
             --triggerParticles_;
@@ -125,16 +98,12 @@ void ParticleSystem::Try2GenerateParticles(float deltaTime)
     }
 }
 
-PParticle ParticleSystem::GenerateParticle()
-{
+PParticle ParticleSystem::GenerateParticle() {
     PParticle particle;
-    if (!disabled_.empty())
-    {
+    if (!disabled_.empty()) {
         particle = *disabled_.begin();
         disabled_.erase(particle);
-    }
-    else
-    {
+    } else {
         particle = CreateChild<Particle>(GetUniqueName(name_));
         particle->SetMaterial(particleMaterial_);
         particle->SetMesh(particleMesh_);
@@ -153,48 +122,38 @@ PParticle ParticleSystem::GenerateParticle()
     return particle;
 }
 
-void ParticleSystem::RemoveParticle(PParticle particle)
-{
+void ParticleSystem::RemoveParticle(PParticle particle) {
     particle->Disable();
     disabled_.insert(particle);
 }
 
-void ParticleSystem::Invalidate()
-{
+void ParticleSystem::Invalidate() {
     particles_.clear();
     ClearAllChildren();
     ReStartLoop();
 }
 
-float ParticleSystem::GetLifeTime() const
-{
-    if (lifetimeRandom_)
-    {
+float ParticleSystem::GetLifeTime() const {
+    if (lifetimeRandom_) {
         auto min = lifetime_ * (1.f - lifetimeRandom_);
         auto max = lifetime_;
         std::uniform_real_distribution<float> dis(min, max);
         auto random = dis(randGenerator_);
         return random;
-    }
-    else
+    } else
         return lifetime_;
 }
 
-void ParticleSystem::ReStartLoop()
-{
+void ParticleSystem::ReStartLoop() {
     currentTime_ = 0;
     generated_ = 0;
 }
 
-void ParticleSystem::Update(float deltaTime)
-{
-    if (mesh_ && mesh_->IsReady())
-    {
+void ParticleSystem::Update(float deltaTime) {
+    if (mesh_ && mesh_->IsReady()) {
         Try2GenerateParticles(deltaTime);
-        for (auto& particle : particles_)
-        {
-            if (!particle->IsHidden())
-            {
+        for (auto& particle : particles_) {
+            if (!particle->IsHidden()) {
                 auto lifeTime = GetLifeTime();
                 auto age = particle->GetAge();
                 if (age < lifeTime)
@@ -211,20 +170,16 @@ void ParticleSystem::Update(float deltaTime)
     }
 }
 
-void ParticleSystem::Initialize(PParticle particle)
-{
-    if (emitFrom_ == PS_EF_VERTS)
-    {
+void ParticleSystem::Initialize(PParticle particle) {
+    if (emitFrom_ == PS_EF_VERTS) {
         auto mesh = GetMesh();
         auto& vertexes = mesh->GetConstVertexsData();
-        if (distribution_ == ParticleSystemDistribution::RANDOM)
-        {
+        if (distribution_ == ParticleSystemDistribution::RANDOM) {
             CHECK_ASSERT(vertexes.size() < std::numeric_limits<float>::max());
-            std::uniform_real_distribution<float> dis(0, (float)vertexes.size());
+            std::uniform_real_distribution<float> dis(0,
+                                                      (float)vertexes.size());
             currentVertex_ = (size_t)dis(randGenerator_);
-        }
-        else
-        {
+        } else {
             ++currentVertex_;
             if (currentVertex_ >= vertexes.size())
                 currentVertex_ = 0;
@@ -238,37 +193,33 @@ void ParticleSystem::Initialize(PParticle particle)
     SetInitialVelocity(particle);
 }
 
-void ParticleSystem::SetInitialVelocity(PParticle particle)
-{
+void ParticleSystem::SetInitialVelocity(PParticle particle) {
     Vector3 velocity(velocityParams_.initialSpeed_);
-    if (velocityParams_.objectSpeed_)
-    {
+    if (velocityParams_.objectSpeed_) {
         auto rb = GetRigidBody();
         if (rb)
-            velocity = velocity + velocityParams_.objectSpeed_ * rb->GetLinearVelocity();
+            velocity = velocity +
+                       velocityParams_.objectSpeed_ * rb->GetLinearVelocity();
     }
 
-    if (velocityParams_.randomSpeed_)
-    {
-        std::uniform_real_distribution<float> dis(0.0f, velocityParams_.randomSpeed_);
+    if (velocityParams_.randomSpeed_) {
+        std::uniform_real_distribution<float> dis(0.0f,
+                                                  velocityParams_.randomSpeed_);
         auto random = dis(randGenerator_);
         velocity = velocity * random;
     }
 
-    if (emitFrom_ == PS_EF_VERTS)
-    {
+    if (emitFrom_ == PS_EF_VERTS) {
         auto mesh = GetMesh();
         auto& vertexes = mesh->GetConstVertexsData();
         auto& vertex = vertexes[currentVertex_];
 
-        if (velocityParams_.normalSpeed_)
-        {
+        if (velocityParams_.normalSpeed_) {
             auto& normal = vertex.normal_;
             velocity = velocity + normal * velocityParams_.normalSpeed_;
         }
 
-        if (velocityParams_.tangetSpeed_)
-        {
+        if (velocityParams_.tangetSpeed_) {
             auto& tangent = vertex.tangent_;
             velocity = velocity + tangent * velocityParams_.tangetSpeed_;
         }
@@ -276,5 +227,4 @@ void ParticleSystem::SetInitialVelocity(PParticle particle)
 
     particle->SetVelocity(velocity);
 }
-
 }

@@ -25,24 +25,23 @@ misrepresented as being the original software.
 */
 #include "LevelOver.h"
 
-LevelOver::LevelOver(PWindow window)
-	: Level(window)
-{
+LevelOver::LevelOver(PWindow window) : Level(window) {
     scene_ = std::make_shared<Scene>();
-	auto loadingNode = scene_->CreateOverlay("loadingNode");
-	loadingNode->SetText("Over", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT);
-	loadingNode->SetFont("data/AnonymousPro32.xml", "data/AnonymousPro32.png");
-	loadingNode->SetMaterialName("loadingMaterial");
+    auto loadingNode = scene_->CreateOverlay("loadingNode");
+    auto xml = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro132.xml");
+    auto atlas = std::make_shared<FontXMLAtlas>();
+    atlas->SetXML(xml);
+    auto atlasResource =
+        Resource::GetOrCreate<ResourceFile>("data/AnonymousPro132.png");
+    auto atlasTexture = std::make_shared<Texture2D>(atlasResource);
+    atlas->SetTexture(atlasTexture);
+    loadingNode->SetMaterial(Material::Create());
+    loadingNode->GetMaterial()->SetFontAtlas(atlas);
+    loadingNode->SetMesh(atlas->GetOrCreateMesh("Over"));
     window->SetScene(scene_);
 
-    slotKey_ = window->SigKey()->Connect([&](int key, int action, int modifier)
-    {
-        Level::Load(0, window_);
-    });
-
+    slotKey_ = window->SigKey()->Connect(
+        [&](int key, int action, int modifier) { Level::Load(0, window_); });
 }
 
-LevelOver::~LevelOver()
-{
-	
-}
+LevelOver::~LevelOver() {}

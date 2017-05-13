@@ -26,40 +26,40 @@ misrepresented as being the original software.
 
 #include "NSG.h"
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
-	auto window = Window::Create();
+    auto window = Window::Create();
     auto scene = std::make_shared<Scene>();
     auto camera = scene->CreateChild<Camera>();
     camera->SetWindow(window);
-	camera->SetPosition(Vertex3(0, 8, 15));
+    camera->SetPosition(Vertex3(0, 8, 15));
     auto control = std::make_shared<CameraControl>(camera);
-    
+
     auto planeMesh = Mesh::Create<BoxMesh>();
     planeMesh->Set(20, 0.1f, 20);
     auto floorObj = scene->CreateChild<SceneNode>();
     floorObj->SetMesh(planeMesh);
     floorObj->SetMaterial(Material::Create());
-	floorObj->GetMaterial()->SetRenderPass(RenderPass::UNLIT);
+    floorObj->GetMaterial()->SetRenderPass(RenderPass::UNLIT);
     floorObj->GetMaterial()->SetDiffuseColor(Color(1, 0, 0));
     auto rb = floorObj->GetOrCreateRigidBody();
-	auto shape = Shape::GetOrCreate(ShapeKey(planeMesh, Vector3(1)));
-	rb->AddShape(shape);
-	auto resource = Resource::GetOrCreateClass<ResourceFile>("data/spark.png");
-	auto texture = std::make_shared<Texture2D>(resource, (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
-	texture->SetUseAlpha(true);
-	auto ps = scene->GetOrCreateChild<ParticleSystem>("ps");
-	ps->GetParticleMaterial()->SetTexture(texture);
-	//ps->GetParticleMaterial()->EnableTransparent(true);
-	//ps->GetParticleMaterial()->SetDiffuseColor(COLOR_GREEN);
-	//ps->GetParticleMaterial()->SetAlpha(0);
-	auto meshEmitter(Mesh::CreateClass<BoxMesh>());
+    auto shape = Shape::GetOrCreate(ShapeKey(planeMesh, Vector3(1)));
+    rb->AddShape(shape);
+    auto resource = Resource::GetOrCreateClass<ResourceFile>("data/spark.png");
+    auto texture = std::make_shared<Texture2D>(
+        resource,
+        (int)TextureFlag::GENERATE_MIPMAPS | (int)TextureFlag::INVERT_Y);
+    texture->SetUseAlpha(true);
+    auto ps = scene->GetOrCreateChild<ParticleSystem>("ps");
+    ps->GetParticleMaterial()->SetTexture(texture);
+    // ps->GetParticleMaterial()->EnableTransparent(true);
+    // ps->GetParticleMaterial()->SetDiffuseColor(COLOR_GREEN);
+    // ps->GetParticleMaterial()->SetAlpha(0);
+    auto meshEmitter(Mesh::CreateClass<BoxMesh>());
     ps->SetMesh(meshEmitter);
     ps->SetPosition(Vertex3(0, 10, 0));
-	ps->SetMaterial(Material::Create());
-	ps->GetMaterial()->SetFillMode(FillMode::WIREFRAME);
+    ps->SetMaterial(Material::Create());
+    ps->GetMaterial()->SetFillMode(FillMode::WIREFRAME);
     window->SetScene(scene);
-	return Engine::Create()->Run();
+    return Engine::Create()->Run();
 }
-

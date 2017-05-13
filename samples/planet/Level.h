@@ -24,29 +24,30 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "GameObject.h"
+#include "NSG.h"
 #include <map>
 #include <vector>
-#include "NSG.h"
-#include "GameObject.h"
 using namespace NSG;
-class Level
-{
+class Level {
 public:
     static void Load(int idx, PWindow window);
     int GetIndex() const { return levelIndex_; }
     static Level* GetCurrent() { return currentLevel_.get(); }
-	void RemoveObject(GameObject* object);
-	void AddObject(PGameObject object);
+    void RemoveObject(GameObject* object);
+    void AddObject(PGameObject object);
     static float GetFlyDistance();
     PCamera GetCamera() const { return camera_; }
+
 protected:
     Level(PWindow window);
     virtual ~Level();
-	PWindow window_;
+    PWindow window_;
     PCamera camera_;
     static PScene scene_;
+
 private:
-	void SetIndex(int idx) { levelIndex_ = idx; }
+    void SetIndex(int idx) { levelIndex_ = idx; }
     std::map<GameObject*, PGameObject> objects_;
     int levelIndex_;
     static std::shared_ptr<Level> currentLevel_;

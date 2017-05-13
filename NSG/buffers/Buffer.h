@@ -24,27 +24,25 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "Object.h"
 #include "GLIncludes.h"
-namespace NSG 
-{
-    class Buffer : public Object
-	{
-	public:
-		~Buffer();
-		void Bind();
-		bool IsDynamic() const { return dynamic_; }
-	protected:
-		bool IsValid() override;
-        void AllocateResources() override;
-        void ReleaseResources() override;
-        Buffer(GLenum type, GLenum usage = GL_STATIC_DRAW);
-		void SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data);
-		GLenum type_;
-		GLuint id_;
-		GLenum usage_;
-		bool dynamic_;
-	};
-}
+#include "Object.h"
+#include "Types.h"
+namespace NSG {
+class Buffer : public Object {
+public:
+    ~Buffer();
+    void Bind();
+    bool IsDynamic() const { return dynamic_; }
 
+protected:
+    bool IsValid() override;
+    void AllocateResources() override;
+    void ReleaseResources() override;
+    Buffer(GLenum type, GLenum usage = GL_STATIC_DRAW);
+    void SetBufferSubData(GLintptr offset, GLsizeiptr size, const GLvoid* data);
+    GLenum type_;
+    GLuint id_;
+    GLenum usage_;
+    bool dynamic_;
+};
+}

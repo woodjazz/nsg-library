@@ -22,22 +22,7 @@
 #misrepresented as being the original software.
 #3. This notice may not be removed or altered from any source distribution.
 #-------------------------------------------------------------------------------
-
-cd $( dirname $0 ) # Ensure we are in project root directory
-set -e
-SOURCE_FOLDER="$PWD"
-
-if [ ! -n "$1" ]; then
-	echo "Enter build target directory. (directory will be created on the parent directory of the current one"
-	exit 0
-fi
-
-cd ..
-cmake -E make_directory $1
-cd $1
-
-#cmake $SOURCE_FOLDER -G "Xcode"
-cmake $SOURCE_FOLDER -G "Xcode" -DCMAKE_PREFIX_PATH="$HOME/Qt/5.7/clang_64/lib/cmake/Qt5Widgets;$HOME/Qt/5.7/clang_64/lib/cmake/Qt5Quick"
+$( dirname $0 )/cmake_linux.sh "$@" --platform osx 
 #xcodebuild -list -project nsg-library.xcodeproj
 #xcodebuild -configuration Release
 #xcodebuild -configuration Debug

@@ -24,23 +24,23 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "Texture.h"
 #include "Types.h"
 #include "Util.h"
-#include "Texture.h"
 
-namespace NSG
-{
-    class Texture2D : public Texture
-    {
-    public:
-        Texture2D(PResource resource, const TextureFlags& flags = (int)TextureFlag::NONE);
-        Texture2D(const std::string& name = GetUniqueName("Texture"));
-        virtual ~Texture2D();
-		static PTexture CreateFrom(const pugi::xml_node& node);
-		GLenum GetTarget() const override;
-		void Define() override;
-		void SetData(const unsigned char* pixels);
-	private:
-		const unsigned char* pixels_;
-    };
+namespace NSG {
+class Texture2D : public Texture {
+public:
+    Texture2D(PResource resource,
+              const TextureFlags& flags = (int)TextureFlag::NONE);
+    Texture2D(const std::string& name = GetUniqueName("Texture"));
+    virtual ~Texture2D();
+    static PTexture CreateFrom(const pugi::xml_node& node);
+    GLenum GetTarget() const override;
+    void Define() override;
+    void SetData(const unsigned char* pixels);
+
+private:
+    const unsigned char* pixels_;
+};
 }

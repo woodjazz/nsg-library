@@ -25,16 +25,15 @@ misrepresented as being the original software.
 */
 #pragma once
 
-namespace NSG 
-{
-	struct UniformsUpdate
-	{
-		UniformsUpdate() : needUpdate_(true) {}
-		~UniformsUpdate() {}
-		inline bool UniformsNeedUpdate() const { return needUpdate_; }
-		inline void SetUniformsNeedUpdate() const { needUpdate_ = true; }
-		inline void ClearUniform() { needUpdate_ = false; }
-	private:
-		mutable bool needUpdate_;
-	};
+namespace NSG {
+struct UniformsUpdate {
+    UniformsUpdate() : needUpdate_(true) {}
+    ~UniformsUpdate() {}
+    inline bool UniformsNeedUpdate() const { return needUpdate_; }
+    inline void SetUniformsNeedUpdate() const { needUpdate_ = true; }
+    inline void ClearUniform() { needUpdate_ = false; }
+
+private:
+    mutable bool needUpdate_;
+};
 }

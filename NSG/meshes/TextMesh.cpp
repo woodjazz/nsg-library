@@ -24,113 +24,94 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "TextMesh.h"
-#include "Program.h"
 #include "FontAtlas.h"
+#include "Program.h"
 #include "RenderingContext.h"
-#include "Window.h"
 #include "SignalSlots.h"
+#include "Window.h"
 #include <algorithm>
 
-namespace NSG
-{
-    template<> std::map<std::string, PWeakTextMesh> WeakFactory<std::string, TextMesh>::objsMap_ = std::map<std::string, PWeakTextMesh>{};
-    
-    TextMesh::TextMesh(const std::string& name)
-        : Mesh(name),
-          screenWidth_(0),
-          screenHeight_(0),
-          hAlignment_(LEFT_ALIGNMENT),
-          vAlignment_(BOTTOM_ALIGNMENT)
-    {
-        SetSerializable(false);
+namespace NSG {
+template <>
+std::map<std::string, PWeakTextMesh>
+    WeakFactory<std::string, TextMesh>::objsMap_ =
+        std::map<std::string, PWeakTextMesh>{};
+
+TextMesh::TextMesh(const std::string& name)
+    : Mesh(name), screenWidth_(0), screenHeight_(0),
+      hAlignment_(LEFT_ALIGNMENT), vAlignment_(BOTTOM_ALIGNMENT) {
+    SetSerializable(false);
+}
+
+TextMesh::~TextMesh() {}
+
+void TextMesh::SetAtlas(PFontAtlas atlas) {
+    if (pAtlas_.lock() != atlas) {
+        pAtlas_ = atlas;
+        Invalidate();
+    }
+}
+
+bool TextMesh::IsValid() {
+    return !text_.empty() && pAtlas_.lock() && pAtlas_.lock()->IsReady();
+}
+
+void TextMesh::AllocateResources() {
+    pAtlas_.lock()->GenerateMeshData(text_, vertexsData_, indexes_,
+                                     screenWidth_, screenHeight_);
+
+    float alignmentOffsetX;
+    float alignmentOffsetY;
+
+    if (hAlignment_ == CENTER_ALIGNMENT)
+        alignmentOffsetX = -screenWidth_ / 2;
+    else if (hAlignment_ == RIGHT_ALIGNMENT)
+        alignmentOffsetX = 1 - screenWidth_;
+    else
+        alignmentOffsetX = -1;
+
+    if (vAlignment_ == MIDDLE_ALIGNMENT)
+        alignmentOffsetY = -screenHeight_ / 2;
+    else if (vAlignment_ == TOP_ALIGNMENT)
+        alignmentOffsetY = 1 - screenHeight_;
+    else
+        alignmentOffsetY = -1; // + screenHeight_;
+
+    for (auto& obj : vertexsData_) {
+        obj.position_.x += alignmentOffsetX;
+        obj.position_.y += alignmentOffsetY;
     }
 
-    TextMesh::~TextMesh()
-    {
+    Mesh::AllocateResources();
+}
+
+void TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign,
+                       VerticalAlignment vAlign) {
+    if (text_ != text) {
+        text_ = text;
+        SetAlignment(hAlign, vAlign);
+        Invalidate();
     }
+}
 
-    void TextMesh::SetAtlas(PFontAtlas atlas)
-    {
-        if (pAtlas_.lock() != atlas)
-        {
-            pAtlas_ = atlas;
-            Invalidate();
-        }
+void TextMesh::SetAlignment(HorizontalAlignment hAlign,
+                            VerticalAlignment vAlign) {
+    if (hAlignment_ != hAlign || vAlignment_ != vAlign) {
+        hAlignment_ = hAlign;
+        vAlignment_ = vAlign;
+        Invalidate();
     }
+}
 
-    bool TextMesh::IsValid()
-    {
-        return !text_.empty() && pAtlas_.lock() && pAtlas_.lock()->IsReady();
-    }
+void TextMesh::GetAlignment(HorizontalAlignment& hAlign,
+                            VerticalAlignment& vAlign) {
+    hAlign = hAlignment_;
+    vAlign = vAlignment_;
+}
 
-    void TextMesh::AllocateResources()
-    {
-        pAtlas_.lock()->GenerateMeshData(text_, vertexsData_, indexes_, screenWidth_, screenHeight_);
+GLenum TextMesh::GetWireFrameDrawMode() const { return GL_LINE_LOOP; }
 
-        float alignmentOffsetX;
-        float alignmentOffsetY;
+GLenum TextMesh::GetSolidDrawMode() const { return GL_TRIANGLES; }
 
-        if (hAlignment_ == CENTER_ALIGNMENT)
-            alignmentOffsetX = -screenWidth_ / 2;
-        else if (hAlignment_ == RIGHT_ALIGNMENT)
-            alignmentOffsetX = 1 - screenWidth_;
-        else
-            alignmentOffsetX = -1;
-
-        if (vAlignment_ == MIDDLE_ALIGNMENT)
-            alignmentOffsetY = -screenHeight_ / 2;
-        else if (vAlignment_ == TOP_ALIGNMENT)
-            alignmentOffsetY = 1 - screenHeight_;
-        else
-            alignmentOffsetY = -1;// + screenHeight_;
-
-        for (auto& obj : vertexsData_)
-        {
-            obj.position_.x += alignmentOffsetX;
-            obj.position_.y += alignmentOffsetY;
-        }
-
-        Mesh::AllocateResources();
-    }
-
-    void TextMesh::SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign)
-    {
-        if (text_ != text)
-        {
-            text_ = text;
-            SetAlignment(hAlign, vAlign);
-            Invalidate();
-        }
-    }
-
-    void TextMesh::SetAlignment(HorizontalAlignment hAlign, VerticalAlignment vAlign)
-    {
-        if (hAlignment_ != hAlign || vAlignment_ != vAlign)
-        {
-            hAlignment_ = hAlign;
-            vAlignment_ = vAlign;
-            Invalidate();
-        }
-    }
-
-    void TextMesh::GetAlignment(HorizontalAlignment& hAlign, VerticalAlignment& vAlign)
-    {
-        hAlign = hAlignment_;
-        vAlign = vAlignment_;
-    }
-
-    GLenum TextMesh::GetWireFrameDrawMode() const
-    {
-        return GL_LINE_LOOP;
-    }
-
-    GLenum TextMesh::GetSolidDrawMode() const
-    {
-        return GL_TRIANGLES;
-    }
-
-    size_t TextMesh::GetNumberOfTriangles() const
-    {
-        return indexes_.size() / 3;
-    }
+size_t TextMesh::GetNumberOfTriangles() const { return indexes_.size() / 3; }
 }

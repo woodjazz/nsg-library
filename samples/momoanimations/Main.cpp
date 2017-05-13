@@ -25,8 +25,7 @@ misrepresented as being the original software.
 */
 #include "NSG.h"
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
 
     auto window = Window::Create();
@@ -34,8 +33,7 @@ int NSG_MAIN(int argc, char* argv[])
     LoaderXML loader("loader");
     PCameraControl control;
     PSceneNode armature;
-    auto slotLoaded = loader.Load(resource)->Connect([&]()
-    {
+    auto slotLoaded = loader.Load(resource)->Connect([&]() {
         auto scene = loader.GetScene(0);
         auto camera = scene->GetOrCreateChild<Camera>("Camera");
         camera->SetWindow(window);
@@ -45,12 +43,11 @@ int NSG_MAIN(int argc, char* argv[])
 
         window->SetScene(scene);
 
-        static auto drawGUISlot = window->SigDrawIMGUI()->Connect([&]()
-        {
+        static auto drawGUISlot = window->SigDrawIMGUI()->Connect([&]() {
             using namespace ImGui;
 
-            static auto itemsGetter = [](void* data, int idx, const char** out_text) -> bool
-            {
+            static auto itemsGetter = [](void* data, int idx,
+                                         const char** out_text) -> bool {
                 LoaderXML* loader = static_cast<LoaderXML*>(data);
                 auto animations = loader->GetAnimations();
                 auto name = animations[idx]->GetName().c_str();
@@ -62,10 +59,12 @@ int NSG_MAIN(int argc, char* argv[])
             static int selection = -1;
             static float fadeTime = 1.2f;
             ImGui::SliderFloat("Fade time (s)", &fadeTime, 0.0f, 10.0f);
-            if(ImGui::ListBox("", &selection, itemsGetter, &loader, (int)loader.GetAnimations().size()))
-            {
+            if (ImGui::ListBox("", &selection, itemsGetter, &loader,
+                               (int)loader.GetAnimations().size())) {
                 auto controller = armature->GetOrCreateAnimationController();
-                controller->CrossFade(loader.GetAnimations()[selection]->GetName(), true, fadeTime);
+                controller->CrossFade(
+                    loader.GetAnimations()[selection]->GetName(), true,
+                    fadeTime);
             }
         });
     });

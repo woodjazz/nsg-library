@@ -28,12 +28,11 @@ misrepresented as being the original software.
 
 extern void CameraTest();
 
-int NSG_MAIN(int argc, char* argv[])
-{
-	using namespace NSG;
+int NSG_MAIN(int argc, char* argv[]) {
+    using namespace NSG;
 
-	MemoryManager memObj;
-	CameraTest();
-	
-	return 0;
-}			
+    MemoryManager memObj;
+    CameraTest();
+
+    return 0;
+}

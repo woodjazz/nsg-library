@@ -28,42 +28,41 @@ misrepresented as being the original software.
 #include "Vector3.h"
 #include <vector>
 
-namespace NSG
-{
-    class Node;
-    struct Color;
-    struct Matrix4;
-    class Frustum;
-    struct BoundingBox
-	{
-		Vertex3 min_;
-		Vertex3 max_;
+namespace NSG {
+class Node;
+struct Color;
+struct Matrix4;
+class Frustum;
+struct BoundingBox {
+    Vertex3 min_;
+    Vertex3 max_;
 
-	    BoundingBox();
-        BoundingBox(const Vector3& min, const Vector3& max);
-    	BoundingBox(const Vector3& point);
-		BoundingBox(const Node& node);
-		BoundingBox(const BoundingBox& obj);
-		BoundingBox(float min, float max);
-		BoundingBox(const Frustum& frustum);
-		BoundingBox(const std::vector<Vector3>& vertices);
-		~BoundingBox();
-		const BoundingBox& operator = (const BoundingBox& obj);
-		bool operator == (const BoundingBox& obj) const;
-		void Clip(const BoundingBox& box);
-	    void Merge(const Vector3& point);
-	    void Merge(const std::vector<Vector3>& points);
-	    void Merge(const BoundingBox& box);
-	    void Transform(const Node& node);
-		void Transform(const Matrix4& m);
-		Intersection IsInside(const BoundingBox& box) const;
-		bool IsInside(const Vertex3& point) const;
-	    Vector3 Center() const { return (max_ + min_) * 0.5f; }
-	    Vector3 Size() const { return max_ - min_; }
-	    void GetVertices(Vertex3 vertices[8]) const;
-	    bool IsDefined() const { return defined_; }
-	    void Debug(DebugRenderer* debugRenderer, const Color& color);
-	private:
-		bool defined_;
-	};
+    BoundingBox();
+    BoundingBox(const Vector3& min, const Vector3& max);
+    BoundingBox(const Vector3& point);
+    BoundingBox(const Node& node);
+    BoundingBox(const BoundingBox& obj);
+    BoundingBox(float min, float max);
+    BoundingBox(const Frustum& frustum);
+    BoundingBox(const std::vector<Vector3>& vertices);
+    ~BoundingBox();
+    const BoundingBox& operator=(const BoundingBox& obj);
+    bool operator==(const BoundingBox& obj) const;
+    void Clip(const BoundingBox& box);
+    void Merge(const Vector3& point);
+    void Merge(const std::vector<Vector3>& points);
+    void Merge(const BoundingBox& box);
+    void Transform(const Node& node);
+    void Transform(const Matrix4& m);
+    Intersection IsInside(const BoundingBox& box) const;
+    bool IsInside(const Vertex3& point) const;
+    Vector3 Center() const { return (max_ + min_) * 0.5f; }
+    Vector3 Size() const { return max_ - min_; }
+    void GetVertices(Vertex3 vertices[8]) const;
+    bool IsDefined() const { return defined_; }
+    void Debug(DebugRenderer* debugRenderer, const Color& color);
+
+private:
+    bool defined_;
+};
 }

@@ -24,18 +24,18 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "NSG.h"
 #include "GameObject.h"
+#include "NSG.h"
 using namespace NSG;
 class Explo;
-class Laser : public GameObject
-{
+class Laser : public GameObject {
 public:
     Laser(PScene scene);
     ~Laser();
     void SetOrientation(const Quaternion& q0, const Quaternion& q1);
     void SetPosition(const Vector3& position);
     void Destroyed() override;
+
 private:
     PNode node_;
     PSceneNode child_;

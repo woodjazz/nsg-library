@@ -27,13 +27,13 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 #include "Level.h"
-class LevelOver : public Level
-{
+class LevelOver : public Level {
 public:
     LevelOver(PWindow window);
     ~LevelOver();
+
 private:
     PScene scene_;
-	PFontAtlas font_;
+    PFontAtlas font_;
     SignalKey::PSlot slotKey_;
 };

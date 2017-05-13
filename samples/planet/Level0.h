@@ -29,14 +29,14 @@ using namespace NSG;
 #include "Level.h"
 class Player;
 class Enemy;
-class Level0 : public Level
-{
+class Level0 : public Level {
 public:
     Level0(PWindow window);
     ~Level0();
+
 private:
-	void GenerateEnemies();
+    void GenerateEnemies();
     std::shared_ptr<Player> player_;
-	SignalEmpty::PSlot slotEnemyDestroyed_;
-	PCameraControl control_;
+    SignalEmpty::PSlot slotEnemyDestroyed_;
+    PCameraControl control_;
 };

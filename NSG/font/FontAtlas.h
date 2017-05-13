@@ -24,47 +24,48 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "Object.h"
+#include "Path.h"
 #include "Types.h"
 #include "VertexData.h"
-#include "Path.h"
-#include "Object.h"
 #include "WeakFactory.h"
-#include <string>
 #include <map>
+#include <string>
 
-namespace NSG
-{
-	class FontAtlas : public std::enable_shared_from_this<FontAtlas>, public Object, WeakFactory<std::string, TextMesh>
-	{
-	public:
-		FontAtlas(const std::string& name = GetUniqueName("FontAtlas"));
-		~FontAtlas();
-		void Set(PResourceFile xmlResource);
-		void SetWindow(PWindow window);
-		void GenerateMeshData(const std::string& text, VertexsData& vertexsData, Indexes& indexes, GLfloat& screenWidth, GLfloat& screenHeight);
-		void SetTexture(PTexture texture);
-		PTexture GetTexture() const { return texture_; }
-		void SetViewSize(int width, int height);
-		PTextMesh GetOrCreateMesh(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
-	private:
-		bool IsValid() override;
-        void AllocateResources() override;
-        void ReleaseResources() override;
-        void ParseXML();
-		PResourceFile xmlResource_;
-		int viewWidth_;
-		int viewHeight_;
-        PTexture texture_;
-        int height_;
-        struct CharInfo
-        {
-        	int width;
-        	Vertex2 offset;
-        	Rect rect;
-        };
-		typedef std::map<int, CharInfo> CharsMap;
-        CharsMap charsMap_;
-        SignalSizeChanged::PSlot slotViewChanged_;
-	};
+namespace NSG {
+class FontAtlas : public std::enable_shared_from_this<FontAtlas>,
+                  public Object,
+                  WeakFactory<std::string, TextMesh> {
+public:
+    FontAtlas(const std::string& name = GetUniqueName("FontAtlas"));
+    ~FontAtlas();
+    void SetWindow(PWindow window);
+    void GenerateMeshData(const std::string& text, VertexsData& vertexsData,
+                          Indexes& indexes, GLfloat& screenWidth,
+                          GLfloat& screenHeight);
+    PTexture GetTexture() const { return texture_; }
+    void SetViewSize(int width, int height);
+    PTextMesh GetOrCreateMesh(
+        const std::string& text,
+        HorizontalAlignment hAlign = HorizontalAlignment::CENTER_ALIGNMENT,
+        VerticalAlignment vAlign = VerticalAlignment::MIDDLE_ALIGNMENT);
 
+protected:
+    bool IsValid() override;
+    PTexture texture_;
+    int height_;
+    struct CharInfo {
+        int width;
+        Vertex2 offset;
+        Rect rect;
+    };
+    typedef std::map<int, CharInfo> CharsMap;
+    CharsMap charsMap_;
+
+private:
+    void ReleaseResources() override;
+    int viewWidth_;
+    int viewHeight_;
+    SignalSizeChanged::PSlot slotViewChanged_;
+};
 }

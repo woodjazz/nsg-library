@@ -24,118 +24,97 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "PlaneMesh.h"
-#include "Types.h"
 #include "Check.h"
+#include "Types.h"
 
-namespace NSG
-{
-    PlaneMesh::PlaneMesh(const std::string& name)
-        : ProceduralMesh(name)
-    {
-        Set();
-        SetSerializable(false);
+namespace NSG {
+PlaneMesh::PlaneMesh(const std::string& name) : ProceduralMesh(name) {
+    Set();
+    SetSerializable(false);
+}
+
+PlaneMesh::~PlaneMesh() {}
+
+void PlaneMesh::Set(float width, float height, int columns, int rows) {
+    if (width_ != width || height_ != height || columns_ != columns ||
+        rows_ != rows) {
+        width_ = width;
+        height_ = height;
+        columns_ = columns;
+        rows_ = rows;
+        Invalidate();
     }
+}
 
-    PlaneMesh::~PlaneMesh()
-    {
-    }
+GLenum PlaneMesh::GetWireFrameDrawMode() const { return GL_LINES; }
 
-    void PlaneMesh::Set(float width, float height, int columns, int rows)
-    {
-        if (width_ != width || height_ != height || columns_ != columns || rows_ != rows)
-        {
-            width_ = width;
-            height_ = height;
-            columns_ = columns;
-            rows_ = rows;
-            Invalidate();
+GLenum PlaneMesh::GetSolidDrawMode() const { return GL_TRIANGLES; }
+
+size_t PlaneMesh::GetNumberOfTriangles() const { return indexes_.size() / 3; }
+
+void PlaneMesh::AllocateResources() {
+    vertexsData_.clear();
+    indexes_.clear();
+    indexesWireframe_.clear();
+
+    VertexsData& data = vertexsData_;
+
+    Vertex3 vert;
+    Vertex3 normal(0, 1, 0); // always facing up
+    Vertex2 texcoord;
+
+    // the origin of the plane is the center
+    float halfW = width_ / 2.f;
+    float halfH = height_ / 2.f;
+    // add the vertexes
+    for (int iy = 0; iy < rows_; iy++) {
+        for (int ix = 0; ix < columns_; ix++) {
+            // normalized tex coords //
+            texcoord.x = ((float)ix / ((float)columns_ - 1.f));
+            texcoord.y = ((float)iy / ((float)rows_ - 1.f));
+
+            vert.x = texcoord.x * width_ - halfW;
+            vert.z = texcoord.y * height_ - halfH;
+
+            VertexData vertexData;
+            vertexData.normal_ = normal;
+            vertexData.position_ = vert;
+            vertexData.uv_[0] = texcoord;
+
+            data.push_back(vertexData);
         }
     }
 
-    GLenum PlaneMesh::GetWireFrameDrawMode() const
-    {
-		return GL_LINES;
-    }
+    // Triangles
+    // Front Face CCW
+    for (int y = 0; y < rows_ - 1; y++) {
+        for (int x = 0; x < columns_ - 1; x++) {
+            IndexType i0 = y * columns_ + x;
+            IndexType i1 = y * columns_ + x + 1;
+            IndexType i2 = (y + 1) * columns_ + x;
+            IndexType i3 = (y + 1) * columns_ + x + 1;
 
-    GLenum PlaneMesh::GetSolidDrawMode() const
-    {
-        return GL_TRIANGLES;
-    }
+            // first triangle
+            indexes_.push_back(i0);
+            indexes_.push_back(i1);
+            indexes_.push_back(i2);
 
-    size_t PlaneMesh::GetNumberOfTriangles() const
-    {
-        return indexes_.size() / 3;
-    }
+            // second triangle
+            indexes_.push_back(i1);
+            indexes_.push_back(i3);
+            indexes_.push_back(i2);
 
-    void PlaneMesh::AllocateResources()
-    {
-        vertexsData_.clear();
-        indexes_.clear();
-		indexesWireframe_.clear();
-
-        VertexsData& data = vertexsData_;
-
-        Vertex3 vert;
-        Vertex3 normal(0, 1, 0); // always facing up
-        Vertex2 texcoord;
-
-        // the origin of the plane is the center
-        float halfW = width_ / 2.f;
-        float halfH = height_ / 2.f;
-        // add the vertexes
-        for (int iy = 0; iy < rows_; iy++)
-        {
-            for (int ix = 0; ix < columns_; ix++)
-            {
-                // normalized tex coords //
-                texcoord.x = ((float)ix / ((float)columns_ - 1.f));
-                texcoord.y = ((float)iy / ((float)rows_ - 1.f));
-
-                vert.x = texcoord.x * width_ - halfW;
-                vert.z = texcoord.y * height_ - halfH;
-
-                VertexData vertexData;
-                vertexData.normal_ = normal;
-                vertexData.position_ = vert;
-				vertexData.uv_[0] = texcoord;
-
-                data.push_back(vertexData);
-            }
+            indexesWireframe_.push_back(i0);
+            indexesWireframe_.push_back(i1);
+            indexesWireframe_.push_back(i1);
+            indexesWireframe_.push_back(i3);
+            indexesWireframe_.push_back(i3);
+            indexesWireframe_.push_back(i2);
+            indexesWireframe_.push_back(i2);
+            indexesWireframe_.push_back(i0);
         }
-
-        // Triangles
-        // Front Face CCW
-        for (int y = 0; y < rows_ - 1; y++)
-        {
-            for (int x = 0; x < columns_ - 1; x++)
-            {
-                IndexType i0 = y * columns_ + x;
-                IndexType i1 = y * columns_ + x + 1;
-                IndexType i2 = (y + 1) * columns_ + x;
-                IndexType i3 = (y + 1) * columns_ + x + 1;
-
-                // first triangle
-                indexes_.push_back(i0);
-                indexes_.push_back(i1);
-                indexes_.push_back(i2);
-
-                // second triangle
-                indexes_.push_back(i1);
-                indexes_.push_back(i3);
-                indexes_.push_back(i2);
-
-				indexesWireframe_.push_back(i0);
-				indexesWireframe_.push_back(i1);
-				indexesWireframe_.push_back(i1);
-				indexesWireframe_.push_back(i3);
-				indexesWireframe_.push_back(i3);
-				indexesWireframe_.push_back(i2);
-				indexesWireframe_.push_back(i2);
-				indexesWireframe_.push_back(i0);
-
-            }
-        }
-
-        Mesh::AllocateResources();
     }
+
+    Mesh::AllocateResources();
+}
 }

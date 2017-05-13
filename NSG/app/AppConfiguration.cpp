@@ -25,32 +25,23 @@ misrepresented as being the original software.
 */
 #include "AppConfiguration.h"
 
-namespace NSG
-{
-    #if EMSCRIPTEN
-      static const int WindowPosX = 0;
-      static const int WindowPosY = 0;
-      static const int WindowWidth = 640;
-      static const int WindowHeight = 480;
-    #else
-      static const int WindowPosX = 0;
-      static const int WindowPosY = 0;
-      static const int WindowWidth = 1024;
-      static const int WindowHeight = 768;
-    
-    #endif
+namespace NSG {
+#if EMSCRIPTEN
+static const int WindowPosX = 0;
+static const int WindowPosY = 0;
+static const int WindowWidth = 640;
+static const int WindowHeight = 480;
+#else
+static const int WindowPosX = 0;
+static const int WindowPosY = 0;
+static const int WindowWidth = 1024;
+static const int WindowHeight = 768;
 
-    AppConfiguration::AppConfiguration()
-        : fps_(60),
-          x_(WindowPosX),
-          y_(WindowPosY),
-          width_(WindowWidth),
-          height_(WindowHeight),
-          vertical_sync_(true),
-          showStatistics_(false),
-          pauseMusicOnBackground_(true),
-          orgName_("woodjazz"),
-          appName_("nsg")
-    {
-    };
+#endif
+
+AppConfiguration::AppConfiguration()
+    : fps_(60), x_(WindowPosX), y_(WindowPosY), width_(WindowWidth),
+      height_(WindowHeight), vertical_sync_(true), showStatistics_(false),
+      pauseMusicOnBackground_(true), orgName_("woodjazz"), appName_("nsg"),
+      platform_(Platform::UseGLX){};
 }

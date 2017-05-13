@@ -25,54 +25,51 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "NonCopyable.h"
-#include "Worker.h"
 #include "Task.h"
-#include <memory>
-#include <deque>
-#include <map>
-#include <functional>
-#include <mutex>
+#include "Worker.h"
 #include <condition_variable>
+#include <deque>
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
 #include <string>
 
-namespace NSG 
-{
-    namespace Task 
-    {
-        class QueuedTask : Worker, NonCopyable 
-        {
-        public:
-	        QueuedTask(const std::string& name);
-	        ~QueuedTask();
-            int AddTask(PTask pTask);
-            bool CancelTask(int id);
-            void CancelAllTasks();
-        private:
-            void RunWorker() override;
-            bool IsEmpty() const;
-            void InternalTask();
-            struct Data 
-            {
-                int id_;
-                PTask pTask_;
-                bool canceled_;
+namespace NSG {
+namespace Task {
+class QueuedTask : Worker, NonCopyable {
+public:
+    QueuedTask(const std::string& name);
+    ~QueuedTask();
+    int AddTask(PTask pTask);
+    bool CancelTask(int id);
+    void CancelAllTasks();
 
-                Data(int id, PTask pTask);
-            };
-            typedef std::shared_ptr<Data> PData;
-            PData Pop();
-            typedef std::deque<PData> QUEUE;
-            typedef std::map<int, PData> MAP_ID_DATA;
-            typedef std::mutex Mutex;
-            typedef std::condition_variable Condition;
-            typedef std::thread Thread;
-            
-            bool taskAlive_;
-            mutable Mutex mtx_;
-            QUEUE queue_;
-            MAP_ID_DATA keyDataMap_;
-            Condition condition_;
-            Thread thread_;
-        };
-    }
+private:
+    void RunWorker() override;
+    bool IsEmpty() const;
+    void InternalTask();
+    struct Data {
+        int id_;
+        PTask pTask_;
+        bool canceled_;
+
+        Data(int id, PTask pTask);
+    };
+    typedef std::shared_ptr<Data> PData;
+    PData Pop();
+    typedef std::deque<PData> QUEUE;
+    typedef std::map<int, PData> MAP_ID_DATA;
+    typedef std::mutex Mutex;
+    typedef std::condition_variable Condition;
+    typedef std::thread Thread;
+
+    bool taskAlive_;
+    mutable Mutex mtx_;
+    QUEUE queue_;
+    MAP_ID_DATA keyDataMap_;
+    Condition condition_;
+    Thread thread_;
+};
+}
 }

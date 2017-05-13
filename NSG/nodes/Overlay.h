@@ -24,23 +24,23 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "SceneNode.h"
 #include "Object.h"
+#include "SceneNode.h"
 #include <string>
-namespace NSG
-{
-    class Overlay : public SceneNode
-    {
-    public:
-        Overlay(const std::string& name);
-        ~Overlay();
-        void SetMaterialName(const std::string& name);
-        void SetFont(const std::string& xmlName, const std::string& atlasName);
-        void SetText(const std::string& text, HorizontalAlignment hAlign, VerticalAlignment vAlign);
-    private:
-        std::string text_;
-        HorizontalAlignment hAlign_;
-        VerticalAlignment vAlign_;
-        PFontAtlas font_;
-    };
+namespace NSG {
+class Overlay : public SceneNode {
+public:
+    Overlay(const std::string& name);
+    ~Overlay();
+    void
+    SetText(const std::string& text,
+            HorizontalAlignment hAlign = HorizontalAlignment::CENTER_ALIGNMENT,
+            VerticalAlignment vAlign = VerticalAlignment::MIDDLE_ALIGNMENT);
+
+private:
+    std::string text_;
+    HorizontalAlignment hAlign_;
+    VerticalAlignment vAlign_;
+    PFontAtlas font_;
+};
 }

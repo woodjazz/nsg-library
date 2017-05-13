@@ -25,15 +25,13 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
     auto window = Window::Create();
     auto resource = Resource::GetOrCreate<ResourceFile>("data/scene.xml");
     PCameraControl control;
     LoaderXML loader("loader");
-    auto slotLoaded = loader.Load(resource)->Connect([&]()
-    {
+    auto slotLoaded = loader.Load(resource)->Connect([&]() {
         auto scene = loader.GetScene(0);
         scene->SetAmbientColor(Color(0.0f));
 
@@ -45,7 +43,7 @@ int NSG_MAIN(int argc, char* argv[])
 
         auto camera = scene->GetChild<Camera>("Camera", false);
         camera->SetWindow(window);
-        //camera->SetNearClip(0.1f);
+        // camera->SetNearClip(0.1f);
         control = std::make_shared<CameraControl>(camera);
         auto sun = scene->GetChild<Light>("Sun", false);
         sun->EnableShadows(true);
@@ -61,15 +59,15 @@ int NSG_MAIN(int argc, char* argv[])
         }
 
         ballRigidBody->HandleCollisions(true);
-        auto static slotCollision = ball->SigCollision()->Connect([&](const ContactPoint & contactInfo)
-        {
-            ballRigidBody->SetLinearVelocity(4.f * contactInfo.normalB_);
-        });
+        auto static slotCollision =
+            ball->SigCollision()->Connect([&](const ContactPoint& contactInfo) {
+                ballRigidBody->SetLinearVelocity(4.f * contactInfo.normalB_);
+            });
 
         auto sunLight = scene->GetChild<Light>("Sun", true);
-        //sunLight->SetShadowColor(Color(1, 0, 0, 1));
+        // sunLight->SetShadowColor(Color(1, 0, 0, 1));
         sunLight->SetBias(.666f);
-        //window->ShowMap(sunLight->GetShadowMap(3));
+        // window->ShowMap(sunLight->GetShadowMap(3));
         window->SetScene(scene);
     });
     return Engine::Create()->Run();

@@ -27,8 +27,7 @@ misrepresented as being the original software.
 
 extern void BBTest();
 
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
     BBTest();
     return 0;

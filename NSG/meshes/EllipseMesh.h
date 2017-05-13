@@ -26,23 +26,21 @@ misrepresented as being the original software.
 #pragma once
 #include "ProceduralMesh.h"
 
-namespace NSG
-{
-	class EllipseMesh : public ProceduralMesh
-    {
-    public:
-        EllipseMesh(const std::string& name);
-        void Set(float width = 2, float height = 1, int res = 8);
-        ~EllipseMesh();
-        GLenum GetWireFrameDrawMode() const override;
-        GLenum GetSolidDrawMode() const override;
-        size_t GetNumberOfTriangles() const override;
-        void AllocateResources() override;
-        PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
-    private:
-        float width_;
-        float height_;
-        int res_;
-    };
+namespace NSG {
+class EllipseMesh : public ProceduralMesh {
+public:
+    EllipseMesh(const std::string& name);
+    void Set(float width = 2, float height = 1, int res = 8);
+    ~EllipseMesh();
+    GLenum GetWireFrameDrawMode() const override;
+    GLenum GetSolidDrawMode() const override;
+    size_t GetNumberOfTriangles() const override;
+    void AllocateResources() override;
+    PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
 
+private:
+    float width_;
+    float height_;
+    int res_;
+};
 }

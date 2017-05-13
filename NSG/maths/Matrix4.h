@@ -25,47 +25,43 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "Vector4.h"
-namespace NSG
-{
-	struct Vector3;
-	struct Quaternion;
-    struct Matrix3;
-    struct Matrix4
-    {
-        Vector4 value[4];
-        Matrix4();
-        Matrix4(float s);
-        Matrix4(const Matrix4& m);
-        Matrix4(const Matrix3& m);
-        Matrix4
-        (
-            float x1, float y1, float z1, float w1,
-            float x2, float y2, float z2, float w2,
-            float x3, float y3, float z3, float w3,
-            float x4, float y4, float z4, float w4
-        );
-        Matrix4(const Vector4& v0, const Vector4& v1, const Vector4& v2, const Vector4& v3);
-		Matrix4(const Quaternion& q);
-		Matrix4(const Vector3& position, const Quaternion& q, const Vector3& scale);
-		Matrix4(const Vector3& position, const Quaternion& q);
-		Matrix4(float left, float right, float bottom, float top, float zNear, float zFar);//ortho
-		Matrix4(float fovy, float aspect, float zNear, float zFar);//perspective
-        const Vector4& operator[](int i) const;
-        Vector4& operator[](int i);
-        const Matrix4& operator*=(float s);
-        Vector3 Translation() const;
-		Matrix4& Translate(const Vector3& v);
-        Vector3 Scale() const;
-        Matrix4& Scale(const Vector3& v);
-        Matrix4 Inverse() const;
-		Vector4 Row(int index) const;
-		const Vector4& Column(int index) const;
-		inline const float* GetPointer() const { return &(value[0].x); }
-		Matrix4 GetSphericalBillboardMatrix() const;
-		Matrix4 GetCylindricalBillboardMatrix() const;
-		void Decompose(Vector3& position, Quaternion& q, Vector3& scale) const;
-    };
-    Matrix4 operator*(const Matrix4& m, float s);
-    Vector4 operator*(const Matrix4& m, const Vector4& v);
-    Matrix4 operator*(const Matrix4& m1, const Matrix4& m2);
+namespace NSG {
+struct Vector3;
+struct Quaternion;
+struct Matrix3;
+struct Matrix4 {
+    Vector4 value[4];
+    Matrix4();
+    Matrix4(float s);
+    Matrix4(const Matrix4& m);
+    Matrix4(const Matrix3& m);
+    Matrix4(float x1, float y1, float z1, float w1, float x2, float y2,
+            float z2, float w2, float x3, float y3, float z3, float w3,
+            float x4, float y4, float z4, float w4);
+    Matrix4(const Vector4& v0, const Vector4& v1, const Vector4& v2,
+            const Vector4& v3);
+    Matrix4(const Quaternion& q);
+    Matrix4(const Vector3& position, const Quaternion& q, const Vector3& scale);
+    Matrix4(const Vector3& position, const Quaternion& q);
+    Matrix4(float left, float right, float bottom, float top, float zNear,
+            float zFar);                                        // ortho
+    Matrix4(float fovy, float aspect, float zNear, float zFar); // perspective
+    const Vector4& operator[](int i) const;
+    Vector4& operator[](int i);
+    const Matrix4& operator*=(float s);
+    Vector3 Translation() const;
+    Matrix4& Translate(const Vector3& v);
+    Vector3 Scale() const;
+    Matrix4& Scale(const Vector3& v);
+    Matrix4 Inverse() const;
+    Vector4 Row(int index) const;
+    const Vector4& Column(int index) const;
+    inline const float* GetPointer() const { return &(value[0].x); }
+    Matrix4 GetSphericalBillboardMatrix() const;
+    Matrix4 GetCylindricalBillboardMatrix() const;
+    void Decompose(Vector3& position, Quaternion& q, Vector3& scale) const;
+};
+Matrix4 operator*(const Matrix4& m, float s);
+Vector4 operator*(const Matrix4& m, const Vector4& v);
+Matrix4 operator*(const Matrix4& m1, const Matrix4& m2);
 }

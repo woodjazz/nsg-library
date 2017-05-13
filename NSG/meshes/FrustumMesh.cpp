@@ -27,36 +27,25 @@ misrepresented as being the software.
 #include "FrustumMesh.h"
 #include "Frustum.h"
 
-namespace NSG
-{
-    FrustumMesh::FrustumMesh(const std::string& name)
-        : LinesMesh(name)
-    {
+namespace NSG {
+FrustumMesh::FrustumMesh(const std::string& name) : LinesMesh(name) {}
 
-    }
+void FrustumMesh::SetFrustum(PFrustum frustum, const Color& color) {
+    if (frustum_ != frustum || color_ != color) {
+        frustum_ = frustum;
+        color_ = color;
 
-    void FrustumMesh::SetFrustum(PFrustum frustum, const Color& color)
-    {
-        if (frustum_ != frustum || color_ != color)
-        {
-            frustum_ = frustum;
-            color_ = color;
+        Clear();
 
-            Clear();
-
-            for (int i = 0; i < NUM_FRUSTUM_FACES; i++)
-            {
-				auto& face = frustum->GetFace((FrustumFace)i);
-                Add(face.vertices[0], face.vertices[1], color);
-                Add(face.vertices[1], face.vertices[2], color);
-                Add(face.vertices[2], face.vertices[3], color);
-                Add(face.vertices[3], face.vertices[0], color);
-            }
+        for (int i = 0; i < NUM_FRUSTUM_FACES; i++) {
+            auto& face = frustum->GetFace((FrustumFace)i);
+            Add(face.vertices[0], face.vertices[1], color);
+            Add(face.vertices[1], face.vertices[2], color);
+            Add(face.vertices[2], face.vertices[3], color);
+            Add(face.vertices[3], face.vertices[0], color);
         }
     }
+}
 
-    bool FrustumMesh::IsValid()
-    {
-        return frustum_ && LinesMesh::IsValid();
-    }
+bool FrustumMesh::IsValid() { return frustum_ && LinesMesh::IsValid(); }
 }

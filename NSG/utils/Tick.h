@@ -24,29 +24,29 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <cstddef>
 #include <chrono>
-namespace NSG 
-{
-	class Tick
-	{
-	public:
-		Tick(size_t fps);
-		~Tick();
-		void Initialize();
-		void PerformTicks();
-    protected:
-		virtual void InitializeTicks() = 0;
-		virtual void BeginTicks() = 0;
-		virtual void DoTick(float delta) = 0;
-		virtual void EndTicks() = 0;
-	private:
-	    typedef std::chrono::steady_clock::time_point TimePoint;
-	    typedef std::chrono::milliseconds Milliseconds;
-        TimePoint current_;
-        TimePoint next_;
-        Milliseconds ticks_;
-        float fixed_;
-        size_t fps_;
-	};
+#include <cstddef>
+namespace NSG {
+class Tick {
+public:
+    Tick(size_t fps);
+    ~Tick();
+    void Initialize();
+    void PerformTicks();
+
+protected:
+    virtual void InitializeTicks() = 0;
+    virtual void BeginTicks() = 0;
+    virtual void DoTick(float delta) = 0;
+    virtual void EndTicks() = 0;
+
+private:
+    typedef std::chrono::steady_clock::time_point TimePoint;
+    typedef std::chrono::milliseconds Milliseconds;
+    TimePoint current_;
+    TimePoint next_;
+    Milliseconds ticks_;
+    float fixed_;
+    size_t fps_;
+};
 }

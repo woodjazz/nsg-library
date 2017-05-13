@@ -24,98 +24,69 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Vector2.h"
-#include "Util.h"
 #include "Check.h"
+#include "Util.h"
 #include <cmath>
-namespace NSG
-{
-    Vector2::Vector2()
-        : x(0), y(0)
-    {
-    }
+namespace NSG {
+Vector2::Vector2() : x(0), y(0) {}
 
-    Vector2::Vector2(float a)
-        : x(a), y(a)
-    {
-    }
+Vector2::Vector2(float a) : x(a), y(a) {}
 
-    Vector2::Vector2(float a, float b)
-        : x(a), y(b)
-    {
-    }
+Vector2::Vector2(float a, float b) : x(a), y(b) {}
 
-    Vector2::Vector2(const Vector2& v)
-        : x(v.x), y(v.y)
-    {
-    }
+Vector2::Vector2(const Vector2& v) : x(v.x), y(v.y) {}
 
-    Vector2::Vector2(const Vector3& v)
-        : x(v.x), y(v.y)
-    {
-    }
+Vector2::Vector2(const Vector3& v) : x(v.x), y(v.y) {}
 
-    const float& Vector2::operator[](int i) const
-    {
-        CHECK_ASSERT(i >= 0 && i < 2);
-        return (&x)[i];
-    }
+const float& Vector2::operator[](int i) const {
+    CHECK_ASSERT(i >= 0 && i < 2);
+    return (&x)[i];
+}
 
-    float& Vector2::operator[](int i)
-    {
-        CHECK_ASSERT(i >= 0 && i < 2);
-        return (&x)[i];
-    }
+float& Vector2::operator[](int i) {
+    CHECK_ASSERT(i >= 0 && i < 2);
+    return (&x)[i];
+}
 
-    const Vector2& Vector2::operator/=(float v)
-    {
-        x /= v;
-        y /= v;
-        return *this;
-    }
+const Vector2& Vector2::operator/=(float v) {
+    x /= v;
+    y /= v;
+    return *this;
+}
 
-    bool operator!=(const Vector2& v1, const Vector2& v2)
-    {
-        return (v1.x != v2.x) || (v1.y != v2.y);
-    }
+bool operator!=(const Vector2& v1, const Vector2& v2) {
+    return (v1.x != v2.x) || (v1.y != v2.y);
+}
 
-    bool operator==(const Vector2& v1, const Vector2& v2)
-    {
-        return (v1.x == v2.x) && (v1.y == v2.y);
-    }
+bool operator==(const Vector2& v1, const Vector2& v2) {
+    return (v1.x == v2.x) && (v1.y == v2.y);
+}
 
-    Vector2 operator+(const Vector2& v1, const Vector2& v2)
-    {
-        return Vector2(v1.x + v2.x, v1.y + v2.y);   
-    }
+Vector2 operator+(const Vector2& v1, const Vector2& v2) {
+    return Vector2(v1.x + v2.x, v1.y + v2.y);
+}
 
-    Vector2 operator-(const Vector2& v1, const Vector2& v2)
-    {
-        return Vector2(v1.x - v2.x, v1.y - v2.y);   
-    }
+Vector2 operator-(const Vector2& v1, const Vector2& v2) {
+    return Vector2(v1.x - v2.x, v1.y - v2.y);
+}
 
-    Vector2 operator+(const Vector2& v, float scalar)
-    {
-        return Vector2(v.x + scalar, v.y + scalar);
-    }
+Vector2 operator+(const Vector2& v, float scalar) {
+    return Vector2(v.x + scalar, v.y + scalar);
+}
 
-    Vector2 operator-(const Vector2& v, float scalar)
-    {
-        return Vector2(v.x - scalar, v.y - scalar);
-    }
+Vector2 operator-(const Vector2& v, float scalar) {
+    return Vector2(v.x - scalar, v.y - scalar);
+}
 
-    Vector2 operator*(const Vector2& v, float scalar)
-    {
-        return Vector2(v.x * scalar, v.y * scalar);
-    }
+Vector2 operator*(const Vector2& v, float scalar) {
+    return Vector2(v.x * scalar, v.y * scalar);
+}
 
-    Vector2 operator*(float scalar, const Vector2& v)
-    {
-        return Vector2(v.x * scalar, v.y * scalar);
-    }
+Vector2 operator*(float scalar, const Vector2& v) {
+    return Vector2(v.x * scalar, v.y * scalar);
+}
 
-    Vector2 operator/(const Vector2& v, float scalar)
-    {
-        return Vector2(v.x / scalar, v.y / scalar);
-    }
-
+Vector2 operator/(const Vector2& v, float scalar) {
+    return Vector2(v.x / scalar, v.y / scalar);
+}
 }

@@ -25,14 +25,9 @@ misrepresented as being the original software.
 */
 #include "FragmentShader.h"
 
-namespace NSG 
-{
-	FragmentShader::FragmentShader(const char* source)
-	: Shader(GL_FRAGMENT_SHADER, source)
-	{
-	}
+namespace NSG {
+FragmentShader::FragmentShader(const char* source)
+    : Shader(GL_FRAGMENT_SHADER, source) {}
 
-	FragmentShader::~FragmentShader()
-	{
-	}
+FragmentShader::~FragmentShader() {}
 }

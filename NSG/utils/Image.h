@@ -23,66 +23,68 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "Types.h"
-#include "Object.h"
 #include "GLIncludes.h"
+#include "Object.h"
+#include "Types.h"
 
-namespace NSG
-{
-	class Image : public Object
-	{
-	public:
-		Image(PResource resource);
-		~Image();
-        const unsigned char* GetData() const { return imgData_; }
-        unsigned GetCompressedDataSize() const;
-        bool FlipVertical();
-        void Reduce(int size);
-        void Resize2PowerOf2();
-        static void Resize2PowerOf2(const unsigned char*& imgData, int& width, int& height, int channels);
-        bool IsCompressed() const { return compressed_; }
-        int GetWidth() const { return width_; }
-        int GetHeight() const { return height_; }
-        bool SaveAsPNG(const Path& outputDir);
-		GLint ConvertFormat2GL() const;
-        void ReadResource();
-        TextureFormat GetFormat() const { return format_; }
-        void Decompress();
-        int GetChannels() const { return channels_; }
-	private:
-        bool IsValid() override;
-        void AllocateResources() override;
-        void ReleaseResources() override;
-        struct CompressedLevel
-        {
-            const unsigned char* data_;
-            int width_;
-            int height_;
-            int depth_;
-            unsigned blockSize_;
-            unsigned dataSize_;
-            unsigned rowSize_;
-            unsigned rows_;
-        };
-        CompressedLevel GetCompressedLevel(const unsigned char* data, unsigned dataSize, unsigned index) const;
-        static void FlipBlockVertical(unsigned char* dest, const unsigned char* src, TextureFormat format);
-        unsigned GetRowDataSize() const;
-        void ReadGeneric();
-		void ReadDDS();
-        void ReadKTX();
-        void ReadPVR();
-        void ResetState();
-	private:
-		PResource resource_;
-		bool compressed_;
-		unsigned numCompressedLevels_;
-		TextureFormat format_;
-		const unsigned char* imgData_;
-		unsigned imgDataSize_;
-		bool allocated_;
-        int channels_;
-        int depth_; // (1 => 2D texture) (>1 => 3D texture)
+namespace NSG {
+class Image : public Object {
+public:
+    Image(PResource resource);
+    ~Image();
+    const unsigned char* GetData() const { return imgData_; }
+    unsigned GetCompressedDataSize() const;
+    bool FlipVertical();
+    void Reduce(int size);
+    void Resize2PowerOf2();
+    static void Resize2PowerOf2(const unsigned char*& imgData, int& width,
+                                int& height, int channels);
+    bool IsCompressed() const { return compressed_; }
+    int GetWidth() const { return width_; }
+    int GetHeight() const { return height_; }
+    bool SaveAsPNG(const Path& outputDir);
+    GLint ConvertFormat2GL() const;
+    void ReadResource();
+    TextureFormat GetFormat() const { return format_; }
+    void Decompress();
+    int GetChannels() const { return channels_; }
+
+private:
+    bool IsValid() override;
+    void AllocateResources() override;
+    void ReleaseResources() override;
+    struct CompressedLevel {
+        const unsigned char* data_;
         int width_;
         int height_;
-	};
+        int depth_;
+        unsigned blockSize_;
+        unsigned dataSize_;
+        unsigned rowSize_;
+        unsigned rows_;
+    };
+    CompressedLevel GetCompressedLevel(const unsigned char* data,
+                                       unsigned dataSize, unsigned index) const;
+    static void FlipBlockVertical(unsigned char* dest, const unsigned char* src,
+                                  TextureFormat format);
+    unsigned GetRowDataSize() const;
+    void ReadGeneric();
+    void ReadDDS();
+    void ReadKTX();
+    void ReadPVR();
+    void ResetState();
+
+private:
+    PResource resource_;
+    bool compressed_;
+    unsigned numCompressedLevels_;
+    TextureFormat format_;
+    const unsigned char* imgData_;
+    unsigned imgDataSize_;
+    bool allocated_;
+    int channels_;
+    int depth_; // (1 => 2D texture) (>1 => 3D texture)
+    int width_;
+    int height_;
+};
 }

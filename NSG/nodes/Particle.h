@@ -24,23 +24,22 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "SceneNode.h"
+#include "Types.h"
 
-namespace NSG
-{
-    class Particle : public SceneNode
-    {
-    public:
-        Particle(const std::string& name);
-        ~Particle();
-        void Update(float deltaTime);
-        float GetAge() const { return age_; }
-        void Enable();
-        void Disable();
-        void SetVelocity(const Vector3& v);
-    private:
-        void Reset();
-        float age_;
-    };
+namespace NSG {
+class Particle : public SceneNode {
+public:
+    Particle(const std::string& name);
+    ~Particle();
+    void Update(float deltaTime);
+    float GetAge() const { return age_; }
+    void Enable();
+    void Disable();
+    void SetVelocity(const Vector3& v);
+
+private:
+    void Reset();
+    float age_;
+};
 }

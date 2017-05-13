@@ -24,10 +24,10 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "QtQuickItem.h"
-#include <QtQuick/qquickwindow.h>
-#include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QOpenGLContext>
 #include "NSG.h"
+#include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLShaderProgram>
+#include <QtQuick/qquickwindow.h>
 using namespace NSG;
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -35,27 +35,20 @@ using namespace NSG;
 ////////////////////////////////////////////////////////////////////////////////////
 
 QtQuickItemRenderer::QtQuickItemRenderer(QQuickWindow* qtWindow)
-    : qtWindow_(qtWindow),
-      initialized_(false)
-{
-}
+    : qtWindow_(qtWindow), initialized_(false) {}
 
-QtQuickItemRenderer::~QtQuickItemRenderer()
-{
-}
+QtQuickItemRenderer::~QtQuickItemRenderer() {}
 
-void QtQuickItemRenderer::Paint()
-{
+void QtQuickItemRenderer::Paint() {
     auto window = Window::GetMainWindow();
-    if (window)
-    {
-        if (!initialized_)
-        {
+    if (window) {
+        if (!initialized_) {
             CHECK_CONDITION(window->IsReady());
             initialized_ = true;
             initializeOpenGLFunctions();
         }
-        window->ViewChanged(qtWindow_->size().width(), qtWindow_->size().height());
+        window->ViewChanged(qtWindow_->size().width(),
+                            qtWindow_->size().height());
         RenderingContext::GetPtr()->ResetCachedState();
         Engine::GetPtr()->PerformTicks();
         qtWindow_->resetOpenGLState();
@@ -65,40 +58,33 @@ void QtQuickItemRenderer::Paint()
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
-QtQuickItem::QtQuickItem()
-{
-    connect(this, &QQuickItem::windowChanged, this, &QtQuickItem::HandleWindowChanged);
+QtQuickItem::QtQuickItem() {
+    connect(this, &QQuickItem::windowChanged, this,
+            &QtQuickItem::HandleWindowChanged);
     timer_.start(12, this);
 }
 
-void QtQuickItem::HandleWindowChanged(QQuickWindow* win)
-{
-    if (win)
-    {
-        connect(win, &QQuickWindow::beforeSynchronizing, this, &QtQuickItem::Sync, Qt::DirectConnection);
-        connect(win, &QQuickWindow::sceneGraphInvalidated, this, &QtQuickItem::Cleanup, Qt::DirectConnection);
+void QtQuickItem::HandleWindowChanged(QQuickWindow* win) {
+    if (win) {
+        connect(win, &QQuickWindow::beforeSynchronizing, this,
+                &QtQuickItem::Sync, Qt::DirectConnection);
+        connect(win, &QQuickWindow::sceneGraphInvalidated, this,
+                &QtQuickItem::Cleanup, Qt::DirectConnection);
         // If we allow QML to do the clearing, they would clear what we paint
         // and nothing would show.
         win->setClearBeforeRendering(false);
     }
 }
 
-void QtQuickItem::Cleanup()
-{
-    renderer_ = nullptr;
-}
+void QtQuickItem::Cleanup() { renderer_ = nullptr; }
 
-void QtQuickItem::Sync()
-{
-    if (!renderer_)
-    {
-        renderer_ = std::unique_ptr<QtQuickItemRenderer>(new QtQuickItemRenderer(window()));
-        connect(window(), &QQuickWindow::beforeRendering, renderer_.get(), &QtQuickItemRenderer::Paint, Qt::DirectConnection);
+void QtQuickItem::Sync() {
+    if (!renderer_) {
+        renderer_ = std::unique_ptr<QtQuickItemRenderer>(
+            new QtQuickItemRenderer(window()));
+        connect(window(), &QQuickWindow::beforeRendering, renderer_.get(),
+                &QtQuickItemRenderer::Paint, Qt::DirectConnection);
     }
 }
 
-void QtQuickItem::timerEvent(QTimerEvent*)
-{
-    window()->update();
-}
-
+void QtQuickItem::timerEvent(QTimerEvent*) { window()->update(); }

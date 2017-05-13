@@ -24,16 +24,14 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <functional>
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <vector>
 
-namespace NSG
-{
+namespace NSG {
 template <typename... PARAMS>
-class Signal : public std::enable_shared_from_this<Signal<PARAMS...>>
-{
+class Signal : public std::enable_shared_from_this<Signal<PARAMS...>> {
 public:
     typedef std::function<void(PARAMS...)> CallbackFunction;
     typedef std::weak_ptr<Signal<PARAMS...>> PWeakSignal;
@@ -42,23 +40,15 @@ public:
     typedef std::shared_ptr<Slot> PSlot;
     typedef std::weak_ptr<Slot> PWeakSlot;
 
-    Signal()
-        : running_(false)
-    {
-    }
+    Signal() : running_(false) {}
 
-    ~Signal()
-    {
-    }
+    ~Signal() {}
 
-    bool HasSlots() const
-    {
-        return !slots_.empty() || !runSlots_.empty();
-    }
+    bool HasSlots() const { return !slots_.empty() || !runSlots_.empty(); }
 
-    PSlot Connect(CallbackFunction callback)
-    {
-        auto slot = std::make_shared<Slot>(Signal<PARAMS...>::shared_from_this(), callback);
+    PSlot Connect(CallbackFunction callback) {
+        auto slot = std::make_shared<Slot>(
+            Signal<PARAMS...>::shared_from_this(), callback);
         if (!running_)
             slots_.push_back(slot);
         else
@@ -66,12 +56,10 @@ public:
         return slot;
     }
 
-    void Run(PARAMS... arguments)
-    {
+    void Run(PARAMS... arguments) {
         running_ = true;
         ExecuteRunSlots(arguments...);
-        for (auto& slot : slots_)
-        {
+        for (auto& slot : slots_) {
             PSlot obj(slot.lock());
             if (obj)
                 obj->Execute(arguments...);
@@ -80,15 +68,10 @@ public:
         running_ = false;
     }
 
-    bool FreeSlots()
-    {
-        auto condition = [&](PWeakSlot slot)
-        {
-            return !slot.lock();
-        };
+    bool FreeSlots() {
+        auto condition = [&](PWeakSlot slot) { return !slot.lock(); };
         auto it = std::remove_if(slots_.begin(), slots_.end(), condition);
-        if (it != slots_.end())
-        {
+        if (it != slots_.end()) {
             slots_.erase(it, slots_.end());
             return true;
         }
@@ -96,21 +79,18 @@ public:
     }
 
 private:
-
-    void ExecuteRunSlots(PARAMS... arguments)
-    {
+    void ExecuteRunSlots(PARAMS... arguments) {
         slots_.insert(slots_.end(), runSlots_.begin(), runSlots_.end());
-        //while (!runSlots_.empty())
+        // while (!runSlots_.empty())
         {
             auto tmp = runSlots_;
             runSlots_.clear();
-            for (auto& slot : tmp)
-            {
+            for (auto& slot : tmp) {
                 PSlot obj(slot.lock());
                 if (obj)
                     obj->Execute(arguments...);
             }
-            //ExecuteRunSlots(arguments...);
+            // ExecuteRunSlots(arguments...);
         }
     }
 
@@ -118,26 +98,18 @@ private:
     std::vector<PWeakSlot> slots_;
     std::vector<PWeakSlot> runSlots_; // slots connected while running
 public:
-    class Slot
-    {
+    class Slot {
     public:
-        Slot(PSignal signal, CallbackFunction callback) :
-            signal_(signal),
-            callback_(callback),
-            enable_(true)
-        {
-        }
+        Slot(PSignal signal, CallbackFunction callback)
+            : signal_(signal), callback_(callback), enable_(true) {}
 
-        void Enable(bool enable)
-        {
-            enable_ = enable;
-        }
+        void Enable(bool enable) { enable_ = enable; }
 
-        void Execute(PARAMS... arguments)
-        {
+        void Execute(PARAMS... arguments) {
             if (enable_)
                 callback_(arguments...);
         }
+
     private:
         PWeakSignal signal_;
         CallbackFunction callback_;

@@ -26,57 +26,60 @@ misrepresented as being the original software.
 #pragma once
 #include "LoaderXMLNode.h"
 #include <string>
-namespace NSG
-{
-    class App;
-    class Object
-    {
-    public:
-        Object(const std::string& name);
-        virtual ~Object();
-		void DisableInvalidation() { disableInvalidation_ = true; }
-		void EnableInvalidation() { disableInvalidation_ = false; }
-        void Invalidate();
-        bool IsReady();
-        void TryReady();
-        virtual void Load(const pugi::xml_node&) { }
-        static void InvalidateAll();
-        const std::string& GetName() const { return name_; }
-        SignalEmpty::PSignal SigBeforeAllocating() {return signalBeforeAllocating_; }
-        SignalEmpty::PSignal SigAllocated() {return signalAllocated_; }
-        SignalEmpty::PSignal SigReleased() {return signalReleased_; }
-        void SetLoader(PLoaderXMLNode nodeLoader);
-        template<typename T, typename U>
-        static std::vector<std::shared_ptr<T>> LoadAll(LoaderXML* loader, const char* collectionType)
-        {
-            std::vector<std::shared_ptr<T>> result;
-            auto adder = [&](const std::string& name)
-            {
-				auto obj = T:: template GetOrCreateClass<U>(name);
-				obj->SetLoader(std::make_shared<LoaderXMLNode>(loader, obj, collectionType, name));
-	            result.push_back(obj);
-            };
-            Object::LoadAll(loader, collectionType, adder);
-            return result;
-        }
-    protected:
-        std::string name_;
-        PLoaderXMLNode nodeLoader_;
-    private:
-    	typedef std::function<void(const std::string&)> AdderFunction;
-    	static void LoadAll(LoaderXML* loader, const char* collectionType, AdderFunction adder);
-        static SignalEmpty::PSignal SigInvalidateAll();
-        virtual bool IsValid() { return true; }
-        virtual void AllocateResources() {}
-        virtual void ReleaseResources()	{}
-        std::string GetType() const;
-        std::string GetNameType() const;
-        bool isValid_;
-        bool resourcesAllocated_;
-        SignalEmpty::PSlot slotInvalidateAll_;
-        SignalEmpty::PSignal signalBeforeAllocating_;
-        SignalEmpty::PSignal signalAllocated_;
-        SignalEmpty::PSignal signalReleased_;
-		bool disableInvalidation_;
-    };
+namespace NSG {
+class App;
+class Object {
+public:
+    Object(const std::string& name);
+    virtual ~Object();
+    void DisableInvalidation() { disableInvalidation_ = true; }
+    void EnableInvalidation() { disableInvalidation_ = false; }
+    void Invalidate();
+    bool IsReady();
+    void TryReady();
+    virtual void Load(const pugi::xml_node&) {}
+    static void InvalidateAll();
+    const std::string& GetName() const { return name_; }
+    SignalEmpty::PSignal SigBeforeAllocating() {
+        return signalBeforeAllocating_;
+    }
+    SignalEmpty::PSignal SigAllocated() { return signalAllocated_; }
+    SignalEmpty::PSignal SigReleased() { return signalReleased_; }
+    void SetLoader(PLoaderXMLNode nodeLoader);
+    template <typename T, typename U>
+    static std::vector<std::shared_ptr<T>> LoadAll(LoaderXML* loader,
+                                                   const char* collectionType) {
+        std::vector<std::shared_ptr<T>> result;
+        auto adder = [&](const std::string& name) {
+            auto obj = T::template GetOrCreateClass<U>(name);
+            obj->SetLoader(std::make_shared<LoaderXMLNode>(
+                loader, obj, collectionType, name));
+            result.push_back(obj);
+        };
+        Object::LoadAll(loader, collectionType, adder);
+        return result;
+    }
+
+protected:
+    std::string name_;
+    PLoaderXMLNode nodeLoader_;
+
+private:
+    typedef std::function<void(const std::string&)> AdderFunction;
+    static void LoadAll(LoaderXML* loader, const char* collectionType,
+                        AdderFunction adder);
+    static SignalEmpty::PSignal SigInvalidateAll();
+    virtual bool IsValid() { return true; }
+    virtual void AllocateResources() {}
+    virtual void ReleaseResources() {}
+    std::string GetType() const;
+    std::string GetNameType() const;
+    bool isValid_;
+    bool resourcesAllocated_;
+    SignalEmpty::PSlot slotInvalidateAll_;
+    SignalEmpty::PSignal signalBeforeAllocating_;
+    SignalEmpty::PSignal signalAllocated_;
+    SignalEmpty::PSignal signalReleased_;
+    bool disableInvalidation_;
+};
 }

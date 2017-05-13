@@ -26,23 +26,22 @@ misrepresented as being the original software.
 #pragma once
 #include "ProceduralMesh.h"
 
-namespace NSG
-{
-	class PlaneMesh : public ProceduralMesh
-	{
-	public:
-		PlaneMesh(const std::string& name);
-		void Set(float width = 2, float height = 2, int columns = 2, int rows = 2);
-		~PlaneMesh();
-		GLenum GetWireFrameDrawMode() const override;
-		GLenum GetSolidDrawMode() const override;
-		size_t GetNumberOfTriangles() const override;
-        void AllocateResources() override;
-        PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
-	private:
-		float width_;
-		float height_;
-		int columns_;
-		int rows_;
-	};
+namespace NSG {
+class PlaneMesh : public ProceduralMesh {
+public:
+    PlaneMesh(const std::string& name);
+    void Set(float width = 2, float height = 2, int columns = 2, int rows = 2);
+    ~PlaneMesh();
+    GLenum GetWireFrameDrawMode() const override;
+    GLenum GetSolidDrawMode() const override;
+    size_t GetNumberOfTriangles() const override;
+    void AllocateResources() override;
+    PhysicsShape GetShapeType() const override { return SH_CONVEX_TRIMESH; }
+
+private:
+    float width_;
+    float height_;
+    int columns_;
+    int rows_;
+};
 }

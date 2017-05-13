@@ -25,20 +25,19 @@ misrepresented as being the original software.
 */
 #pragma once
 #include "SharedPointers.h"
-namespace NSG
-{
-    struct Color;
-    struct Vector3;
-    class DebugRenderer
-    {
-    public:
-        DebugRenderer();
-        ~DebugRenderer();
-        void AddLine(const Vector3& from, const Vector3& to, const Color& color);
-        void AddSphere(const Vector3& center, float radius, const Color& color);
-        void Clear();
-        PLinesMesh GetDebugLines() const { return lines_; }
-    private:
-        PLinesMesh lines_;
-    };
+namespace NSG {
+struct Color;
+struct Vector3;
+class DebugRenderer {
+public:
+    DebugRenderer();
+    ~DebugRenderer();
+    void AddLine(const Vector3& from, const Vector3& to, const Color& color);
+    void AddSphere(const Vector3& center, float radius, const Color& color);
+    void Clear();
+    PLinesMesh GetDebugLines() const { return lines_; }
+
+private:
+    PLinesMesh lines_;
+};
 }

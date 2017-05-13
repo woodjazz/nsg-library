@@ -24,27 +24,27 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "Path.h"
+#include "Types.h"
 #include "stb_truetype.h"
 #include <vector>
-namespace NSG
-{
-	class ResourceConverter;
-	class TrueTypeConverter
-	{
-	public:
-		TrueTypeConverter(const Path& path, int sChar, int eChar, int fontPixelsHeight, int bitmapWidth, int bitmapHeight);
-		bool Load();
-		bool Save(const Path& outputDir, bool compress) const;
-	private:
-		Path path_;
-		int sChar_;
-		int eChar_;
-		int fontPixelsHeight_;
-		int bitmapWidth_;
-		int bitmapHeight_;
-		std::shared_ptr<ResourceConverter> texture_;
-		std::vector<stbtt_bakedchar> cdata_;
-	};
+namespace NSG {
+class Resource;
+class TrueTypeConverter {
+public:
+    TrueTypeConverter(const Path& path, int sChar, int eChar,
+                      int fontPixelsHeight, int bitmapWidth, int bitmapHeight);
+    bool Load();
+    bool Save(const Path& outputDir, bool compress) const;
+
+private:
+    Path path_;
+    int sChar_;
+    int eChar_;
+    int fontPixelsHeight_;
+    int bitmapWidth_;
+    int bitmapHeight_;
+    std::shared_ptr<Resource> texture_;
+    std::vector<stbtt_bakedchar> cdata_;
+};
 }

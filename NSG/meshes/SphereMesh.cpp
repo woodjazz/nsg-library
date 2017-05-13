@@ -24,127 +24,105 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "SphereMesh.h"
-#include "Types.h"
 #include "Check.h"
 #include "Log.h"
 #include "Maths.h"
+#include "Types.h"
 
-namespace NSG
-{
-    SphereMesh::SphereMesh(const std::string& name)
-        : ProceduralMesh(name),
-          radius_(0),
-          rings_(0)
-    {
-        Set();
-        SetSerializable(false);
+namespace NSG {
+SphereMesh::SphereMesh(const std::string& name)
+    : ProceduralMesh(name), radius_(0), rings_(0) {
+    Set();
+    SetSerializable(false);
+}
+
+SphereMesh::~SphereMesh() {}
+
+void SphereMesh::Set(float radius, int rings) {
+    if (radius_ != radius || rings_ != rings) {
+        radius_ = radius;
+        rings_ = rings;
+        Invalidate();
     }
+}
 
-    SphereMesh::~SphereMesh()
-    {
-    }
+GLenum SphereMesh::GetWireFrameDrawMode() const { return GL_LINE_STRIP; }
 
-    void SphereMesh::Set(float radius, int rings)
-    {
-        if (radius_ != radius || rings_ != rings)
-        {
-            radius_ = radius;
-            rings_ = rings;
-            Invalidate();
+GLenum SphereMesh::GetSolidDrawMode() const { return GL_TRIANGLES; }
+
+size_t SphereMesh::GetNumberOfTriangles() const { return indexes_.size() / 3; }
+
+void SphereMesh::AllocateResources() {
+    vertexsData_.clear();
+    indexes_.clear();
+    indexesWireframe_.clear();
+
+    VertexsData& data = vertexsData_;
+
+    int segments = rings_ * 2;
+    float ringInc = PI / rings_;
+    float segInc = TWO_PI / segments;
+
+    Vertex2 tcoord;
+
+    for (float ring = 0; ring < rings_ + 1; ring++) {
+        auto alpha = PI - ring * ringInc;
+        auto tr = sin(alpha);
+        auto ny = cos(alpha);
+
+        tcoord.y = ring / rings_;
+
+        for (float seg = 0; seg <= segments; seg++) {
+            auto beta = seg * segInc;
+            auto nx = tr * sin(beta);
+            auto nz = tr * cos(beta);
+
+            tcoord.x = seg / segments;
+
+            VertexData vertexData;
+            vertexData.normal_ = Vertex3(nx, ny, nz);
+            vertexData.position_ = vertexData.normal_ * radius_;
+            vertexData.uv_[0] = tcoord;
+
+            data.push_back(vertexData);
         }
     }
 
-    GLenum SphereMesh::GetWireFrameDrawMode() const
-    {
-        return GL_LINE_STRIP;
-    }
+    int nr = segments + 1;
 
-    GLenum SphereMesh::GetSolidDrawMode() const
-    {
-        return GL_TRIANGLES;
-    }
+    int index0, index1, index2, index3;
 
-    size_t SphereMesh::GetNumberOfTriangles() const
-    {
-        return indexes_.size() / 3;
-    }
+    // Triangles
+    // Front Face CCW
+    for (int ring = 0; ring < rings_; ring++) {
+        for (int segment = 0; segment < segments; segment++) {
+            //	i2_____i3
+            //	| \		|
+            //	|	\	|
+            //	|	  \	|
+            //	i0_____i1
 
-    void SphereMesh::AllocateResources()
-    {
-        vertexsData_.clear();
-        indexes_.clear();
-        indexesWireframe_.clear();
+            index0 = nr * (ring + 0) + (segment + 0);
+            index1 = nr * (ring + 0) + (segment + 1);
+            index2 = nr * (ring + 1) + (segment + 0);
+            index3 = nr * (ring + 1) + (segment + 1);
 
-        VertexsData& data = vertexsData_;
+            indexesWireframe_.push_back(index2);
+            indexesWireframe_.push_back(index0);
+            indexesWireframe_.push_back(index1);
 
-        int segments = rings_ * 2;
-        float ringInc = PI / rings_;
-        float segInc = TWO_PI / segments;
+            // first triangle
+            indexes_.push_back(index0);
+            indexes_.push_back(index1);
+            indexes_.push_back(index2);
 
-        Vertex2 tcoord;
-
-        for (float ring = 0; ring < rings_ + 1; ring++)
-        {
-			auto alpha = PI - ring * ringInc;
-			auto tr = sin(alpha);
-			auto ny = cos(alpha);
-
-            tcoord.y = ring / rings_;
-
-            for (float seg = 0; seg <= segments; seg++)
-            {
-				auto beta = seg * segInc;
-                auto nx = tr * sin(beta);
-                auto nz = tr * cos(beta);
-
-                tcoord.x = seg / segments;
-
-                VertexData vertexData;
-                vertexData.normal_ = Vertex3(nx, ny, nz);
-                vertexData.position_ = vertexData.normal_ * radius_;
-                vertexData.uv_[0] = tcoord;
-
-                data.push_back(vertexData);
-            }
+            // second triangle
+            indexes_.push_back(index1);
+            indexes_.push_back(index3);
+            indexes_.push_back(index2);
         }
-
-        int nr = segments + 1;
-
-        int index0, index1, index2, index3;
-
-        // Triangles
-        // Front Face CCW
-        for (int ring = 0; ring < rings_; ring++)
-        {
-            for (int segment = 0; segment < segments; segment++)
-            {
-				//	i2_____i3
-				//	| \		|
-				//	|	\	|
-				//	|	  \	|
-				//	i0_____i1
-				
-				index0 = nr * (ring + 0) + (segment + 0);
-				index1 = nr * (ring + 0) + (segment + 1);
-				index2 = nr * (ring + 1) + (segment + 0);
-				index3 = nr * (ring + 1) + (segment + 1);
-
-				indexesWireframe_.push_back(index2);
-				indexesWireframe_.push_back(index0);
-				indexesWireframe_.push_back(index1);
-
-                // first triangle
-                indexes_.push_back(index0);
-                indexes_.push_back(index1);
-                indexes_.push_back(index2);
-
-				// second triangle
-                indexes_.push_back(index1);
-                indexes_.push_back(index3);
-                indexes_.push_back(index2);
-            }
-        }
-
-        Mesh::AllocateResources();
     }
+
+    Mesh::AllocateResources();
+}
 }

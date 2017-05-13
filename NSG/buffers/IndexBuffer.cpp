@@ -25,86 +25,65 @@ misrepresented as being the original software.
 */
 
 #include "IndexBuffer.h"
-#include "Types.h"
-#include "RenderingContext.h"
 #include "Check.h"
 #include "Log.h"
-#include <vector>
+#include "RenderingContext.h"
+#include "Types.h"
 #include <algorithm>
 #include <sstream>
+#include <vector>
 
-namespace NSG
-{
-    static Indexes emptyIndexes;
-    IndexBuffer::IndexBuffer(GLenum usage)
-        : Buffer(GL_ELEMENT_ARRAY_BUFFER, usage),
-          indexes_(emptyIndexes)
-    {
+namespace NSG {
+static Indexes emptyIndexes;
+IndexBuffer::IndexBuffer(GLenum usage)
+    : Buffer(GL_ELEMENT_ARRAY_BUFFER, usage), indexes_(emptyIndexes) {}
+
+IndexBuffer::IndexBuffer(const Indexes& indexes, GLenum usage)
+    : Buffer(GL_ELEMENT_ARRAY_BUFFER, usage), indexes_(indexes) {}
+
+IndexBuffer::~IndexBuffer() {}
+
+void IndexBuffer::AllocateResources() {
+    CHECK_GL_STATUS();
+    auto ctx = RenderingContext::GetSharedPtr();
+    CHECK_ASSERT(ctx);
+    Buffer::AllocateResources();
+    ctx->SetIndexBuffer(this);
+    if (indexes_.size()) {
+        auto bytesNeeded = sizeof(IndexType) * indexes_.size();
+        glBufferData(type_, bytesNeeded, &indexes_[0], usage_);
     }
+    // SetBufferSubData(0, bytesNeeded, &indexes_[0]);
+    CHECK_GL_STATUS();
+}
 
-    IndexBuffer::IndexBuffer(const Indexes& indexes, GLenum usage)
-        : Buffer(GL_ELEMENT_ARRAY_BUFFER, usage),
-          indexes_(indexes)
-    {
+void IndexBuffer::ReleaseResources() {
+    auto ctx = RenderingContext::GetSharedPtr();
+    if (ctx) {
+        if (ctx->GetIndexBuffer() == this)
+            ctx->SetIndexBuffer(nullptr);
+        Buffer::ReleaseResources();
     }
+}
 
-    IndexBuffer::~IndexBuffer()
-    {
-    }
+void IndexBuffer::Unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 
-    void IndexBuffer::AllocateResources()
-    {
+void IndexBuffer::UpdateData() {
+    if (IsReady()) {
         CHECK_GL_STATUS();
-        auto ctx = RenderingContext::GetSharedPtr();
-        CHECK_ASSERT(ctx);
-        Buffer::AllocateResources();
-        ctx->SetIndexBuffer(this);
-        if(indexes_.size())
-        {
-            auto bytesNeeded = sizeof(IndexType) * indexes_.size();
-            glBufferData(type_, bytesNeeded, &indexes_[0], usage_);
-        }
-        //SetBufferSubData(0, bytesNeeded, &indexes_[0]);
+        auto bytesNeeded = sizeof(IndexType) * indexes_.size();
+        glBufferData(type_, bytesNeeded, &indexes_[0], usage_);
         CHECK_GL_STATUS();
     }
+}
 
-    void IndexBuffer::ReleaseResources()
-    {
+void IndexBuffer::SetData(GLsizeiptr size, const GLvoid* data) {
+    if (IsReady()) {
         auto ctx = RenderingContext::GetSharedPtr();
-        if (ctx)
-        {
-            if (ctx->GetIndexBuffer() == this)
-                ctx->SetIndexBuffer(nullptr);
-            Buffer::ReleaseResources();
-        }
+        CHECK_GL_STATUS();
+        ctx->SetIndexBuffer(this, true);
+        glBufferData(type_, size, data, usage_);
+        CHECK_GL_STATUS();
     }
-
-    void IndexBuffer::Unbind()
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-
-    void IndexBuffer::UpdateData()
-    {
-        if (IsReady())
-        {
-            CHECK_GL_STATUS();
-            auto bytesNeeded = sizeof(IndexType) * indexes_.size();
-            glBufferData(type_, bytesNeeded, &indexes_[0], usage_);
-            CHECK_GL_STATUS();
-        }
-    }
-
-    void IndexBuffer::SetData(GLsizeiptr size, const GLvoid* data)
-    {
-        if (IsReady())
-        {
-            auto ctx = RenderingContext::GetSharedPtr();
-            CHECK_GL_STATUS();
-            ctx->SetIndexBuffer(this, true);
-            glBufferData(type_, size, data, usage_);
-            CHECK_GL_STATUS();
-        }
-    }
-
+}
 }

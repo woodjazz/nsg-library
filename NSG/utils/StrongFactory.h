@@ -24,120 +24,98 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
+#include "Check.h"
+#include "Log.h"
 #include "Types.h"
 #include "Util.h"
-#include "Log.h"
-#include "Check.h"
-#include <memory>
 #include <map>
+#include <memory>
 
-namespace NSG
-{
-    template<typename K, typename T>
-    class StrongFactory
-    {
-		typedef std::shared_ptr<T> PT;
-    public:
-        StrongFactory() 
-        {
+namespace NSG {
+template <typename K, typename T> class StrongFactory {
+    typedef std::shared_ptr<T> PT;
+
+public:
+    StrongFactory() {}
+
+    template <typename U>
+    static std::shared_ptr<U>
+    CreateClass(const K& key = GetUniqueName(typeid(U).name())) {
+        CHECK_CONDITION(!Has(key));
+        std::shared_ptr<U> obj = std::make_shared<U>(key);
+        auto result =
+            objsMap_.insert(typename std::map<K, PT>::value_type(key, obj));
+        if (!result.second) {
+            LOGE("StrongFactory failed creating %s!!!", key.c_str());
+            return nullptr;
         }
+        return obj;
+    }
 
-		template<typename U>
-		static std::shared_ptr<U> CreateClass(const K& key = GetUniqueName(typeid(U).name()))
-		{
-			CHECK_CONDITION(!Has(key));
-			std::shared_ptr<U> obj = std::make_shared<U>(key);
-			auto result = objsMap_.insert(typename std::map<K, PT>::value_type(key, obj));
-			if (!result.second)
-			{
-				LOGE("StrongFactory failed creating %s!!!", key.c_str());
-				return nullptr;
-			}
-			return obj;
-		}
+    template <typename U>
+    static std::shared_ptr<U> GetOrCreateClass(const K& key) {
+        auto it = objsMap_.find(key);
+        if (it == objsMap_.end())
+            return CreateClass<U>(key);
+        else
+            return std::dynamic_pointer_cast<U>(it->second);
+    }
 
-		template<typename U>
-		static std::shared_ptr<U> GetOrCreateClass(const K& key)
-		{
-			auto it = objsMap_.find(key);
-			if (it == objsMap_.end())
-                return CreateClass<U>(key);
-			else
-				return std::dynamic_pointer_cast<U>(it->second);
-		}
+    template <typename U> static std::shared_ptr<U> GetClass(const K& key) {
+        auto it = objsMap_.find(key);
+        if (it != objsMap_.end())
+            return std::dynamic_pointer_cast<U>(it->second);
+        return nullptr;
+    }
 
-		template<typename U>
-		static std::shared_ptr<U> GetClass(const K& key)
-		{
-			auto it = objsMap_.find(key);
-			if (it != objsMap_.end())
-				return std::dynamic_pointer_cast<U>(it->second);
-			return nullptr;
-		}
+    static PT Get(const K& key) {
+        auto it = objsMap_.find(key);
+        if (it != objsMap_.end())
+            return it->second;
+        return nullptr;
+    }
 
-		static PT Get(const K& key)
-		{
-			auto it = objsMap_.find(key);
-			if (it != objsMap_.end())
-				return it->second;
-			return nullptr;
-		}
+    template <typename U> static std::shared_ptr<U> Get(const K& key) {
+        return GetClass<U>(key);
+    }
 
-		template<typename U>
-		static std::shared_ptr<U> Get(const K& key)
-		{
-			return GetClass<U>(key);
-		}
+    static PT Create(const K& key = GetUniqueName(typeid(T).name())) {
+        return CreateClass<T>(key);
+    }
 
-		static PT Create(const K& key = GetUniqueName(typeid(T).name()))
-        {
-			return CreateClass<T>(key);
-        }
+    template <typename U>
+    static std::shared_ptr<U>
+    Create(const K& key = GetUniqueName(typeid(U).name())) {
+        return CreateClass<U>(key);
+    }
 
-		template<typename U>
-		static std::shared_ptr<U> Create(const K& key = GetUniqueName(typeid(U).name()))
-		{
-			return CreateClass<U>(key);
-		}
+    static PT GetOrCreate(const K& key) { return GetOrCreateClass<T>(key); }
 
-		static PT GetOrCreate(const K& key)
-        {
-			return GetOrCreateClass<T>(key);
-        }
+    template <typename U> static std::shared_ptr<U> GetOrCreate(const K& key) {
+        return GetOrCreateClass<U>(key);
+    }
 
-		template<typename U>
-		static std::shared_ptr<U> GetOrCreate(const K& key)
-		{
-			return GetOrCreateClass<U>(key);
-		}
+    static std::vector<PT> GetObjs() {
+        std::vector<PT> objs;
+        for (auto& obj : objsMap_)
+            objs.push_back(obj.second);
+        return objs;
+    }
 
-		static std::vector<PT> GetObjs()
-        {
-			std::vector<PT> objs;
-			for (auto& obj : objsMap_)
-				objs.push_back(obj.second);
-			return objs;
-        }
+    static bool Has(const K& key) {
+        return objsMap_.find(key) != objsMap_.end();
+    }
 
-		static bool Has(const K& key)
-		{
-			return objsMap_.find(key) != objsMap_.end();
-		}
+    static void Clear() { objsMap_.clear(); }
 
-		static void Clear()
-        {
-        	objsMap_.clear();
-        }
+    static bool AreReady() {
+        for (auto& obj : objsMap_)
+            if (!obj.second->IsReady())
+                return false;
+        return true;
+    }
 
-        static bool AreReady()
-       	{
-			for (auto& obj : objsMap_)
-				if(!obj.second->IsReady())
-					return false;
-			return true;
-       	}
-
-    private:
-		static std::map<K, PT> objsMap_;
-    };
+private:
+    static std::map<K, PT> objsMap_;
+};
 }

@@ -25,20 +25,22 @@ misrepresented as being the original software.
 */
 #pragma once
 #include <string>
-namespace NSG 
-{
-	struct AppConfiguration
-	{
-		unsigned fps_;
-		int x_; ///the x position of the window
-		int y_; ///the y position of the window
-		int width_; ///the width of the window
-		int height_; ///the height of the window
-		bool vertical_sync_;
-		bool showStatistics_;
-		bool pauseMusicOnBackground_;
-		std::string orgName_;
-		std::string appName_;
-		AppConfiguration();
-	};
+namespace NSG {
+struct AppConfiguration {
+    unsigned fps_;
+    int x_;      /// the x position of the window
+    int y_;      /// the y position of the window
+    int width_;  /// the width of the window
+    int height_; /// the height of the window
+    bool vertical_sync_;
+    bool showStatistics_;
+    bool pauseMusicOnBackground_;
+    std::string orgName_;
+    std::string appName_;
+    enum Platform {
+        UseGLX,
+        UseEGL,
+    } platform_;
+    AppConfiguration();
+};
 }

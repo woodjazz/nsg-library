@@ -27,18 +27,18 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "pugixml.hpp"
 
-namespace NSG
-{
-	class LoaderXMLNode
-	{
-	public:
-		LoaderXMLNode(LoaderXML* loaderXML, PObject obj, const std::string& type, const std::string& nameAttValue);
-		~LoaderXMLNode();
-		bool Load();
-	private:
-		LoaderXML* loaderXML_;
-		PWeakObject obj_;
-		std::string type_;
-		std::string nameAttValue_;
-	};
+namespace NSG {
+class LoaderXMLNode {
+public:
+    LoaderXMLNode(LoaderXML* loaderXML, PObject obj, const std::string& type,
+                  const std::string& nameAttValue);
+    ~LoaderXMLNode();
+    bool Load();
+
+private:
+    LoaderXML* loaderXML_;
+    PWeakObject obj_;
+    std::string type_;
+    std::string nameAttValue_;
+};
 }

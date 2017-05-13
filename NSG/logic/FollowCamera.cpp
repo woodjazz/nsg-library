@@ -25,103 +25,87 @@ misrepresented as being the original software.
 */
 #include "FollowCamera.h"
 #include "Camera.h"
-#include "Engine.h"
-#include "Ray.h"
-#include "Scene.h"
-#include "PhysicsWorld.h"
-#include "RigidBody.h"
 #include "Character.h"
-#include "PointOnSphere.h"
-#include "Util.h"
+#include "Engine.h"
 #include "Maths.h"
+#include "PhysicsWorld.h"
+#include "PointOnSphere.h"
+#include "Ray.h"
+#include "RigidBody.h"
+#include "Scene.h"
+#include "Util.h"
 
-namespace NSG
-{
-    FollowCamera::FollowCamera(PCamera camera)
-        : camera_(camera),
-          track_(nullptr),
-          distance_(1),
-          angle_(Radians(45.f)),
-          world_(camera_->GetScene()->GetPhysicsWorld())
-    {
-        slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime)
-        {
-            if (track_ && world_.lock())
-                OnUpdate(deltaTime);
-        });
+namespace NSG {
+FollowCamera::FollowCamera(PCamera camera)
+    : camera_(camera), track_(nullptr), distance_(1), angle_(Radians(45.f)),
+      world_(camera_->GetScene()->GetPhysicsWorld()) {
+    slotUpdate_ = Engine::SigUpdate()->Connect([this](float deltaTime) {
+        if (track_ && world_.lock())
+            OnUpdate(deltaTime);
+    });
+}
+
+FollowCamera::~FollowCamera() {}
+
+void FollowCamera::SetAngle(float angle) { angle_ = Radians(angle); }
+
+bool FollowCamera::Obstruction(const Vector3& origin, const Vector3& targetPos,
+                               float radius) const {
+    auto direction = targetPos - origin;
+    auto distance = direction.Length();
+    PhysicsRaycastResult result = world_.lock()->SphereCastBut(
+        track_, origin, direction.Normalize(), radius, distance);
+    return result.collider_ != nullptr;
+}
+
+Vector3 FollowCamera::GetBestTargetPoint(const Vector3& center,
+                                         float radius) const {
+    auto camPos = camera_->GetGlobalPosition();
+    auto point = center + (camPos - center).Normalize() * distance_;
+    PointOnSphere sphere(center, point);
+    auto theta = sphere.GetTheta();
+    for (float incTheta = 0.f; incTheta < TWO_PI; incTheta += PI15) {
+        sphere.SetAngles(theta + incTheta, angle_);
+        auto target = sphere.GetPoint();
+        if (!Obstruction(center, target, radius))
+            return target;
     }
-
-    FollowCamera::~FollowCamera()
-    {
-
-    }
-
-    void FollowCamera::SetAngle(float angle)
-    {
-        angle_ = Radians(angle);
-    }
-
-    bool FollowCamera::Obstruction(const Vector3& origin, const Vector3& targetPos, float radius) const
-    {
-        auto direction = targetPos - origin;
-        auto distance = direction.Length();
-        PhysicsRaycastResult result = world_.lock()->SphereCastBut(track_, origin, direction.Normalize(), radius, distance);
-        return result.collider_ != nullptr;
-    }
-
-    Vector3 FollowCamera::GetBestTargetPoint(const Vector3& center, float radius) const
-    {
-        auto camPos = camera_->GetGlobalPosition();
-        auto point = center + (camPos - center).Normalize() * distance_;
-        PointOnSphere sphere(center, point);
-        auto theta = sphere.GetTheta();
-        for (float incTheta = 0.f; incTheta < TWO_PI; incTheta += PI15)
-        {
-            sphere.SetAngles(theta + incTheta, angle_);
+    if (angle_ + PI10 < PI90) {
+        for (float incTheta = 0.f; incTheta < TWO_PI; incTheta += PI15) {
+            sphere.SetAngles(theta + incTheta, PI90);
             auto target = sphere.GetPoint();
             if (!Obstruction(center, target, radius))
                 return target;
         }
-        if (angle_ + PI10 < PI90)
-        {
-            for (float incTheta = 0.f; incTheta < TWO_PI; incTheta += PI15)
-            {
-                sphere.SetAngles(theta + incTheta, PI90);
-                auto target = sphere.GetPoint();
-                if (!Obstruction(center, target, radius))
-                    return target;
-            }
-        }
-        if (angle_ > PI10)
-        {
-            sphere.SetAngles(theta, 0);
-            auto target = sphere.GetPoint();
-            if (!Obstruction(center, target, radius))
-                return target;
-        }
-        return camPos;
     }
+    if (angle_ > PI10) {
+        sphere.SetAngles(theta, 0);
+        auto target = sphere.GetPoint();
+        if (!Obstruction(center, target, radius))
+            return target;
+    }
+    return camPos;
+}
 
-    void FollowCamera::OnUpdate(float deltaTime)
-    {
-        auto pos = camera_->GetGlobalPosition();
-        auto bb = track_->GetColliderBoundingBox();
-        auto center = bb.Center();
-        auto size = bb.Size();
-        auto radius = std::min(std::min(size.x, size.y), size.z) * .4f;
-        auto target = GetBestTargetPoint(center, radius);
-        auto direction = target - pos;
-        auto distance = direction.Length();
-        PhysicsRaycastResult result = world_.lock()->SphereCastBut(track_, pos, direction.Normalize(), radius, distance);
-        if (result.collider_)
-            target = pos + direction.GetSlidingVector(result.normal_);
-        camera_->SetGlobalPosition(pos.Lerp(target, deltaTime));
-        camera_->SetGlobalLookAtPosition(center);
-    }
+void FollowCamera::OnUpdate(float deltaTime) {
+    auto pos = camera_->GetGlobalPosition();
+    auto bb = track_->GetColliderBoundingBox();
+    auto center = bb.Center();
+    auto size = bb.Size();
+    auto radius = std::min(std::min(size.x, size.y), size.z) * .4f;
+    auto target = GetBestTargetPoint(center, radius);
+    auto direction = target - pos;
+    auto distance = direction.Length();
+    PhysicsRaycastResult result = world_.lock()->SphereCastBut(
+        track_, pos, direction.Normalize(), radius, distance);
+    if (result.collider_)
+        target = pos + direction.GetSlidingVector(result.normal_);
+    camera_->SetGlobalPosition(pos.Lerp(target, deltaTime));
+    camera_->SetGlobalLookAtPosition(center);
+}
 
-    void FollowCamera::Track(ICollision* track, float distance)
-    {
-        track_ = track;
-        distance_ = distance;
-    }
+void FollowCamera::Track(ICollision* track, float distance) {
+    track_ = track;
+    distance_ = distance;
+}
 }

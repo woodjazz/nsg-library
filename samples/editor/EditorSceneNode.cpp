@@ -24,26 +24,19 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "EditorSceneNode.h"
-#include "Renderer.h"
 #include "Editor.h"
+#include "Renderer.h"
 
-EditorSceneNode::EditorSceneNode(const std::string& name)
-    : SceneNode(name)
-{
+EditorSceneNode::EditorSceneNode(const std::string& name) : SceneNode(name) {}
 
+EditorSceneNode::~EditorSceneNode() {}
+
+bool EditorSceneNode::CanBeVisible() const {
+    return Renderer::GetPtr() &&
+           RendererContext::EDITOR == Renderer::GetPtr()->GetContextType() &&
+           SceneNode::CanBeVisible();
 }
 
-EditorSceneNode::~EditorSceneNode()
-{
-
-}
-
-bool EditorSceneNode::CanBeVisible() const
-{
-    return Renderer::GetPtr() && RendererContext::EDITOR == Renderer::GetPtr()->GetContextType() && SceneNode::CanBeVisible();
-}
-
-void EditorSceneNode::ShowGUIProperties(Editor* editor)
-{
+void EditorSceneNode::ShowGUIProperties(Editor* editor) {
     editor->ShowGUIProperties(GetParent().get());
 }

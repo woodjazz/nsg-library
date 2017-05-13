@@ -24,56 +24,60 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "SharedPointers.h"
+#include "Types.h"
 
-namespace NSG
-{
-    class PlayerControl
-    {
-    public:
-        PlayerControl(PWindow window);
-        ~PlayerControl();
-        void SetWindow(PWindow window);
-		SignalFloatFloat::PSignal SigMoved() { return signalMoved_; }
-        SignalFloatFloat::PSignal SigLeftStickMoved() { return signalLeftStickMoved_; }
-        SignalFloatFloat::PSignal SigRightStickMoved() { return signalRightStickMoved_; }
-        SignalBool::PSignal SigButtonA() { return signalButtonA_; }
-    private:
-        void OnKey(int key, int action, int modifier);
-        void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
-        void OnMousewheel(float x, float y);
-        void OnMouseUp(int button, float x, float y);
-        void OnMouseDown(int button, float x, float y);
-        void OnMousemoved(float x, float y);
-        void OnUpdate(float deltaTime);
+namespace NSG {
+class PlayerControl {
+public:
+    PlayerControl(PWindow window);
+    ~PlayerControl();
+    void SetWindow(PWindow window);
+    SignalFloatFloat::PSignal SigMoved() { return signalMoved_; }
+    SignalFloatFloat::PSignal SigLeftStickMoved() {
+        return signalLeftStickMoved_;
+    }
+    SignalFloatFloat::PSignal SigRightStickMoved() {
+        return signalRightStickMoved_;
+    }
+    SignalBool::PSignal SigButtonA() { return signalButtonA_; }
 
-        SignalFloatFloat::PSignal signalMoved_;
-        SignalFloatFloat::PSignal signalLeftStickMoved_;
-        SignalFloatFloat::PSignal signalRightStickMoved_;        
-        SignalBool::PSignal signalButtonA_;
-        SignalFloatFloat::PSlot slotMouseMoved_;
-        SignalMouseButton::PSlot slotMouseDown_;
-        SignalMouseButton::PSlot slotMouseUp_;
-        SignalFloatFloat::PSlot slotMouseWheel_;
-        SignalMultiGesture::PSlot slotMultiGesture_;
-        SignalKey::PSlot slotKey_;
-        SignalUpdate::PSlot slotUpdate_;
-        SignalJoystickButton::PSlot slotJoystickDown_;
-		SignalJoystickButton::PSlot slotJoystickUp_;
-        SignalJoystickAxisMotion::PSlot slotJoystickAxisMotion_;
-        SignalTouchFinger::PSlot slotTouchFinger_;
-        PWeakWindow window_;
-        float leftHorizontalAxis_;
-        float leftVerticalAxis_;
-        float rightHorizontalAxis_;
-        float rightVerticalAxis_;
-        bool left_;
-        bool right_;
-        bool forward_;
-        bool backward_;
-        typedef std::pair<bool, int64_t> FirgerId;
-        FirgerId leftFingerId_;
-        FirgerId rightFingerId_;
-    };
+private:
+    void OnKey(int key, int action, int modifier);
+    void OnMultiGesture(int timestamp, float x, float y, float dTheta,
+                        float dDist, int numFingers);
+    void OnMousewheel(float x, float y);
+    void OnMouseUp(int button, float x, float y);
+    void OnMouseDown(int button, float x, float y);
+    void OnMousemoved(float x, float y);
+    void OnUpdate(float deltaTime);
+
+    SignalFloatFloat::PSignal signalMoved_;
+    SignalFloatFloat::PSignal signalLeftStickMoved_;
+    SignalFloatFloat::PSignal signalRightStickMoved_;
+    SignalBool::PSignal signalButtonA_;
+    SignalFloatFloat::PSlot slotMouseMoved_;
+    SignalMouseButton::PSlot slotMouseDown_;
+    SignalMouseButton::PSlot slotMouseUp_;
+    SignalFloatFloat::PSlot slotMouseWheel_;
+    SignalMultiGesture::PSlot slotMultiGesture_;
+    SignalKey::PSlot slotKey_;
+    SignalUpdate::PSlot slotUpdate_;
+    SignalJoystickButton::PSlot slotJoystickDown_;
+    SignalJoystickButton::PSlot slotJoystickUp_;
+    SignalJoystickAxisMotion::PSlot slotJoystickAxisMotion_;
+    SignalTouchFinger::PSlot slotTouchFinger_;
+    PWeakWindow window_;
+    float leftHorizontalAxis_;
+    float leftVerticalAxis_;
+    float rightHorizontalAxis_;
+    float rightVerticalAxis_;
+    bool left_;
+    bool right_;
+    bool forward_;
+    bool backward_;
+    typedef std::pair<bool, int64_t> FirgerId;
+    FirgerId leftFingerId_;
+    FirgerId rightFingerId_;
+};
 }

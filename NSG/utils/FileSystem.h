@@ -26,20 +26,20 @@ misrepresented as being the original software.
 #pragma once
 #include "Types.h"
 #include <string>
-namespace NSG
-{
-    struct FileSystem
-    {
-        /// Where the application can write personal files
-        static std::string GetPreferencesPath();
-        static std::string GetPreferencesPath(const std::string& org, const std::string& app);
-        static SignalEmpty::PSignal SigReady();
-        static SignalEmpty::PSignal SigSaved();
-        static void Initialize();
-        static bool Save();
-        static bool SetCurrentDir(const std::string& pathName);
-        // copy file
-        static bool Copy(const Path& source, const Path& target);
-        static bool SaveDocument(const Path& path, const pugi::xml_document& doc, bool compress);
-    };
+namespace NSG {
+struct FileSystem {
+    /// Where the application can write personal files
+    static std::string GetPreferencesPath();
+    static std::string GetPreferencesPath(const std::string& org,
+                                          const std::string& app);
+    static SignalEmpty::PSignal SigReady();
+    static SignalEmpty::PSignal SigSaved();
+    static void Initialize();
+    static bool Save();
+    static bool SetCurrentDir(const std::string& pathName);
+    // copy file
+    static bool Copy(const Path& source, const Path& target);
+    static bool SaveDocument(const Path& path, const pugi::xml_document& doc,
+                             bool compress);
+};
 }

@@ -24,19 +24,19 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <vector>
-#include "NSG.h"
 #include "Level.h"
+#include "NSG.h"
+#include <vector>
 using namespace NSG;
 
 class Enemy;
 class Player;
-class Level1 : public Level
-{
+class Level1 : public Level {
 public:
-	Level1(PWindow window);
-	~Level1();
+    Level1(PWindow window);
+    ~Level1();
+
 private:
-	void GenerateEnemies();
-	std::shared_ptr<Player> player_;
+    void GenerateEnemies();
+    std::shared_ptr<Player> player_;
 };

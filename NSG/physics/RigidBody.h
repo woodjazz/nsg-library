@@ -24,104 +24,101 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "Quaternion.h"
-#include "Object.h"
 #include "ICollision.h"
+#include "Object.h"
+#include "Quaternion.h"
+#include "Types.h"
 #include "btBulletDynamicsCommon.h"
 #include <map>
 using namespace std;
 
 class btDynamicsWorld;
 class btRigidBody;
-namespace NSG
-{
-	class RigidBody : public ICollision, public btMotionState, public Object
-    {
-    public:
-        RigidBody(PSceneNode sceneNode);
-        ~RigidBody();
-		void SetGravity(const Vector3& gravity);
-        void SetKinematic(bool enable);
-        bool IsKinematic() const { return kinematic_; }
-        void SetMass(float mass);
-        void AddShape(PShape shape, const Vector3& position = Vector3::Zero, const Quaternion& rotation = Quaternion::Identity);
-        void HandleCollisions(bool enable) {handleCollision_ = enable; }
-        void SetLinearVelocity(const Vector3& lv);
-        Vector3 GetLinearVelocity() const;
-        void SetAngularVelocity(const Vector3& av);
-        void ReScale();
-        bool IsStatic() const;
-        void SyncWithNode();
-		void SetRestitution(float restitution);
-		void SetFriction(float friction);
-        void SetRollingFriction(float friction);
-		void SetLinearDamp(float linearDamp);
-		void SetAngularDamp(float angularDamp);
-        void Load(const pugi::xml_node& node) override;
-        void Save(pugi::xml_node& node);
-		void SetCollisionMask(int group, int mask);
-        void Activate();
-        void ResetForces();
-		void Reset();
-        void ReAddToWorld();
-        void AddToWorld();
-        void RemoveFromWorld();
-        void SetTrigger(bool enable);
-        void SetLinearFactor(const Vector3& factor);
-        const Vector3& GetLinearFactor() const { return linearFactor_; }
-        void SetAngularFactor(const Vector3& factor);
-        const Vector3& GetAngularFactor() const { return angularFactor_; }
-        void ApplyForce(const Vector3& force);
-        void ApplyImpulse(const Vector3& impulse);
-        BoundingBox GetColliderBoundingBox() const override;
-		SceneNode* GetSceneNode() const override;
-		bool HandleCollision() const override { return handleCollision_; }
-	private:
-		void ReDoShape(const Vector3& newScale);
-        bool IsValid() override;
-        void AllocateResources() override;
-        void ReleaseResources() override;
-        void getWorldTransform(btTransform& worldTrans) const override;
-        void setWorldTransform(const btTransform& worldTrans) override;
-        void UpdateInertia();
-        void SetMaterialPhysicsSlot();
-        void SetMaterialPhysics();
+namespace NSG {
+class RigidBody : public ICollision, public btMotionState, public Object {
+public:
+    RigidBody(PSceneNode sceneNode);
+    ~RigidBody();
+    void SetGravity(const Vector3& gravity);
+    void SetKinematic(bool enable);
+    bool IsKinematic() const { return kinematic_; }
+    void SetMass(float mass);
+    void AddShape(PShape shape, const Vector3& position = Vector3::Zero,
+                  const Quaternion& rotation = Quaternion::Identity);
+    void HandleCollisions(bool enable) { handleCollision_ = enable; }
+    void SetLinearVelocity(const Vector3& lv);
+    Vector3 GetLinearVelocity() const;
+    void SetAngularVelocity(const Vector3& av);
+    void ReScale();
+    bool IsStatic() const;
+    void SyncWithNode();
+    void SetRestitution(float restitution);
+    void SetFriction(float friction);
+    void SetRollingFriction(float friction);
+    void SetLinearDamp(float linearDamp);
+    void SetAngularDamp(float angularDamp);
+    void Load(const pugi::xml_node& node) override;
+    void Save(pugi::xml_node& node);
+    void SetCollisionMask(int group, int mask);
+    void Activate();
+    void ResetForces();
+    void Reset();
+    void ReAddToWorld();
+    void AddToWorld();
+    void RemoveFromWorld();
+    void SetTrigger(bool enable);
+    void SetLinearFactor(const Vector3& factor);
+    const Vector3& GetLinearFactor() const { return linearFactor_; }
+    void SetAngularFactor(const Vector3& factor);
+    const Vector3& GetAngularFactor() const { return angularFactor_; }
+    void ApplyForce(const Vector3& force);
+    void ApplyImpulse(const Vector3& impulse);
+    BoundingBox GetColliderBoundingBox() const override;
+    SceneNode* GetSceneNode() const override;
+    bool HandleCollision() const override { return handleCollision_; }
 
-        std::shared_ptr<btRigidBody> body_;
-		PWeakSceneNode sceneNode_;
-        std::weak_ptr<btDynamicsWorld> owner_;
-        float mass_;
-		std::shared_ptr<btCompoundShape> compoundShape_;
-		struct ShapeData
-		{
-			PShape shape;
-			Vector3 position;
-			Quaternion rotation;
-            SignalEmpty::PSlot slotShapeReleased;
-		};
-		typedef std::vector<ShapeData> Shapes;
-		Shapes shapes_;
-        bool handleCollision_;
-		float restitution_;
-		float friction_;
-        float rollingFriction_;
-		float linearDamp_;
-		float angularDamp_;
-		int collisionGroup_;
-		int collisionMask_;
-		bool inWorld_;
-        bool trigger_;
-		Vector3 gravity_;
-        Vector3 linearVelocity_;
-        Vector3 angularVelocity_;
-		bool kinematic_;
-		Vector3 linearFactor_;
-		Vector3 angularFactor_;
-        SignalEmpty::PSlot slotMaterialSet_;
-        SignalEmpty::PSlot slotMaterialPhysicsSet_;
-        SignalEmpty::PSlot slotBeginFrame_;
+private:
+    void ReDoShape(const Vector3& newScale);
+    bool IsValid() override;
+    void AllocateResources() override;
+    void ReleaseResources() override;
+    void getWorldTransform(btTransform& worldTrans) const override;
+    void setWorldTransform(const btTransform& worldTrans) override;
+    void UpdateInertia();
+    void SetMaterialPhysicsSlot();
+    void SetMaterialPhysics();
+
+    std::shared_ptr<btRigidBody> body_;
+    PWeakSceneNode sceneNode_;
+    std::weak_ptr<btDynamicsWorld> owner_;
+    float mass_;
+    std::shared_ptr<btCompoundShape> compoundShape_;
+    struct ShapeData {
+        PShape shape;
+        Vector3 position;
+        Quaternion rotation;
+        SignalEmpty::PSlot slotShapeReleased;
     };
+    typedef std::vector<ShapeData> Shapes;
+    Shapes shapes_;
+    bool handleCollision_;
+    float restitution_;
+    float friction_;
+    float rollingFriction_;
+    float linearDamp_;
+    float angularDamp_;
+    int collisionGroup_;
+    int collisionMask_;
+    bool inWorld_;
+    bool trigger_;
+    Vector3 gravity_;
+    Vector3 linearVelocity_;
+    Vector3 angularVelocity_;
+    bool kinematic_;
+    Vector3 linearFactor_;
+    Vector3 angularFactor_;
+    SignalEmpty::PSlot slotMaterialSet_;
+    SignalEmpty::PSlot slotMaterialPhysicsSet_;
+    SignalEmpty::PSlot slotBeginFrame_;
+};
 }
-
-

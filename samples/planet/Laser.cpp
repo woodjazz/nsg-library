@@ -32,9 +32,7 @@ Laser::Laser(PScene scene)
       body_(child_->GetOrCreateRigidBody()),
       collisionGroup_((int)CollisionMask::PLAYER),
       collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::PLAYER),
-      totalTime_(0),
-      destroyed_(false)
-{
+      totalTime_(0), destroyed_(false) {
     const Vector3 Scale(0.03f, 0.15f, 0.03f);
     child_->SetScale(Scale);
     child_->SetPosition(Vector3(0, 0, 3));
@@ -57,50 +55,40 @@ Laser::Laser(PScene scene)
 
     body_->SetKinematic(true);
     body_->HandleCollisions(true);
-    auto shape = Shape::GetOrCreate(ShapeKey(mesh, Vector3(Scale.x, Scale.y, Scale.z)));
+    auto shape =
+        Shape::GetOrCreate(ShapeKey(mesh, Vector3(Scale.x, Scale.y, Scale.z)));
     shape->SetBB(child_->GetWorldBoundingBox());
-    body_->AddShape(shape, Vector3(0, Scale.y * 0.5f, 0));// , AngleAxis(PI90, VECTOR3_RIGHT));
+    body_->AddShape(shape, Vector3(0, Scale.y * 0.5f,
+                                   0)); // , AngleAxis(PI90, VECTOR3_RIGHT));
     body_->SetCollisionMask(collisionGroup_, collisionMask_);
 
-    updateSlot_ = Engine::SigUpdate()->Connect([this](float dt)
-    {
+    updateSlot_ = Engine::SigUpdate()->Connect([this](float dt) {
         totalTime_ += dt;
         if (destroyed_ || totalTime_ > 1)
             Destroyed();
-        else
-        {
+        else {
             auto dir = 2 * dt * (child_->GetOrientation() * Vector3::Up);
             node_->Pitch(-dir.y);
             node_->Yaw(dir.x);
         }
     });
 
-    slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
-    {
-        destroyed_ = true;
-    });
-
+    slotCollision_ = child_->SigCollision()->Connect(
+        [this](const ContactPoint& contactInfo) { destroyed_ = true; });
 }
 
-Laser::~Laser()
-{
-    node_->SetParent(nullptr);
-}
+Laser::~Laser() { node_->SetParent(nullptr); }
 
-void Laser::SetOrientation(const Quaternion& q0, const Quaternion& q1)
-{
+void Laser::SetOrientation(const Quaternion& q0, const Quaternion& q1) {
     node_->SetOrientation(q0);
     child_->SetOrientation(q1);
 }
 
-void Laser::SetPosition(const Vector3& position)
-{
+void Laser::SetPosition(const Vector3& position) {
     child_->SetPosition(position);
 }
 
-void Laser::Destroyed()
-{
+void Laser::Destroyed() {
     auto level = Level::GetCurrent();
     level->RemoveObject(this);
 }
-

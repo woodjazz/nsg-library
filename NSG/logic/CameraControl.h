@@ -24,65 +24,67 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "Vector4.h"
-#include "Vector3.h"
 #include "Quaternion.h"
 #include "SharedPointers.h"
+#include "Types.h"
+#include "Vector3.h"
+#include "Vector4.h"
 
-namespace NSG
-{
-	class CameraControl
-	{
-	public:
-		CameraControl(PCamera camera, PScene scene);
-		CameraControl(PCamera camera);
-		~CameraControl();
-		void Track(PNode node);
-		void SetWindow(PWindow window);
-		void AutoZoom();
-		void OnUpdate(float deltaTime);
-		void OnKey(int key, int action, int modifier);
-		void Enable(bool enable);
-		PSceneNode SelectObject(float x, float y);
-        void SetViewRect(const Vector4& viewRect);
-		void SetSelectionContext(RendererContext context) { selectionContext_ = context; }
-	private:
-		bool TransformCoords(float& x, float& y);
-		void OnMultiGesture(int timestamp, float x, float y, float dTheta, float dDist, int numFingers);
-		void OnMousewheel(float x, float y);
-		void OnMouseUp(int button, float x, float y);
-		void OnMouseDown(int button, float x, float y);
-		void OnMouseMoved(float x, float y);
-		void SetPosition(const Vertex3& position);
-		void RayCastNewCenter(bool centerObj);
-		void Move(float x, float y);
-		float lastX_;
-		float lastY_;
-		bool leftButtonDown_;
-		bool altKeyDown_;
-		bool shiftKeyDown_;
-		PPointOnSphere pointOnSphere_;
-		PCamera camera_;
-		PScene scene_;
-		bool updateOrientation_;
-		PWeakWindow window_;
-		Vector3 originalPosition_;
-		Quaternion originalOrientation_;
-		PNode trackNode_;
-		SignalWindow::PSlot slotWindow_;
-		SignalFloatFloat::PSlot slotMouseMoved_;
-		SignalMouseButton::PSlot slotMouseDown_;
-		SignalMouseButton::PSlot slotMouseUp_;
-		SignalFloatFloat::PSlot slotMouseWheel_;
-		SignalMultiGesture::PSlot slotMultiGesture_;
-		SignalKey::PSlot slotKey_;
-		SignalUpdate::PSlot slotUpdate_;
-		bool enableDebugPhysics_;
-		bool enableColorSplits_;
-		bool enabled_;
-		Vector4 viewRect_;
-		bool selection_;
-		RendererContext selectionContext_;
-	};
+namespace NSG {
+class CameraControl {
+public:
+    CameraControl(PCamera camera, PScene scene);
+    CameraControl(PCamera camera);
+    ~CameraControl();
+    void Track(PNode node);
+    void SetWindow(PWindow window);
+    void AutoZoom();
+    void OnUpdate(float deltaTime);
+    void OnKey(int key, int action, int modifier);
+    void Enable(bool enable);
+    PSceneNode SelectObject(float x, float y);
+    void SetViewRect(const Vector4& viewRect);
+    void SetSelectionContext(RendererContext context) {
+        selectionContext_ = context;
+    }
+
+private:
+    bool TransformCoords(float& x, float& y);
+    void OnMultiGesture(int timestamp, float x, float y, float dTheta,
+                        float dDist, int numFingers);
+    void OnMousewheel(float x, float y);
+    void OnMouseUp(int button, float x, float y);
+    void OnMouseDown(int button, float x, float y);
+    void OnMouseMoved(float x, float y);
+    void SetPosition(const Vertex3& position);
+    void RayCastNewCenter(bool centerObj);
+    void Move(float x, float y);
+    float lastX_;
+    float lastY_;
+    bool leftButtonDown_;
+    bool altKeyDown_;
+    bool shiftKeyDown_;
+    PPointOnSphere pointOnSphere_;
+    PCamera camera_;
+    PScene scene_;
+    bool updateOrientation_;
+    PWeakWindow window_;
+    Vector3 originalPosition_;
+    Quaternion originalOrientation_;
+    PNode trackNode_;
+    SignalWindow::PSlot slotWindow_;
+    SignalFloatFloat::PSlot slotMouseMoved_;
+    SignalMouseButton::PSlot slotMouseDown_;
+    SignalMouseButton::PSlot slotMouseUp_;
+    SignalFloatFloat::PSlot slotMouseWheel_;
+    SignalMultiGesture::PSlot slotMultiGesture_;
+    SignalKey::PSlot slotKey_;
+    SignalUpdate::PSlot slotUpdate_;
+    bool enableDebugPhysics_;
+    bool enableColorSplits_;
+    bool enabled_;
+    Vector4 viewRect_;
+    bool selection_;
+    RendererContext selectionContext_;
+};
 }

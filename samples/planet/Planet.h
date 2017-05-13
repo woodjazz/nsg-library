@@ -24,19 +24,19 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "NSG.h"
 #include "GameObject.h"
+#include "NSG.h"
 using namespace NSG;
-class Planet : public GameObject
-{
+class Planet : public GameObject {
 public:
-	Planet(PScene scene);
-	~Planet();
-	static PSphereMesh GetMesh();
-	static PIcoSphereMesh GetGridMesh();
+    Planet(PScene scene);
+    ~Planet();
+    static PSphereMesh GetMesh();
+    static PIcoSphereMesh GetGridMesh();
+
 private:
-	PSceneNode planet_;
-	PSceneNode clouds_;
-	PSceneNode grid_;
-	SignalUpdate::PSlot updateSlot_;
+    PSceneNode planet_;
+    PSceneNode clouds_;
+    PSceneNode grid_;
+    SignalUpdate::PSlot updateSlot_;
 };

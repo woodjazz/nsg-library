@@ -25,41 +25,47 @@ misrepresented as being the original software.
 */
 #pragma once
 
-namespace NSG
-{
-    struct Vector3;
-    struct Vector4
-	{
-		union { float x, r, s; };
-		union { float y, g, t; };
-		union { float z, b, p; };
-		union { float w, a, q; };
-        Vector4();
-        Vector4(float a);
-        Vector4(float a, float b, float c, float d);
-        Vector4(const Vector4& v);
-        Vector4(const Vector3& v, float d);
-        const float& operator[](int i) const;
-        float& operator[](int i);
-        const Vector4& operator/=(float v);
-        const Vector4& operator*=(float v);
-		float Dot(const Vector4& v) const;
-		Vector4 Floor() const;
-		float Length() const;
-		float Distance(const Vector4& v) const;
-		Vector4 Fract() const;
-        static const Vector4 Zero;
-	};
-	typedef Vector4 Vertex4;
-	typedef Vector4 Rect;
+namespace NSG {
+struct Vector3;
+struct Vector4 {
+    union {
+        float x, r, s;
+    };
+    union {
+        float y, g, t;
+    };
+    union {
+        float z, b, p;
+    };
+    union {
+        float w, a, q;
+    };
+    Vector4();
+    Vector4(float a);
+    Vector4(float a, float b, float c, float d);
+    Vector4(const Vector4& v);
+    Vector4(const Vector3& v, float d);
+    const float& operator[](int i) const;
+    float& operator[](int i);
+    const Vector4& operator/=(float v);
+    const Vector4& operator*=(float v);
+    float Dot(const Vector4& v) const;
+    Vector4 Floor() const;
+    float Length() const;
+    float Distance(const Vector4& v) const;
+    Vector4 Fract() const;
+    static const Vector4 Zero;
+};
+typedef Vector4 Vertex4;
+typedef Vector4 Rect;
 
-	bool operator!=(const Vector4& v1, const Vector4& v2);
-	bool operator==(const Vector4& v1, const Vector4& v2);
-	Vector4 operator+(const Vector4& v1, const Vector4& v2);
-    Vector4 operator-(const Vector4& v);
-	Vector4 operator-(const Vector4& v1, const Vector4& v2);
-	Vector4 operator+(const Vector4& v, float scalar);
-	Vector4 operator-(const Vector4& v, float scalar);
-	Vector4 operator*(const Vector4& v, float scalar);
-    Vector4 operator*(const Vector4& v1, const Vector4& v2);
+bool operator!=(const Vector4& v1, const Vector4& v2);
+bool operator==(const Vector4& v1, const Vector4& v2);
+Vector4 operator+(const Vector4& v1, const Vector4& v2);
+Vector4 operator-(const Vector4& v);
+Vector4 operator-(const Vector4& v1, const Vector4& v2);
+Vector4 operator+(const Vector4& v, float scalar);
+Vector4 operator-(const Vector4& v, float scalar);
+Vector4 operator*(const Vector4& v, float scalar);
+Vector4 operator*(const Vector4& v1, const Vector4& v2);
 }

@@ -24,64 +24,66 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
-#include "Task.h"
-#include "Worker.h"
 #include "NonCopyable.h"
-#include <queue>
-#include <map>
-#include <functional>
-#include <mutex>
+#include "Task.h"
+#include "Types.h"
+#include "Worker.h"
 #include <condition_variable>
+#include <functional>
+#include <map>
+#include <mutex>
+#include <queue>
 #include <string>
 
-namespace NSG 
-{
-    namespace Task 
-    {
-        class TimedTask : Worker, NonCopyable 
-        {
-        public:
-	        TimedTask(const std::string& name, Milliseconds precision);
-	        ~TimedTask();
-            int AddTask(PTask pTask, TimePoint timePoint);
-            int AddLoopTask(PTask pTask, TimePoint timePoint, Milliseconds repeat);
-            int AddRepeatTask(PTask pTask, TimePoint timePoint, Milliseconds repeat, size_t times);
-            bool CancelTask(int id);
-        private:
-            void RunWorker() override;
-            bool IsEmpty() const;
-            void InternalTask();
-            struct Data {
-                enum Type {ONCE, REPEAT_LOOP, REPEAT_TIMES};
-                int id_;
-                PTask pTask_;
-                TimePoint timePoint_;
-                Type type_;
-                Milliseconds repeatStep_;
-                size_t repeatTimes_;
-                bool canceled_;
+namespace NSG {
+namespace Task {
+class TimedTask : Worker, NonCopyable {
+public:
+    TimedTask(const std::string& name, Milliseconds precision);
+    ~TimedTask();
+    int AddTask(PTask pTask, TimePoint timePoint);
+    int AddLoopTask(PTask pTask, TimePoint timePoint, Milliseconds repeat);
+    int AddRepeatTask(PTask pTask, TimePoint timePoint, Milliseconds repeat,
+                      size_t times);
+    bool CancelTask(int id);
 
-                Data(int id, PTask pTask, TimePoint timePoint, Type type, Milliseconds repeatStep, size_t repeatTimes);
-            };
-            typedef std::shared_ptr<Data> PData;
-            Data& GetTop();
-            void Run();
-            typedef std::priority_queue<PData, std::vector<PData>, std::greater<PData>> QUEUE;
-            typedef std::map<int, PData> MAP_ID_DATA;
-            typedef std::mutex Mutex;
-            typedef std::condition_variable Condition;
-            typedef std::thread Thread;
-            
-            bool taskAlive_;
-            mutable Mutex mtx_;
-            QUEUE queue_;
-            MAP_ID_DATA keyDataMap_;
-            Condition condition_;
-            Milliseconds precision_;
-            friend bool operator > (const NSG::Task::TimedTask::PData& a , const NSG::Task::TimedTask::PData& b);
-        };
+private:
+    void RunWorker() override;
+    bool IsEmpty() const;
+    void InternalTask();
+    struct Data {
+        enum Type { ONCE, REPEAT_LOOP, REPEAT_TIMES };
+        int id_;
+        PTask pTask_;
+        TimePoint timePoint_;
+        Type type_;
+        Milliseconds repeatStep_;
+        size_t repeatTimes_;
+        bool canceled_;
 
-        bool operator > (const TimedTask::PData& a , const TimedTask::PData& b);
-    }
+        Data(int id, PTask pTask, TimePoint timePoint, Type type,
+             Milliseconds repeatStep, size_t repeatTimes);
+    };
+    typedef std::shared_ptr<Data> PData;
+    Data& GetTop();
+    void Run();
+    typedef std::priority_queue<PData, std::vector<PData>, std::greater<PData>>
+        QUEUE;
+    typedef std::map<int, PData> MAP_ID_DATA;
+    typedef std::mutex Mutex;
+    typedef std::condition_variable Condition;
+    typedef std::thread Thread;
+
+    bool taskAlive_;
+    mutable Mutex mtx_;
+    QUEUE queue_;
+    MAP_ID_DATA keyDataMap_;
+    Condition condition_;
+    Milliseconds precision_;
+    friend bool operator>(const NSG::Task::TimedTask::PData& a,
+                          const NSG::Task::TimedTask::PData& b);
+};
+
+bool operator>(const TimedTask::PData& a, const TimedTask::PData& b);
+}
 }

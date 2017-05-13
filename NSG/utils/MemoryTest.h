@@ -25,30 +25,26 @@ misrepresented as being the original software.
 */
 #pragma once
 #if defined(IS_TARGET_WINDOWS) && defined(_MSC_VER)
-//http://msdn.microsoft.com/en-us/library/x98tx3cf.aspx
+// http://msdn.microsoft.com/en-us/library/x98tx3cf.aspx
 // {,,msvcr100d.dll}_crtBreakAlloc
 #include <stdio.h>
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
 #include <crtdbg.h>
+#include <stdlib.h>
 
-namespace NSG 
-{
-    inline int CRTReportHook(int type, char* msg, int* ret) 
-    {
-        printf("%s", msg);
-        return 0;
+namespace NSG {
+inline int CRTReportHook(int type, char* msg, int* ret) {
+    printf("%s", msg);
+    return 0;
+}
+
+struct MemoryTest {
+    MemoryTest() {
+        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+        _CrtSetReportHook(CRTReportHook);
     }
+};
 
-    struct MemoryTest
-    {
-        MemoryTest() 
-        {
-            _CrtSetDbgFlag (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-            _CrtSetReportHook(CRTReportHook);
-        }
-    };
-
-    static MemoryTest memoryTest;
+static MemoryTest memoryTest;
 }
 #endif

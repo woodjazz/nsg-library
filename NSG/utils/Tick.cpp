@@ -26,56 +26,45 @@ misrepresented as being the original software.
 #include "Tick.h"
 #include "Check.h"
 
-namespace NSG
-{
-	typedef std::chrono::steady_clock Clock;
+namespace NSG {
+typedef std::chrono::steady_clock Clock;
 
-	Tick::Tick(size_t fps) 
-	: ticks_(0), 
-	fixed_(0), 
-    fps_(fps)
-	{
-		CHECK_ASSERT(fps_ > 0);
-	}
+Tick::Tick(size_t fps) : ticks_(0), fixed_(0), fps_(fps) {
+    CHECK_ASSERT(fps_ > 0);
+}
 
-	Tick::~Tick()
-	{
-	}
+Tick::~Tick() {}
 
-	void Tick::Initialize()
-	{
-	    ticks_ = Milliseconds(1000 / fps_);
-	    fixed_ = 1.0f / (float)fps_;
-		InitializeTicks();
-		current_ = next_ = Clock::now();
-	}
+void Tick::Initialize() {
+    ticks_ = Milliseconds(1000 / fps_);
+    fixed_ = 1.0f / (float)fps_;
+    InitializeTicks();
+    current_ = next_ = Clock::now();
+}
 
-	void Tick::PerformTicks()
-	{
-		bool lock = false;
-		int loop = 0;
-		const int MAX_LOOP = 10;
+void Tick::PerformTicks() {
+    bool lock = false;
+    int loop = 0;
+    const int MAX_LOOP = 10;
 
-		BeginTicks();
+    BeginTicks();
 
-		while ((current_ = Clock::now()) > next_ && loop < MAX_LOOP)
-		{
-			DoTick(fixed_);
-			Milliseconds duration = std::chrono::duration_cast<Milliseconds>(Clock::now() - current_);
-			if (duration > ticks_)
-			{
-				lock = true;
-				break;
-			}
-			next_ += ticks_;
-			++loop;
-		}
+    while ((current_ = Clock::now()) > next_ && loop < MAX_LOOP) {
+        DoTick(fixed_);
+        Milliseconds duration =
+            std::chrono::duration_cast<Milliseconds>(Clock::now() - current_);
+        if (duration > ticks_) {
+            lock = true;
+            break;
+        }
+        next_ += ticks_;
+        ++loop;
+    }
 
-		if (lock || current_ > next_)
-		{
-			current_ = next_ = Clock::now(); // sync tick back
-		}
+    if (lock || current_ > next_) {
+        current_ = next_ = Clock::now(); // sync tick back
+    }
 
-		EndTicks();
-	}
+    EndTicks();
+}
 }

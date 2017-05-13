@@ -24,96 +24,78 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "InstanceBuffer.h"
-#include "RenderingContext.h"
-#include "RenderingCapabilities.h"
 #include "Batch.h"
+#include "Check.h"
+#include "RenderingCapabilities.h"
+#include "RenderingContext.h"
 #include "SceneNode.h"
 #include "Util.h"
-#include "Check.h"
 
-namespace NSG
-{
-    InstanceBuffer::InstanceBuffer()
-        : Buffer(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW),
-        maxInstances_(0)
-    {
-    }
+namespace NSG {
+InstanceBuffer::InstanceBuffer()
+    : Buffer(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW), maxInstances_(0) {}
 
-    InstanceBuffer::~InstanceBuffer()
-    {
-    }
+InstanceBuffer::~InstanceBuffer() {}
 
-    void InstanceBuffer::AllocateResources()
-    {
-        Buffer::AllocateResources();
-    }
+void InstanceBuffer::AllocateResources() { Buffer::AllocateResources(); }
 
-    void InstanceBuffer::ReleaseResources()
-    {
-        auto ctx = RenderingContext::GetSharedPtr();
-        CHECK_ASSERT(ctx);
-        if (ctx->GetVertexBuffer() == this)
-            ctx->SetVertexBuffer(nullptr);
-        Buffer::ReleaseResources();
-    }
-
-    void InstanceBuffer::Unbind()
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-	void InstanceBuffer::UpdateData(const std::vector<InstanceData>& data)
-	{
-        auto ctx = RenderingContext::GetSharedPtr();
-        ctx->SetVertexBuffer(this);
-        if (maxInstances_ >= data.size())
-        {
-            auto size = data.size() * sizeof(InstanceData);
-            auto bufferSize = maxInstances_ * sizeof(InstanceData);
-            CHECK_ASSERT(size <= bufferSize);
-            SetBufferSubData(0, data.size() * sizeof(InstanceData), &(data[0]));
-        }
-        else
-        {
-            maxInstances_ = data.size();
-            auto bufferSize = maxInstances_ * sizeof(InstanceData);
-            glBufferData(type_, bufferSize, &(data[0]), usage_);
-        }
-	}
-
-	void InstanceBuffer::UpdateBatchBuffer(const Batch& batch)
-	{
-        if(IsReady())
-        {
-            CHECK_GL_STATUS();
-            CHECK_ASSERT(RenderingCapabilities::GetPtr()->HasInstancedArrays());
-
-            std::vector<InstanceData> instancesData;
-            auto& nodes = batch.GetNodes();
-            instancesData.reserve(nodes.size());
-            for (auto& node : nodes)
-            {
-                InstanceData data;
-                const Matrix4& m = node->GetGlobalModelMatrix();
-                // for the model matrix be careful in the shader as we are using rows instead of columns
-                // in order to save space (for the attributes) we just pass the first 3 rows of the matrix as the fourth row is always (0,0,0,1) and can be set in the shader
-                data.modelMatrixRow0_ = m.Row(0);
-                data.modelMatrixRow1_ = m.Row(1);
-                data.modelMatrixRow2_ = m.Row(2);
-
-                const Matrix3& normal = node->GetGlobalModelInvTranspMatrix();
-                // for the normal matrix we are OK since we pass columns (we do not need to save space as the matrix is 3x3)
-                data.normalMatrixCol0_ = normal.Column(0);
-                data.normalMatrixCol1_ = normal.Column(1);
-                data.normalMatrixCol2_ = normal.Column(2);
-                instancesData.push_back(data);
-            }
-
-            UpdateData(instancesData);
-
-            CHECK_GL_STATUS();
-        }
-	}
-
+void InstanceBuffer::ReleaseResources() {
+    auto ctx = RenderingContext::GetSharedPtr();
+    CHECK_ASSERT(ctx);
+    if (ctx->GetVertexBuffer() == this)
+        ctx->SetVertexBuffer(nullptr);
+    Buffer::ReleaseResources();
 }
 
+void InstanceBuffer::Unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
+
+void InstanceBuffer::UpdateData(const std::vector<InstanceData>& data) {
+    auto ctx = RenderingContext::GetSharedPtr();
+    ctx->SetVertexBuffer(this);
+    if (maxInstances_ >= data.size()) {
+        auto size = data.size() * sizeof(InstanceData);
+        auto bufferSize = maxInstances_ * sizeof(InstanceData);
+        CHECK_ASSERT(size <= bufferSize);
+        SetBufferSubData(0, data.size() * sizeof(InstanceData), &(data[0]));
+    } else {
+        maxInstances_ = data.size();
+        auto bufferSize = maxInstances_ * sizeof(InstanceData);
+        glBufferData(type_, bufferSize, &(data[0]), usage_);
+    }
+}
+
+void InstanceBuffer::UpdateBatchBuffer(const Batch& batch) {
+    if (IsReady()) {
+        CHECK_GL_STATUS();
+        CHECK_ASSERT(RenderingCapabilities::GetPtr()->HasInstancedArrays());
+
+        std::vector<InstanceData> instancesData;
+        auto& nodes = batch.GetNodes();
+        instancesData.reserve(nodes.size());
+        for (auto& node : nodes) {
+            InstanceData data;
+            const Matrix4& m = node->GetGlobalModelMatrix();
+            // for the model matrix be careful in the shader as we are using
+            // rows instead of columns
+            // in order to save space (for the attributes) we just pass the
+            // first 3 rows of the matrix as the fourth row is always (0,0,0,1)
+            // and can be set in the shader
+            data.modelMatrixRow0_ = m.Row(0);
+            data.modelMatrixRow1_ = m.Row(1);
+            data.modelMatrixRow2_ = m.Row(2);
+
+            const Matrix3& normal = node->GetGlobalModelInvTranspMatrix();
+            // for the normal matrix we are OK since we pass columns (we do not
+            // need to save space as the matrix is 3x3)
+            data.normalMatrixCol0_ = normal.Column(0);
+            data.normalMatrixCol1_ = normal.Column(1);
+            data.normalMatrixCol2_ = normal.Column(2);
+            instancesData.push_back(data);
+        }
+
+        UpdateData(instancesData);
+
+        CHECK_GL_STATUS();
+    }
+}
+}

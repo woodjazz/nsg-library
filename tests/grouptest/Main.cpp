@@ -26,118 +26,115 @@ misrepresented as being the original software.
 
 #include "NSG.h"
 using namespace NSG;
-static void Test0()
-{
-	auto window = Window::Create("0", 100, 100, 150, 50, (int)WindowFlag::HIDDEN);
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene0.xml");
-	LoaderXML data("loader");
-	auto slot = data.Load(resource)->Connect([&]()
-	{
-		auto scene = data.GetScene(0);
-		CHECK_CONDITION(scene->GetChildren().size() == 7);
-		{
-			auto object = scene->GetChild<SceneNode>("Cube", true);
-			CHECK_CONDITION(object);
-		}
-		{
-			auto object = scene->GetChild<SceneNode>("Sphere", true);
-			CHECK_CONDITION(object);
-		}
-		{
-			auto object = scene->GetChild<SceneNode>("Torus", true);
-			CHECK_CONDITION(object);
-		}
-		{
-			auto object = scene->GetChild<SceneNode>("Plane", true);
-			CHECK_CONDITION(object);
-		}
-		{
-			auto object = scene->GetChild<SceneNode>("InstancedGroup", true);
-			CHECK_CONDITION(object);
-			{
-				auto object1 = object->GetChild<SceneNode>("Cube", true);
-				CHECK_CONDITION(object1);
-			}
-			{
-				auto object1 = object->GetChild<SceneNode>("Sphere", true);
-				CHECK_CONDITION(object1);
-			}
-			{
-				auto object1 = object->GetChild<SceneNode>("Torus", true);
-				CHECK_CONDITION(object1);
-			}
-			{
-				auto object1 = object->GetChild<SceneNode>("Plane", true);
-				CHECK_CONDITION(!object1);
-			}
-		}
-		window = nullptr;
-	});
+static void Test0() {
+    auto window =
+        Window::Create("0", 100, 100, 150, 50, (int)WindowFlag::HIDDEN);
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/scene0.xml");
+    LoaderXML data("loader");
+    auto slot = data.Load(resource)->Connect([&]() {
+        auto scene = data.GetScene(0);
+        CHECK_CONDITION(scene->GetChildren().size() == 7);
+        {
+            auto object = scene->GetChild<SceneNode>("Cube", true);
+            CHECK_CONDITION(object);
+        }
+        {
+            auto object = scene->GetChild<SceneNode>("Sphere", true);
+            CHECK_CONDITION(object);
+        }
+        {
+            auto object = scene->GetChild<SceneNode>("Torus", true);
+            CHECK_CONDITION(object);
+        }
+        {
+            auto object = scene->GetChild<SceneNode>("Plane", true);
+            CHECK_CONDITION(object);
+        }
+        {
+            auto object = scene->GetChild<SceneNode>("InstancedGroup", true);
+            CHECK_CONDITION(object);
+            {
+                auto object1 = object->GetChild<SceneNode>("Cube", true);
+                CHECK_CONDITION(object1);
+            }
+            {
+                auto object1 = object->GetChild<SceneNode>("Sphere", true);
+                CHECK_CONDITION(object1);
+            }
+            {
+                auto object1 = object->GetChild<SceneNode>("Torus", true);
+                CHECK_CONDITION(object1);
+            }
+            {
+                auto object1 = object->GetChild<SceneNode>("Plane", true);
+                CHECK_CONDITION(!object1);
+            }
+        }
+        window = nullptr;
+    });
 
-	Engine::Create()->Run();
+    Engine::Create()->Run();
 }
 
-static void Test1()
-{
-	auto window = Window::Create("0", 100, 100, 150, 50, (int)WindowFlag::HIDDEN);
-	auto resource = Resource::GetOrCreate<ResourceFile>("data/scene1.xml");
-	LoaderXML data("loader");
-	auto slot = data.Load(resource)->Connect([&]()
-	{
-		auto scene = data.GetScene(0);
-		CHECK_CONDITION(scene->GetChildren().size() == 11);
-		{
-			auto object = scene->GetChild<SceneNode>("Cube", true);
-			CHECK_CONDITION(object);
-		}
-		{
-			auto object = scene->GetChild<SceneNode>("Sphere", true);
-			CHECK_CONDITION(object);
-		}
-		{
-			auto object = scene->GetChild<SceneNode>("Torus", true);
-			CHECK_CONDITION(object);
-		}
-		{
-			auto object = scene->GetChild<SceneNode>("Plane", true);
-			CHECK_CONDITION(object);
-		}
-		{
-			auto object = scene->GetChild<SceneNode>("InstancedGroup001", true);
-			CHECK_CONDITION(object);
-			CHECK_CONDITION(object->GetChildren().size() == 2);
-		}
+static void Test1() {
+    auto window =
+        Window::Create("0", 100, 100, 150, 50, (int)WindowFlag::HIDDEN);
+    auto resource = Resource::GetOrCreate<ResourceFile>("data/scene1.xml");
+    LoaderXML data("loader");
+    auto slot = data.Load(resource)->Connect([&]() {
+        auto scene = data.GetScene(0);
+        CHECK_CONDITION(scene->GetChildren().size() == 11);
+        {
+            auto object = scene->GetChild<SceneNode>("Cube", true);
+            CHECK_CONDITION(object);
+        }
+        {
+            auto object = scene->GetChild<SceneNode>("Sphere", true);
+            CHECK_CONDITION(object);
+        }
+        {
+            auto object = scene->GetChild<SceneNode>("Torus", true);
+            CHECK_CONDITION(object);
+        }
+        {
+            auto object = scene->GetChild<SceneNode>("Plane", true);
+            CHECK_CONDITION(object);
+        }
+        {
+            auto object = scene->GetChild<SceneNode>("InstancedGroup001", true);
+            CHECK_CONDITION(object);
+            CHECK_CONDITION(object->GetChildren().size() == 2);
+        }
 
-		{
-			auto object = scene->GetChild<SceneNode>("InstancedGroup", true);
-			CHECK_CONDITION(object);
-			CHECK_CONDITION(object->GetChildren().size() == 3);
-			{
-				auto object1 = object->GetChild<SceneNode>("Cube", true);
-				CHECK_CONDITION(object1);
-			}
-			{
-				auto object1 = object->GetChild<SceneNode>("Sphere", true);
-				CHECK_CONDITION(object1);
-			}
-			{
-				auto object1 = object->GetChild<SceneNode>("Torus", true);
-				CHECK_CONDITION(object1);
-			}
-			{
-				auto object1 = object->GetChild<SceneNode>("Plane", true);
-				CHECK_CONDITION(!object1);
-			}
-		}
-		window = nullptr;
-	});
+        {
+            auto object = scene->GetChild<SceneNode>("InstancedGroup", true);
+            CHECK_CONDITION(object);
+            CHECK_CONDITION(object->GetChildren().size() == 3);
+            {
+                auto object1 = object->GetChild<SceneNode>("Cube", true);
+                CHECK_CONDITION(object1);
+            }
+            {
+                auto object1 = object->GetChild<SceneNode>("Sphere", true);
+                CHECK_CONDITION(object1);
+            }
+            {
+                auto object1 = object->GetChild<SceneNode>("Torus", true);
+                CHECK_CONDITION(object1);
+            }
+            {
+                auto object1 = object->GetChild<SceneNode>("Plane", true);
+                CHECK_CONDITION(!object1);
+            }
+        }
+        window = nullptr;
+    });
 
-	Engine::Create()->Run();
+    Engine::Create()->Run();
 }
 
-int NSG_MAIN(int argc, char* argv[])
-{
-	Test0();
-	Test1();
-	return 0;
+int NSG_MAIN(int argc, char* argv[]) {
+    Test0();
+    Test1();
+    return 0;
 }

@@ -24,116 +24,104 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Skeleton.h"
-#include "SceneNode.h"
 #include "Bone.h"
 #include "Check.h"
 #include "ModelMesh.h"
 #include "Scene.h"
-#include "Util.h"
+#include "SceneNode.h"
 #include "StringConverter.h"
+#include "Util.h"
 #include "pugixml.hpp"
 #include <sstream>
 
-namespace NSG
-{
-    template<> std::map<std::string, PWeakSkeleton> WeakFactory<std::string, Skeleton>::objsMap_ = std::map<std::string, PWeakSkeleton>{};
+namespace NSG {
+template <>
+std::map<std::string, PWeakSkeleton>
+    WeakFactory<std::string, Skeleton>::objsMap_ =
+        std::map<std::string, PWeakSkeleton>{};
 
-    Skeleton::Skeleton(const std::string& name)
-        : Object(name)
-    {
-    }
+Skeleton::Skeleton(const std::string& name) : Object(name) {}
 
-    Skeleton::~Skeleton()
-    {
-    }
+Skeleton::~Skeleton() {}
 
-    void Skeleton::Save(pugi::xml_node& node)
+void Skeleton::Save(pugi::xml_node& node) {
+    pugi::xml_node skeletonNode = node.append_child("Skeleton");
+    skeletonNode.append_attribute("name") = name_.c_str();
     {
-        pugi::xml_node skeletonNode = node.append_child("Skeleton");
-        skeletonNode.append_attribute("name") = name_.c_str();
-        {
-            auto shaderOrderNode = skeletonNode.append_child("ShaderOrder");
-            for (auto& obj : shaderOrder_)
-            {
-                auto boneNode = shaderOrderNode.append_child("Bone");
-                boneNode.append_attribute("name") = obj.c_str();
-                const Matrix4& offset = GetBoneOffsetMatrix(obj);
-                boneNode.append_attribute("offsetMatrix").set_value(ToString(offset).c_str());
-            }
-        }
-        {
-            auto bonesNode = skeletonNode.append_child("Bones");
-            for (auto bone : rootBones_)
-                bone->Save(bonesNode);
+        auto shaderOrderNode = skeletonNode.append_child("ShaderOrder");
+        for (auto& obj : shaderOrder_) {
+            auto boneNode = shaderOrderNode.append_child("Bone");
+            boneNode.append_attribute("name") = obj.c_str();
+            const Matrix4& offset = GetBoneOffsetMatrix(obj);
+            boneNode.append_attribute("offsetMatrix")
+                .set_value(ToString(offset).c_str());
         }
     }
-
-    void Skeleton::Load(const pugi::xml_node& node)
     {
-        std::string name = node.attribute("name").as_string();
-        CHECK_ASSERT(name == name_);
-		shaderOrder_.clear();
-        offsets_.clear();
-        rootBones_.clear();
-        {
-            auto boneNode = node.child("ShaderOrder").child("Bone");
-            while (boneNode)
-            {
-                std::string name = boneNode.attribute("name").as_string();
-                SetBoneOffsetMatrix(name, ToMatrix4(boneNode.attribute("offsetMatrix").as_string()));
-                shaderOrder_.push_back(name);
-                boneNode = boneNode.next_sibling("Bone");
-            }
-        }
+        auto bonesNode = skeletonNode.append_child("Bones");
+        for (auto bone : rootBones_)
+            bone->Save(bonesNode);
+    }
+}
 
-        {
-            auto boneNode = node.child("Bones").child("Bone");
-            while (boneNode)
-            {
-                std::string name = boneNode.attribute("name").as_string();
-                auto bone = std::make_shared<Bone>(name);
-                bone->Load(boneNode);
-                rootBones_.push_back(bone);
-                boneNode = boneNode.next_sibling("Bone");
-            }
+void Skeleton::Load(const pugi::xml_node& node) {
+    std::string name = node.attribute("name").as_string();
+    CHECK_ASSERT(name == name_);
+    shaderOrder_.clear();
+    offsets_.clear();
+    rootBones_.clear();
+    {
+        auto boneNode = node.child("ShaderOrder").child("Bone");
+        while (boneNode) {
+            std::string name = boneNode.attribute("name").as_string();
+            SetBoneOffsetMatrix(
+                name,
+                ToMatrix4(boneNode.attribute("offsetMatrix").as_string()));
+            shaderOrder_.push_back(name);
+            boneNode = boneNode.next_sibling("Bone");
         }
     }
 
-    void Skeleton::SetBoneOffsetMatrix(const std::string& name, const Matrix4& offset)
     {
-        offsets_[name] = offset;
+        auto boneNode = node.child("Bones").child("Bone");
+        while (boneNode) {
+            std::string name = boneNode.attribute("name").as_string();
+            auto bone = std::make_shared<Bone>(name);
+            bone->Load(boneNode);
+            rootBones_.push_back(bone);
+            boneNode = boneNode.next_sibling("Bone");
+        }
     }
+}
 
-    const Matrix4& Skeleton::GetBoneOffsetMatrix(const std::string& name) const
-    {
-        auto it = offsets_.find(name);
-        return it->second;
-    }
+void Skeleton::SetBoneOffsetMatrix(const std::string& name,
+                                   const Matrix4& offset) {
+    offsets_[name] = offset;
+}
 
-    void Skeleton::SaveSkeletons(pugi::xml_node& node)
-    {
-        pugi::xml_node child = node.append_child("Skeletons");
-        auto skeletons = Skeleton::GetObjs();
-        for (auto& obj : skeletons)
-            obj->Save(child);
-    }
+const Matrix4& Skeleton::GetBoneOffsetMatrix(const std::string& name) const {
+    auto it = offsets_.find(name);
+    return it->second;
+}
 
-    void Skeleton::CreateBonesFor(PNode parent, PBone bone) const
-    {
-    	auto clone = bone->Clone();
-    	clone->SetParent(parent);
-        for (auto child : bone->GetChildren())
-			CreateBonesFor(clone, std::dynamic_pointer_cast<Bone>(child));
-    }
+void Skeleton::SaveSkeletons(pugi::xml_node& node) {
+    pugi::xml_node child = node.append_child("Skeletons");
+    auto skeletons = Skeleton::GetObjs();
+    for (auto& obj : skeletons)
+        obj->Save(child);
+}
 
-    void Skeleton::CreateBonesFor(PSceneNode sceneNode) const
-    {
-        for (auto node : rootBones_)
-            CreateBonesFor(sceneNode, node);
-    }
+void Skeleton::CreateBonesFor(PNode parent, PBone bone) const {
+    auto clone = bone->Clone();
+    clone->SetParent(parent);
+    for (auto child : bone->GetChildren())
+        CreateBonesFor(clone, std::dynamic_pointer_cast<Bone>(child));
+}
 
-	size_t Skeleton::GetNumberOfBones() const
-	{
-		return shaderOrder_.size();
-	}
+void Skeleton::CreateBonesFor(PSceneNode sceneNode) const {
+    for (auto node : rootBones_)
+        CreateBonesFor(sceneNode, node);
+}
+
+size_t Skeleton::GetNumberOfBones() const { return shaderOrder_.size(); }
 }

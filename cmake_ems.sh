@@ -22,34 +22,5 @@
 #misrepresented as being the original software.
 #3. This notice may not be removed or altered from any source distribution.
 #-------------------------------------------------------------------------------
-
-cd $( dirname $0 ) # Ensure we are in project root directory
-set -e
-SOURCE_FOLDER="$PWD"
-
-# if [ ! -n "$HOME_EMSCRIPTEN" ]; then
-# 	echo "Environment variable HOME_EMSCRIPTEN shall be set."
-# 	exit 0
-# fi
-
-if [ ! -n "$1" ]; then
-	echo "Enter build target directory. (directory will be created on the parent directory of the current one)"
-	exit 0
-fi
-
-cd $HOME_EMSCRIPTEN
-source $HOME_EMSCRIPTEN/emsdk_env.sh
-$HOME_EMSCRIPTEN/emsdk activate
-cd $SOURCE_FOLDER
-
-cd ..
-cmake -E make_directory $1
-cd $1
-
-echo "*** CONFIGURING PROJECTS ***"
-#cmake $SOURCE_FOLDER -G "Unix Makefiles" -DEMS_DEBUG_LEVEL=4 -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake"
-cmake $SOURCE_FOLDER -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Release" -DCMAKE_TOOLCHAIN_FILE="$EMSCRIPTEN/cmake/Modules/Platform/Emscripten.cmake"
-
-echo "*** BUILDING $2 ***"
-make $2
+$( dirname $0 )/cmake_linux.sh "$@" --platform emscripten 
 #python -m SimpleHTTPServer 8000

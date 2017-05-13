@@ -21,21 +21,20 @@ misrepresented as being the original software.
 */
 
 #include "NSG.h"
-int NSG_MAIN(int argc, char* argv[])
-{
+int NSG_MAIN(int argc, char* argv[]) {
     using namespace NSG;
 
     auto window = Window::Create();
+    auto font = std::make_shared<FontXMLAtlas>();
 
-    auto font = std::make_shared<FontAtlas>();
+    auto xmlResource =
+        Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.xml");
+    font->SetXML(xmlResource);
 
-    auto xmlResource = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.xml");
-    font->Set(xmlResource);
-
-    auto atlasResource = Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.png");
+    auto atlasResource =
+        Resource::GetOrCreate<ResourceFile>("data/AnonymousPro32.png");
     auto atlasTexture = std::make_shared<Texture2D>(atlasResource);
     font->SetTexture(atlasTexture);
-
     auto scene = std::make_shared<Scene>("scene");
     auto camera = scene->CreateChild<Camera>();
     camera->SetPosition(Vector3(0, 0, 2));
@@ -47,49 +46,69 @@ int NSG_MAIN(int argc, char* argv[])
     auto nodeLeftTop = scene->GetOrCreateChild<SceneNode>("nodeLeftTop");
     auto nodeRightTop = scene->GetOrCreateChild<SceneNode>("nodeRightTop");
     auto nodeLeftBottom = scene->GetOrCreateChild<SceneNode>("nodeLeftBottom");
-    auto nodeRightBottom = scene->GetOrCreateChild<SceneNode>("nodeRightBottom");
+    auto nodeRightBottom =
+        scene->GetOrCreateChild<SceneNode>("nodeRightBottom");
 
-    nodeCenter->SetMesh(font->GetOrCreateMesh("C Hello World!!!", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT));
-    nodeLeftTop->SetMesh(font->GetOrCreateMesh("LT Hello World!!!", LEFT_ALIGNMENT, TOP_ALIGNMENT));
-    nodeRightTop->SetMesh(font->GetOrCreateMesh("RT Hello World!!!", RIGHT_ALIGNMENT, TOP_ALIGNMENT));
-    nodeLeftBottom->SetMesh(font->GetOrCreateMesh("LB Hello World!!!", LEFT_ALIGNMENT, BOTTOM_ALIGNMENT));
-    nodeRightBottom->SetMesh(font->GetOrCreateMesh("RB Hello World!!!", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT));
+    nodeCenter->SetMesh(font->GetOrCreateMesh(
+        "C Hello World!!!", CENTER_ALIGNMENT, MIDDLE_ALIGNMENT));
+    nodeLeftTop->SetMesh(font->GetOrCreateMesh("LT Hello World!!!",
+                                               LEFT_ALIGNMENT, TOP_ALIGNMENT));
+    nodeRightTop->SetMesh(font->GetOrCreateMesh(
+        "RT Hello World!!!", RIGHT_ALIGNMENT, TOP_ALIGNMENT));
+    nodeLeftBottom->SetMesh(font->GetOrCreateMesh(
+        "LB Hello World!!!", LEFT_ALIGNMENT, BOTTOM_ALIGNMENT));
+    nodeRightBottom->SetMesh(font->GetOrCreateMesh(
+        "RB Hello World!!!", RIGHT_ALIGNMENT, BOTTOM_ALIGNMENT));
     auto material = Material::Create();
-    material->SetTextMap(font->GetTexture());
-
-    auto focusMaterial = material->Clone();
-    focusMaterial->SetDiffuseColor(Color(0, 0, 1));
-
-    auto activeMaterial = material->Clone();
-    activeMaterial->SetDiffuseColor(Color(1, 0, 0));
+    material->SetFontAtlas(font);
 
     nodeCenter->SetMaterial(material);
     nodeLeftTop->SetMaterial(material);
     nodeRightTop->SetMaterial(material);
     nodeLeftBottom->SetMaterial(material);
     nodeRightBottom->SetMaterial(material);
-    //control->AutoZoom();
+    // control->AutoZoom();
+
+    auto overlayNode = scene->CreateOverlay("overlayNode");
+    overlayNode->SetMaterial(Material::Create());
+    overlayNode->GetMaterial()->SetFontAtlas(font);
+    overlayNode->SetMesh(font->GetOrCreateMesh("OVERLAY"));
+
+    auto fontTTF = std::make_shared<FontTTFAtlas>();
+    fontTTF->SetTTF(
+        Resource::GetOrCreate<ResourceFile>("data/AnonymousPro.ttf"));
+    auto overlayNode1 = scene->CreateOverlay("overlayNode1");
+    overlayNode1->SetMaterial(Material::Create());
+    overlayNode1->GetMaterial()->SetFontAtlas(fontTTF);
+    overlayNode1->SetMesh(fontTTF->GetOrCreateMesh("OVERLAY1"));
+    PMaterial activeMaterial;
 
     SceneNode* lastNode = nullptr;
-    auto slotMouseDown = scene->SigNodeMouseDown()->Connect([&](SceneNode * node, int button, float x, float y)
-    {
-        lastNode = node;
-        node->SetMaterial(activeMaterial);
-    });
+    auto slotMouseDown = scene->SigNodeMouseDown()->Connect(
+        [&](SceneNode* node, int button, float x, float y) {
+            lastNode = node;
+            if (!activeMaterial) {
+                activeMaterial = material->Clone();
+                activeMaterial->SetDiffuseColor(Color(1, 0, 0));
+            }
+            node->SetMaterial(activeMaterial);
+        });
 
-    auto slotMouseUp = window->SigMouseUp()->Connect([&](int button, float x, float y)
-    {
-        if (lastNode)
-        {
-            lastNode->SetMaterial(material);
-            lastNode = nullptr;
-        }
-    });
+    auto slotMouseUp =
+        window->SigMouseUp()->Connect([&](int button, float x, float y) {
+            if (lastNode) {
+                lastNode->SetMaterial(material);
+                lastNode = nullptr;
+            }
+        });
 
-    auto drawGUISlot = window->SigDrawIMGUI()->Connect([&]()
-    {
+    auto drawGUISlot = window->SigDrawIMGUI()->Connect([&]() {
         static bool show_test_window = true;
         ImGui::ShowTestWindow(&show_test_window);
+        static float incX = 0.0001f;
+        if (Abs(overlayNode->GetPosition().x) > 1.2f)
+            incX *= -1;
+        overlayNode->Translate(Vector3(incX, 0, 0));
     });
 
     window->SetScene(scene);

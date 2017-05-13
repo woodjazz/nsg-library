@@ -28,8 +28,7 @@ misrepresented as being the original software.
 
 extern void NodeTest();
 
-int NSG_MAIN(int argc, char* argv[])
-{
-	NodeTest();
-	return 0;
+int NSG_MAIN(int argc, char* argv[]) {
+    NodeTest();
+    return 0;
 };

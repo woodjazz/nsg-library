@@ -24,91 +24,73 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "OctreeQuery.h"
-#include "SceneNode.h"
 #include "Camera.h"
 #include "Frustum.h"
+#include "SceneNode.h"
 
-namespace NSG
-{
-    OctreeQuery::OctreeQuery(std::vector<SceneNode*>& result)
-        : result_(result)
-    {
-    }
+namespace NSG {
+OctreeQuery::OctreeQuery(std::vector<SceneNode*>& result) : result_(result) {}
 
-    OctreeQuery::~OctreeQuery()
-    {
-    }
+OctreeQuery::~OctreeQuery() {}
 
+FrustumOctreeQuery::FrustumOctreeQuery(std::vector<SceneNode*>& result,
+                                       const Frustum* frustum)
+    : OctreeQuery(result), frustum_(frustum) {}
 
-    FrustumOctreeQuery::FrustumOctreeQuery(std::vector<SceneNode*>& result, const Frustum* frustum)
-        : OctreeQuery(result),
-          frustum_(frustum)
-    {
-    }
+Intersection FrustumOctreeQuery::TestOctant(const BoundingBox& box,
+                                            bool inside) {
+    if (inside)
+        return Intersection::INSIDE;
+    else
+        return frustum_->IsInside(box);
+}
 
-    Intersection FrustumOctreeQuery::TestOctant(const BoundingBox& box, bool inside)
-    {
-        if (inside)
-            return Intersection::INSIDE;
-        else
-            return frustum_->IsInside(box);
-    }
-
-    void FrustumOctreeQuery::Test(const std::vector<SceneNode*>& objs, bool inside)
-    {
-        for (auto& obj : objs)
-        {
-			if (obj->CanBeVisible())
-            {
-                if (inside || frustum_->IsInside(obj->GetWorldBoundingBox()) != Intersection::OUTSIDE)
-                    result_.push_back(obj);
-            }
+void FrustumOctreeQuery::Test(const std::vector<SceneNode*>& objs,
+                              bool inside) {
+    for (auto& obj : objs) {
+        if (obj->CanBeVisible()) {
+            if (inside ||
+                frustum_->IsInside(obj->GetWorldBoundingBox()) !=
+                    Intersection::OUTSIDE)
+                result_.push_back(obj);
         }
     }
+}
 
-    RayOctreeQuery::RayOctreeQuery(std::vector<SceneNode*>& result, const Ray& ray)
-        : OctreeQuery(result),
-          ray_(ray)
-    {
-    }
+RayOctreeQuery::RayOctreeQuery(std::vector<SceneNode*>& result, const Ray& ray)
+    : OctreeQuery(result), ray_(ray) {}
 
-    Intersection RayOctreeQuery::TestOctant(const BoundingBox& box, bool inside)
-    {
-        if (inside)
-            return Intersection::INSIDE;
-        else
-            return ray_.IsInside(box);
-    }
+Intersection RayOctreeQuery::TestOctant(const BoundingBox& box, bool inside) {
+    if (inside)
+        return Intersection::INSIDE;
+    else
+        return ray_.IsInside(box);
+}
 
-    void RayOctreeQuery::Test(const std::vector<SceneNode*>& objs, bool inside)
-    {
-        for (auto& obj : objs)
-        {
-            if(!obj->AllowRayQuery())
-                continue;
-			if (obj->CanBeVisible())
-            {
-                if(inside)
-                    result_.push_back(obj);
-                else
-                {
-                    auto worldBB = obj->GetWorldBoundingBox();
-                    if(obj->IsBillboard())
-                    {
-						auto size = worldBB.Size();
-						auto maxDistance = std::max(std::max(size.x, size.y), size.z);
-						auto halfDistance = .5f * maxDistance;
-                        auto halfExtend = Vector3::One * halfDistance;
-						auto min = worldBB.Center() - halfExtend;
-						auto max = worldBB.Center() + halfExtend;
-                        worldBB = BoundingBox(min, max);
-                    }
-
-                    if(ray_.IsInside(worldBB) != Intersection::OUTSIDE)
-                        result_.push_back(obj);
+void RayOctreeQuery::Test(const std::vector<SceneNode*>& objs, bool inside) {
+    for (auto& obj : objs) {
+        if (!obj->AllowRayQuery())
+            continue;
+        if (obj->CanBeVisible()) {
+            if (inside)
+                result_.push_back(obj);
+            else {
+                auto worldBB = obj->GetWorldBoundingBox();
+                if (obj->IsBillboard()) {
+                    auto size = worldBB.Size();
+                    auto maxDistance =
+                        std::max(std::max(size.x, size.y), size.z);
+                    auto halfDistance = .5f * maxDistance;
+                    auto halfExtend = Vector3::One * halfDistance;
+                    auto min = worldBB.Center() - halfExtend;
+                    auto max = worldBB.Center() + halfExtend;
+                    worldBB = BoundingBox(min, max);
                 }
 
+                if (ray_.IsInside(worldBB) != Intersection::OUTSIDE)
+                    result_.push_back(obj);
             }
         }
     }
+}
 }

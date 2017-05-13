@@ -27,30 +27,31 @@ misrepresented as being the original software.
 #include "Types.h"
 #include "Vector3.h"
 
-namespace NSG
-{
-    struct Matrix4;
-    class Ray
-    {
-    public:
-		Ray(const Vertex3& origin, const Vector3& direction, float maxDistance = std::numeric_limits<float>::max());
-        Ray(const Ray& ray);
-        ~Ray();
-		Ray& operator = (const Ray& rhs);
-        bool operator == (const Ray& rhs) const;
-        bool operator != (const Ray& rhs) const;
-		float HitDistance(const Vector3& v0, const Vector3& v1, const Vector3& v2, Vector3* outNormal = nullptr) const;
-        float HitDistance(const BoundingBox& box) const;
-        Intersection IsInside(const BoundingBox& box) const;
-        float HitDistance(const SceneNode* node) const;
-        float GetMaxDistance() const { return maxDistance_; }
-        Vertex3 GetPoint(float distance) const;
-        const Vector3& GetDirection() const { return direction_; }
-        const Vertex3& GetOrigin() const { return origin_; }
-        Ray Transformed(const Matrix4& transform) const;
-    private:
-        Vertex3 origin_;
-        Vector3 direction_;
-        float maxDistance_;
-    };
+namespace NSG {
+struct Matrix4;
+class Ray {
+public:
+    Ray(const Vertex3& origin, const Vector3& direction,
+        float maxDistance = std::numeric_limits<float>::max());
+    Ray(const Ray& ray);
+    ~Ray();
+    Ray& operator=(const Ray& rhs);
+    bool operator==(const Ray& rhs) const;
+    bool operator!=(const Ray& rhs) const;
+    float HitDistance(const Vector3& v0, const Vector3& v1, const Vector3& v2,
+                      Vector3* outNormal = nullptr) const;
+    float HitDistance(const BoundingBox& box) const;
+    Intersection IsInside(const BoundingBox& box) const;
+    float HitDistance(const SceneNode* node) const;
+    float GetMaxDistance() const { return maxDistance_; }
+    Vertex3 GetPoint(float distance) const;
+    const Vector3& GetDirection() const { return direction_; }
+    const Vertex3& GetOrigin() const { return origin_; }
+    Ray Transformed(const Matrix4& transform) const;
+
+private:
+    Vertex3 origin_;
+    Vector3 direction_;
+    float maxDistance_;
+};
 }

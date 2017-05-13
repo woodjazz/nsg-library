@@ -24,133 +24,74 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "Pass.h"
+#include "Batch.h"
+#include "BoundingBox.h"
+#include "Camera.h"
+#include "Check.h"
+#include "Frustum.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "Check.h"
-#include "RenderingContext.h"
-#include "Camera.h"
-#include "BoundingBox.h"
-#include "Frustum.h"
 #include "Program.h"
+#include "RenderingContext.h"
 #include "pugixml.hpp"
-#include "Batch.h"
 #include <sstream>
 
-namespace NSG
-{
-    PassData::PassData()
-        : enableDepthTest_(true),
-          enableStencilTest_(false),
-          stencilMask_(~GLuint(0)),
-          sfailStencilOp_(GL_KEEP),
-          dpfailStencilOp_(GL_KEEP),
-          dppassStencilOp_(GL_KEEP),
-          stencilFunc_(GL_ALWAYS),
-          stencilRefValue_(0),
-          stencilMaskValue_(~GLuint(0)),
-          enableColorBuffer_(true),
-          enableDepthBuffer_(true),
-          frontFaceMode_(FrontFaceMode::DEFAULT),
-          depthFunc_(DepthFunc::LESS),
-          enableScissorTest_(false),
-          scissorX_(0),
-          scissorY_(0),
-          scissorWidth_(0),
-          scissorHeight_(0),
-          cullFaceMode_(CullFaceMode::DEFAULT),
-          blendMode_(BLEND_MODE::NONE)
-    {
+namespace NSG {
+PassData::PassData()
+    : enableDepthTest_(true), enableStencilTest_(false),
+      stencilMask_(~GLuint(0)), sfailStencilOp_(GL_KEEP),
+      dpfailStencilOp_(GL_KEEP), dppassStencilOp_(GL_KEEP),
+      stencilFunc_(GL_ALWAYS), stencilRefValue_(0),
+      stencilMaskValue_(~GLuint(0)), enableColorBuffer_(true),
+      enableDepthBuffer_(true), frontFaceMode_(FrontFaceMode::DEFAULT),
+      depthFunc_(DepthFunc::LESS), enableScissorTest_(false), scissorX_(0),
+      scissorY_(0), scissorWidth_(0), scissorHeight_(0),
+      cullFaceMode_(CullFaceMode::DEFAULT), blendMode_(BLEND_MODE::NONE) {}
 
-    }
+Pass::Pass() : type_(PassType::DEFAULT) {}
 
-    Pass::Pass()
-        : type_(PassType::DEFAULT)
-    {
-    }
+Pass::~Pass() {}
 
-    Pass::~Pass()
-    {
-    }
+void Pass::SetType(PassType type) { type_ = type; }
 
-    void Pass::SetType(PassType type)
-    {
-        type_ = type;
-    }
+void Pass::SetBlendMode(BLEND_MODE mode) { data_.blendMode_ = mode; }
 
-    void Pass::SetBlendMode(BLEND_MODE mode)
-    {
-        data_.blendMode_ = mode;
-    }
+BLEND_MODE Pass::GetBlendMode() const { return data_.blendMode_; }
 
-    BLEND_MODE Pass::GetBlendMode() const
-    {
-        return data_.blendMode_;
-    }
+void Pass::EnableColorBuffer(bool enable) { data_.enableColorBuffer_ = enable; }
 
-    void Pass::EnableColorBuffer(bool enable)
-    {
-        data_.enableColorBuffer_ = enable;
-    }
+void Pass::EnableDepthBuffer(bool enable) { data_.enableDepthBuffer_ = enable; }
 
-    void Pass::EnableDepthBuffer(bool enable)
-    {
-        data_.enableDepthBuffer_ = enable;
-    }
+void Pass::EnableDepthTest(bool enable) { data_.enableDepthTest_ = enable; }
 
-    void Pass::EnableDepthTest(bool enable)
-    {
-        data_.enableDepthTest_ = enable;
-    }
+void Pass::EnableStencilTest(bool enable) { data_.enableStencilTest_ = enable; }
 
-    void Pass::EnableStencilTest(bool enable)
-    {
-        data_.enableStencilTest_ = enable;
-    }
+void Pass::EnableScissorTest(bool enable) { data_.enableScissorTest_ = enable; }
 
-    void Pass::EnableScissorTest(bool enable)
-    {
-        data_.enableScissorTest_ = enable;
-    }
+void Pass::SetScissor(int x, int y, int width, int height) {
+    data_.scissorX_ = x;
+    data_.scissorY_ = y;
+    data_.scissorWidth_ = width;
+    data_.scissorHeight_ = height;
+}
 
-    void Pass::SetScissor(int x, int y, int width, int height)
-    {
-        data_.scissorX_ = x;
-        data_.scissorY_ = y;
-        data_.scissorWidth_ = width;
-        data_.scissorHeight_ = height;
-    }
+void Pass::SetDepthFunc(DepthFunc depthFunc) { data_.depthFunc_ = depthFunc; }
 
-    void Pass::SetDepthFunc(DepthFunc depthFunc)
-    {
-        data_.depthFunc_ = depthFunc;
-    }
+void Pass::SetStencilMask(GLuint mask) { data_.stencilMask_ = mask; }
 
-    void Pass::SetStencilMask(GLuint mask)
-    {
-        data_.stencilMask_ = mask;
-    }
+void Pass::SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass) {
+    data_.sfailStencilOp_ = sfail;
+    data_.dpfailStencilOp_ = dpfail;
+    data_.dppassStencilOp_ = dppass;
+}
 
-    void Pass::SetStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass)
-    {
-        data_.sfailStencilOp_ = sfail;
-        data_.dpfailStencilOp_ = dpfail;
-        data_.dppassStencilOp_ = dppass;
-    }
+void Pass::SetStencilFunc(GLenum func, GLint ref, GLuint mask) {
+    data_.stencilFunc_ = func;
+    data_.stencilRefValue_ = ref;
+    data_.stencilMaskValue_ = mask;
+}
 
-    void Pass::SetStencilFunc(GLenum func, GLint ref, GLuint mask)
-    {
-        data_.stencilFunc_ = func;
-        data_.stencilRefValue_ = ref;
-        data_.stencilMaskValue_ = mask;
-    }
+void Pass::SetFrontFace(FrontFaceMode mode) { data_.frontFaceMode_ = mode; }
 
-    void Pass::SetFrontFace(FrontFaceMode mode)
-    {
-        data_.frontFaceMode_ = mode;
-    }
-
-    void Pass::SetCullFace(CullFaceMode mode)
-    {
-        data_.cullFaceMode_ = mode;
-    }
+void Pass::SetCullFace(CullFaceMode mode) { data_.cullFaceMode_ = mode; }
 }

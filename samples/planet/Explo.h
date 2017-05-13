@@ -26,19 +26,19 @@ misrepresented as being the original software.
 #pragma once
 #include "NSG.h"
 using namespace NSG;
-class Explo
-{
+class Explo {
 public:
-	Explo(PSceneNode node);
-	~Explo();
-	void Start();
+    Explo(PSceneNode node);
+    ~Explo();
+    void Start();
+
 private:
-	SignalUpdate::PSlot slotUpdate_;
-	float totalTime_;
-	Vector4 uvTransform_;
-	float alpha_;
-	PMaterial material_;
-	PTexture2D texture_;
-	PSceneNode sprite_;
-	PMaterial filter_;
+    SignalUpdate::PSlot slotUpdate_;
+    float totalTime_;
+    Vector4 uvTransform_;
+    float alpha_;
+    PMaterial material_;
+    PTexture2D texture_;
+    PSceneNode sprite_;
+    PMaterial filter_;
 };

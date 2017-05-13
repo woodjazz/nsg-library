@@ -26,82 +26,73 @@ misrepresented as being the original software.
 #include "NSG.h"
 using namespace NSG;
 
-static int Test01()
-{
+static int Test01() {
     auto window = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
 
     HTTPRequest::Form form;
     form["user"] = "user2";
     form["value"] = "200";
 
-    auto onLoad0 = [&](const std::string & data)
-    {
+    auto onLoad0 = [&](const std::string& data) {
         LOGI("HTTP OnLoad0: %s", data.c_str());
     };
 
-    auto onLoad1 = [&](const std::string & data)
-    {
+    auto onLoad1 = [&](const std::string& data) {
         LOGI("HTTP OnLoad1: %u %s", (unsigned)data.size(), data.c_str());
         window = nullptr;
     };
 
-    auto onError = [&](int httpError, const std::string & description)
-    {
+    auto onError = [&](int httpError, const std::string& description) {
         LOGI("HTTP Error: %d. %s", httpError, description.c_str());
         CHECK_CONDITION(false);
     };
 
-    auto onProgress = [&](unsigned percentage)
-    {
+    auto onProgress = [&](unsigned percentage) {
         LOGI("HTTP Progress: %d", percentage);
     };
 
-    HTTPRequest postRequest("http://nsg-datacollector.appspot.com/store", form, onLoad0, onError, onProgress);
-    HTTPRequest getRequest("http://nsg-datacollector.appspot.com/retrieve", onLoad1, onError, onProgress);
+    HTTPRequest postRequest("http://nsg-datacollector.appspot.com/store", form,
+                            onLoad0, onError, onProgress);
+    HTTPRequest getRequest("http://nsg-datacollector.appspot.com/retrieve",
+                           onLoad1, onError, onProgress);
     postRequest.StartRequest();
     getRequest.StartRequest();
     auto engine = Engine::Create();
     return engine->Run();
 }
 
-static int Test02()
-{
+static int Test02() {
     auto window0 = Window::Create("hiddenWindow", (int)WindowFlag::HIDDEN);
     auto window1 = window0;
 
     HTTPRequest::Form form;
-    auto onLoad = [&](const std::string & data)
-    {
-        CHECK_CONDITION(false);
-    };
+    auto onLoad = [&](const std::string& data) { CHECK_CONDITION(false); };
 
-    auto onError0 = [&](int httpError, const std::string & description)
-    {
+    auto onError0 = [&](int httpError, const std::string& description) {
         LOGI("HTTP Error: %d. %s", httpError, description.c_str());
         window0 = nullptr;
     };
 
-    auto onError1 = [&](int httpError, const std::string & description)
-    {
+    auto onError1 = [&](int httpError, const std::string& description) {
         LOGI("HTTP Error: %d. %s", httpError, description.c_str());
         window1 = nullptr;
     };
 
-    auto onProgress = [&](unsigned percentage)
-    {
+    auto onProgress = [&](unsigned percentage) {
         LOGI("HTTP Progress: %d", percentage);
     };
 
-    HTTPRequest request0("http://nsg-datacollector.appspot11111.com/storexasas", form, onLoad, onError0, onProgress);
-    HTTPRequest request1("http://nsg-datacollector.appspot.com/retrievesasa", onLoad, onError1, onProgress);
+    HTTPRequest request0("http://nsg-datacollector.appspot11111.com/storexasas",
+                         form, onLoad, onError0, onProgress);
+    HTTPRequest request1("http://nsg-datacollector.appspot.com/retrievesasa",
+                         onLoad, onError1, onProgress);
     request0.StartRequest();
     request1.StartRequest();
     auto engine = Engine::Create();
     return engine->Run();
 }
 
-void Tests()
-{
+void Tests() {
     Test01();
     Test02();
 }

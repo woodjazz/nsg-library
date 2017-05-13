@@ -27,72 +27,67 @@ misrepresented as being the original software.
 using namespace NSG;
 #include <fstream>
 
-static void Test01()
-{
-	{
-		Path path("/sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(!path.IsPathRelative());
-	}
+static void Test01() {
+    {
+        Path path("/sjhdjshd/sdhsdjhsd/kskd.txt");
+        CHECK_CONDITION(!path.IsPathRelative());
+    }
 #if WIN32
-	{
-		Path path("c:/sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(!path.IsPathRelative());
-	}
+    {
+        Path path("c:/sjhdjshd/sdhsdjhsd/kskd.txt");
+        CHECK_CONDITION(!path.IsPathRelative());
+    }
 
-	{
-		Path path("a:\\sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(!path.IsPathRelative());
-	}
+    {
+        Path path("a:\\sjhdjshd/sdhsdjhsd/kskd.txt");
+        CHECK_CONDITION(!path.IsPathRelative());
+    }
 #endif
-	{
-		Path path("a:sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(path.IsPathRelative());
-	}
+    {
+        Path path("a:sjhdjshd/sdhsdjhsd/kskd.txt");
+        CHECK_CONDITION(path.IsPathRelative());
+    }
 
-	{
-		Path path("sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(path.IsPathRelative());
-	}
+    {
+        Path path("sjhdjshd/sdhsdjhsd/kskd.txt");
+        CHECK_CONDITION(path.IsPathRelative());
+    }
 
-	{
-		Path path("sjhdjshd/sdhsdjhsd/kskd.TXT");
-		CHECK_CONDITION(path.GetFilename() == "kskd.TXT");
-		CHECK_CONDITION(path.GetPath() == "sjhdjshd/sdhsdjhsd");
-		CHECK_CONDITION(path.GetExtension() == "txt");
-	}
+    {
+        Path path("sjhdjshd/sdhsdjhsd/kskd.TXT");
+        CHECK_CONDITION(path.GetFilename() == "kskd.TXT");
+        CHECK_CONDITION(path.GetPath() == "sjhdjshd/sdhsdjhsd");
+        CHECK_CONDITION(path.GetExtension() == "txt");
+    }
 
-	{
-		Path path("sjhdjshd/data/kskd.TXT");
-		CHECK_CONDITION(!path.AppendDirIfDoesNotExist("data"));
-		CHECK_CONDITION(path.GetPath() == "sjhdjshd/data");
-		CHECK_CONDITION(path.AppendDirIfDoesNotExist("Data"));
-		CHECK_CONDITION(path.GetPath() == "sjhdjshd/data/Data");
-	}
+    {
+        Path path("sjhdjshd/data/kskd.TXT");
+        CHECK_CONDITION(!path.AppendDirIfDoesNotExist("data"));
+        CHECK_CONDITION(path.GetPath() == "sjhdjshd/data");
+        CHECK_CONDITION(path.AppendDirIfDoesNotExist("Data"));
+        CHECK_CONDITION(path.GetPath() == "sjhdjshd/data/Data");
+    }
 
-	{
-		Path path("/sjhdjshd/sdhsdjhsd/kskd.txt");
-		CHECK_CONDITION(path.GetExtension() == "txt");
-		CHECK_CONDITION(path.GetFilename() == "kskd.txt");
-		path.AddExtension("zip");
-		CHECK_CONDITION(path.GetExtension() == "zip");
-		CHECK_CONDITION(path.GetFilename() == "kskd.txt.zip");
-	}
+    {
+        Path path("/sjhdjshd/sdhsdjhsd/kskd.txt");
+        CHECK_CONDITION(path.GetExtension() == "txt");
+        CHECK_CONDITION(path.GetFilename() == "kskd.txt");
+        path.AddExtension("zip");
+        CHECK_CONDITION(path.GetExtension() == "zip");
+        CHECK_CONDITION(path.GetFilename() == "kskd.txt.zip");
+    }
 
     {
         std::string str = "localhost:8000/loader/Hello%20Color";
         Path::ReplaceString(str, "%20", " ");
         CHECK_CONDITION(str == "localhost:8000/loader/Hello Color");
     }
-	{
-		Path path("data/testfile.txt");
-		auto mtime = path.GetModificationTime();
-		CHECK_CONDITION(!mtime.empty());
-		LOGI("%s", mtime.c_str());
-	}
-
+    {
+        Path path("data/testfile.txt");
+        auto mtime = path.GetModificationTime();
+        CHECK_CONDITION(!mtime.empty());
+        LOGI("%s", mtime.c_str());
+    }
 }
 
-void Tests()
-{
-	Test01();
-}
+void Tests() { Test01(); }

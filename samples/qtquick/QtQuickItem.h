@@ -24,36 +24,37 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include <QtQuick/QQuickItem>
-#include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QOpenGLFunctions>
 #include <QBasicTimer>
+#include <QtGui/QOpenGLFunctions>
+#include <QtGui/QOpenGLShaderProgram>
+#include <QtQuick/QQuickItem>
 #include <memory>
-class QtQuickItemRenderer : public QObject, protected QOpenGLFunctions
-{
+class QtQuickItemRenderer : public QObject, protected QOpenGLFunctions {
     Q_OBJECT
 public:
     QtQuickItemRenderer(QQuickWindow* qtWindow);
     ~QtQuickItemRenderer();
 public slots:
     void Paint();
+
 private:
     bool initialized_;
     QQuickWindow* qtWindow_;
 };
 
-class QtQuickItem : public QQuickItem
-{
+class QtQuickItem : public QQuickItem {
     Q_OBJECT
 public:
     QtQuickItem();
 public slots:
     void Sync();
     void Cleanup();
+
 protected:
     void timerEvent(QTimerEvent* e) Q_DECL_OVERRIDE;
 private slots:
     void HandleWindowChanged(QQuickWindow* win);
+
 private:
     std::unique_ptr<QtQuickItemRenderer> renderer_;
     QBasicTimer timer_;

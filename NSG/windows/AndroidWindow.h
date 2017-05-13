@@ -25,45 +25,45 @@ misrepresented as being the original software.
 */
 #pragma once
 #if defined(IS_TARGET_ANDROID)
-#include "Window.h"
 #include "GLIncludes.h"
-#include <string>
+#include "Window.h"
 #include <android/sensor.h>
 #include <android_native_app_glue.h>
+#include <string>
 
-namespace NSG
-{
-    class AndroidWindow : public Window
-    {
-    public:
-        AndroidWindow(const std::string& name, WindowFlags flags);
-        AndroidWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-        ~AndroidWindow();
-        void SwapWindowBuffers() override;
-        void Destroy() override;
-        void HandleEvents() override;
-    private:
-        bool IsValid() override;
-        void SetContext() override;
-        void Show() override;
-        void Hide() override;
-        void Raise() override;
-        void SetupImgui() override;
-        void BeginImguiRender() override;
-        void Initialize(int x, int y, int width, int height, WindowFlags flags);
-        void Close() override;
-        void InitDisplay();
-        void DestroyDisplay();
-        void RestoreContext();
-        static int32_t HandleInput(struct android_app* app, AInputEvent* event);
-        static void HandleCmd(struct android_app* app, int32_t cmd);
-        int flags_;
-        ASensorManager* sensorManager_;
-        const ASensor* accelerometerSensor_;
-        ASensorEventQueue* sensorEventQueue_;
-        EGLDisplay display_;
-        EGLSurface surface_;
-        EGLContext eglContext_;
-    };
+namespace NSG {
+class AndroidWindow : public Window {
+public:
+    AndroidWindow(const std::string& name, WindowFlags flags);
+    AndroidWindow(const std::string& name, int x, int y, int width, int height,
+                  WindowFlags flags);
+    ~AndroidWindow();
+    void SwapWindowBuffers() override;
+    void Destroy() override;
+    void HandleEvents() override;
+
+private:
+    bool IsValid() override;
+    void SetContext() override;
+    void Show() override;
+    void Hide() override;
+    void Raise() override;
+    void SetupImgui() override;
+    void BeginImguiRender() override;
+    void Initialize(int x, int y, int width, int height, WindowFlags flags);
+    void Close() override;
+    void InitDisplay();
+    void DestroyDisplay();
+    void RestoreContext();
+    static int32_t HandleInput(struct android_app* app, AInputEvent* event);
+    static void HandleCmd(struct android_app* app, int32_t cmd);
+    int flags_;
+    ASensorManager* sensorManager_;
+    const ASensor* accelerometerSensor_;
+    ASensorEventQueue* sensorEventQueue_;
+    EGLDisplay display_;
+    EGLSurface surface_;
+    EGLContext eglContext_;
+};
 }
 #endif

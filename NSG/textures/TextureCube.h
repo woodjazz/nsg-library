@@ -24,17 +24,15 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "Texture.h"
+#include "Types.h"
 
-namespace NSG
-{
-    class TextureCube : public Texture
-    {
-    public:
-        TextureCube(const std::string& name);
-        virtual ~TextureCube();
-        GLenum GetTarget() const override;
-        void Define() override;
-    };
+namespace NSG {
+class TextureCube : public Texture {
+public:
+    TextureCube(const std::string& name);
+    virtual ~TextureCube();
+    GLenum GetTarget() const override;
+    void Define() override;
+};
 }

@@ -24,27 +24,24 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "ICollision.h"
-#include "Util.h"
 #include "SceneNode.h"
+#include "Util.h"
 #include "btBulletDynamicsCommon.h"
-namespace NSG
-{
-    void ICollision::HandleManifold(btPersistentManifold* manifold, ICollision* collider) const
-    {
-        auto sceneNode = GetSceneNode();
-        int nrc = manifold->getNumContacts();
-        if (nrc)
-        {
-            for (int j = 0; j < nrc; ++j)
-            {
-                if (!HandleCollision())
-                    break;
-                ContactPoint cinf;
-                btManifoldPoint& pt = manifold->getContactPoint(j);
-                cinf.collider_ = collider->GetSceneNode();
-                cinf.normalB_ = ToVector3(pt.m_normalWorldOnB);
-                sceneNode->OnCollision(cinf);
-            }
+namespace NSG {
+void ICollision::HandleManifold(btPersistentManifold* manifold,
+                                ICollision* collider) const {
+    auto sceneNode = GetSceneNode();
+    int nrc = manifold->getNumContacts();
+    if (nrc) {
+        for (int j = 0; j < nrc; ++j) {
+            if (!HandleCollision())
+                break;
+            ContactPoint cinf;
+            btManifoldPoint& pt = manifold->getContactPoint(j);
+            cinf.collider_ = collider->GetSceneNode();
+            cinf.normalB_ = ToVector3(pt.m_normalWorldOnB);
+            sceneNode->OnCollision(cinf);
         }
     }
+}
 }

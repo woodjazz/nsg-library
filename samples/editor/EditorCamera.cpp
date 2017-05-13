@@ -29,50 +29,39 @@ misrepresented as being the original software.
 
 #define X (unsigned char)0xFF,
 #define O (unsigned char)0x00,
-EditorCamera::EditorCamera(const std::string& name)
-    : EditorSceneNode(name)
-{
+EditorCamera::EditorCamera(const std::string& name) : EditorSceneNode(name) {
     SetMesh(Mesh::GetOrCreate<QuadMesh>("NSGEditorCamera"));
     SetMaterial(Material::GetOrCreate("NSGEditorCamera"));
     material_->SetRenderPass(RenderPass::TEXT);
     material_->SetDiffuseColor(Color::DodgerBlue);
     material_->EnableTransparent(true);
-	material_->SetAlpha(0.9f);
+    material_->SetAlpha(0.9f);
     material_->SetBillboardType(BillboardType::SPHERICAL);
     material_->CastShadow(false);
     material_->ReceiveShadows(false);
-		
-	const int SIZE = 8;
-	static const unsigned char image[SIZE][SIZE]
-    {
-        {X X X X X X X X},
-        {X O O O O O O X},
-        {X O X X X X O X},
-        {X O X O O O O X},
-        {X O X O O O O X},
-        {X O X X X X O X},
-        {X O O O O O O X},
-        {X X X X X X X X},
+
+    const int SIZE = 8;
+    static const unsigned char image[SIZE][SIZE]{
+        {X X X X X X X X}, {X O O O O O O X}, {X O X X X X O X},
+        {X O X O O O O X}, {X O X O O O O X}, {X O X X X X O X},
+        {X O O O O O O X}, {X X X X X X X X},
     };
 
-	auto texture = std::make_shared<Texture2D>();
-	texture->SetFormat(GL_ALPHA);
-	texture->SetData(&image[0][0]);
-	texture->SetSize(SIZE, SIZE);
-	texture->SetMapType(TextureType::COL);
-	material_->SetTextMap(texture);
-	texture->SetFilterMode(TextureFilterMode::NEAREST);
+    auto texture = std::make_shared<Texture2D>();
+    texture->SetFormat(GL_ALPHA);
+    texture->SetData(&image[0][0]);
+    texture->SetSize(SIZE, SIZE);
+    texture->SetMapType(TextureType::COL);
+    material_->SetTextMap(texture);
+    texture->SetFilterMode(TextureFilterMode::NEAREST);
 }
 
-EditorCamera::~EditorCamera()
-{
+EditorCamera::~EditorCamera() {}
 
-}
-
-void EditorCamera::OnCreated()
-{
+void EditorCamera::OnCreated() {
     auto camera = std::dynamic_pointer_cast<Camera>(GetParent());
     if (!frustum_)
-        frustum_ = camera->CreateChild<EditorFrustum>(GetUniqueName("EditorFrustum"));
+        frustum_ =
+            camera->CreateChild<EditorFrustum>(GetUniqueName("EditorFrustum"));
     frustum_->SetCamera(camera);
 }

@@ -1,5 +1,5 @@
 //Remember to rebuild with CMake if this file changes
-#ifdef GLES2
+#if defined(GLES2) || defined(EGL)
 	#ifdef GL_FRAGMENT_PRECISION_HIGH
 		precision highp float;
 		precision highp int;

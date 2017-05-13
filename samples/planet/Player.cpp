@@ -25,36 +25,28 @@ misrepresented as being the original software.
 */
 #include "Player.h"
 #include "Explo.h"
-#include "Level.h"
 #include "Laser.h"
+#include "Level.h"
 
 static int s_lives = 3;
 
-static std::string GetOverlayName(int life)
-{
-    return "Life" + ToString(life);
-}
+static std::string GetOverlayName(int life) { return "Life" + ToString(life); }
 
 Player::Player(PScene scene, PWindow window)
     : node_(scene->CreateChild<SceneNode>()),
-      child_(node_->CreateChild<SceneNode>()),
-      control_(window),
+      child_(node_->CreateChild<SceneNode>()), control_(window),
       body_(child_->GetOrCreateRigidBody()),
       explo_(std::make_shared<Explo>(child_)),
       collisionGroup_((int)CollisionMask::PLAYER),
       collisionMask_((int)CollisionMask::ALL & ~(int)CollisionMask::PLAYER),
-      shot_(false),
-      buttonADown_(false),
-      lastShotTime_(0),
-      totalSpawningTime_(0),
-      spawning_(true)
-{
-    slotCollision_ = child_->SigCollision()->Connect([this](const ContactPoint & contactInfo)
-    {
-        child_->Hide(true, false);
-        body_->HandleCollisions(false);
-        explo_->Start();
-    });
+      shot_(false), buttonADown_(false), lastShotTime_(0),
+      totalSpawningTime_(0), spawning_(true) {
+    slotCollision_ = child_->SigCollision()->Connect(
+        [this](const ContactPoint& contactInfo) {
+            child_->Hide(true, false);
+            body_->HandleCollisions(false);
+            explo_->Start();
+        });
 
     auto radius = Level::GetFlyDistance();
     child_->SetPosition(Vector3(0, 0, radius));
@@ -62,15 +54,13 @@ Player::Player(PScene scene, PWindow window)
     auto mesh = Mesh::GetOrCreate<TriangleMesh>("PlayerMesh");
     child_->SetMesh(mesh);
     auto material(Material::Create());
-    //material->SetFillMode(FillMode::WIREFRAME);
+    // material->SetFillMode(FillMode::WIREFRAME);
     material->SetDiffuseColor(Color::DodgerBlue);
     material->SetRenderPass(RenderPass::UNLIT);
     child_->SetMaterial(material);
 
-    moveSlot_ = control_.SigMoved()->Connect([this](float x, float y)
-    {
-        if (!child_->IsHidden() && (x || y))
-        {
+    moveSlot_ = control_.SigMoved()->Connect([this](float x, float y) {
+        if (!child_->IsHidden() && (x || y)) {
             auto dt = Engine::GetPtr()->GetDeltaTime();
             child_->Roll(-x * dt);
             auto dir = y * dt * (child_->GetOrientation() * Vector3::Up);
@@ -79,68 +69,57 @@ Player::Player(PScene scene, PWindow window)
         }
     });
 
-    moveLeftStickSlot_ = control_.SigLeftStickMoved()->Connect([this](float x, float y)
-    {
-        if (!child_->IsHidden() && (x || y))
-        {
-            auto angle = Vector3::Up.Angle(Vector3(x, y, 0).Normalize());
-            if (x > 0)
-                angle *= -1;
-            child_->SetOrientation(Quaternion(angle, Vector3::Forward));
-            auto dt = Engine::GetPtr()->GetDeltaTime();
-            auto dir = dt * (child_->GetOrientation() * Vector3::Up);
-            node_->Pitch(-dir.y);
-            node_->Yaw(dir.x);
-        }
-    });
+    moveLeftStickSlot_ =
+        control_.SigLeftStickMoved()->Connect([this](float x, float y) {
+            if (!child_->IsHidden() && (x || y)) {
+                auto angle = Vector3::Up.Angle(Vector3(x, y, 0).Normalize());
+                if (x > 0)
+                    angle *= -1;
+                child_->SetOrientation(Quaternion(angle, Vector3::Forward));
+                auto dt = Engine::GetPtr()->GetDeltaTime();
+                auto dir = dt * (child_->GetOrientation() * Vector3::Up);
+                node_->Pitch(-dir.y);
+                node_->Yaw(dir.x);
+            }
+        });
 
-    moveRightStickSlot_ = control_.SigRightStickMoved()->Connect([this](float x, float y)
-    {
-        if (!child_->IsHidden() && (x || y))
-        {
-            auto angle = Vector3::Up.Angle(Vector3(x, y, 0).Normalize());
-            if (x > 0)
-                angle *= -1;
-            lastShotOrientation_ = Quaternion(angle, Vector3::Forward);
-            shot_ = true;
-        }
-        else
-            shot_ = false;
-    });
+    moveRightStickSlot_ =
+        control_.SigRightStickMoved()->Connect([this](float x, float y) {
+            if (!child_->IsHidden() && (x || y)) {
+                auto angle = Vector3::Up.Angle(Vector3(x, y, 0).Normalize());
+                if (x > 0)
+                    angle *= -1;
+                lastShotOrientation_ = Quaternion(angle, Vector3::Forward);
+                shot_ = true;
+            } else
+                shot_ = false;
+        });
 
-    buttonASlot_ =  control_.SigButtonA()->Connect([this](bool down)
-    {
-        buttonADown_ = down;
-    });
+    buttonASlot_ = control_.SigButtonA()->Connect(
+        [this](bool down) { buttonADown_ = down; });
 
-    updateSlot_ = Engine::SigUpdate()->Connect([this](float deltaTime)
-    {
+    updateSlot_ = Engine::SigUpdate()->Connect([this](float deltaTime) {
         lastShotTime_ += deltaTime;
         totalSpawningTime_ += deltaTime;
-        if (spawning_)
-        {
-            if (totalSpawningTime_ > 3)
-            {
+        if (spawning_) {
+            if (totalSpawningTime_ > 3) {
                 child_->Hide(false, false);
                 body_->HandleCollisions(true);
                 spawning_ = false;
-            }
-            else
-            {
+            } else {
                 child_->Hide(!child_->IsHidden(), false);
             }
         }
-        if (shot_ || buttonADown_)
-        {
-            if (lastShotTime_ > 0.2f)
-            {
+        if (shot_ || buttonADown_) {
+            if (lastShotTime_ > 0.2f) {
                 if (buttonADown_ && !shot_)
                     lastShotOrientation_ = child_->GetOrientation();
 
                 lastShotTime_ = 0;
                 auto obj = std::make_shared<Laser>(node_->GetScene());
                 obj->SetPosition(child_->GetPosition());
-                obj->SetOrientation(node_->GetOrientation(), lastShotOrientation_);
+                obj->SetOrientation(node_->GetOrientation(),
+                                    lastShotOrientation_);
                 Level::GetCurrent()->AddObject(obj);
             }
         }
@@ -150,37 +129,31 @@ Player::Player(PScene scene, PWindow window)
 
     body_->SetKinematic(true);
     body_->SetCollisionMask(collisionGroup_, collisionMask_);
-    auto shape = Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, Vector3::One));
+    auto shape =
+        Shape::GetOrCreate(ShapeKey(PhysicsShape::SH_SPHERE, Vector3::One));
     body_->AddShape(shape);
     shape->SetBB(child_->GetWorldBoundingBox());
 
-    for (auto i = 0; i < s_lives; i++)
-    {
+    for (auto i = 0; i < s_lives; i++) {
         auto overlay = scene->CreateOverlay(GetOverlayName(i));
         overlay->SetMaterial(material);
         overlay->SetMesh(mesh);
         overlay->SetScale(0.1f);
         auto bb = overlay->GetWorldBoundingBox();
         auto size = bb.Size();
-        overlay->SetPosition(Vector3(-1 + size.x / 2.f + i * size.x * 1.1f, 1 - size.y, 0));
+        overlay->SetPosition(
+            Vector3(-1 + size.x / 2.f + i * size.x * 1.1f, 1 - size.y, 0));
     }
 }
 
-Player::~Player()
-{
-    node_->SetParent(nullptr);
-}
+Player::~Player() { node_->SetParent(nullptr); }
 
-void Player::Destroyed()
-{
+void Player::Destroyed() {
     CHECK_ASSERT(s_lives > 0);
-    if (--s_lives == 0)
-    {
+    if (--s_lives == 0) {
         s_lives = 3;
         Level::Load(2, Window::GetMainWindow()->shared_from_this());
-    }
-    else
-    {
+    } else {
         totalSpawningTime_ = 0;
         spawning_ = true;
         node_->GetScene()->RemoveOverlay(GetOverlayName(s_lives));

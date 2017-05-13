@@ -23,23 +23,26 @@ misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------
 */
-#include "ResourceConverter.h"
-#include <cstring>
+#pragma once
+#include "FontAtlas.h"
+#include <string>
 
-namespace NSG
-{
-    ResourceConverter::ResourceConverter(const std::string& name)
-		:Resource(name)
-    {
-    }
+namespace NSG {
+class FontTTFAtlas : public FontAtlas {
+public:
+    FontTTFAtlas(const std::string& name = GetUniqueName("FontTTFAtlas"));
+    ~FontTTFAtlas();
+    void SetTTF(PResourceFile ttfResource);
 
-    ResourceConverter::~ResourceConverter()
-    {
-    }
-
-	void ResourceConverter::SetData(const char* buffer, size_t bytes)
-    {
-        buffer_.resize(bytes);
-        memcpy(&buffer_[0], buffer, bytes);
-    }
+private:
+    bool IsValid() override;
+    void AllocateResources() override;
+    void ParseTTF();
+    PResourceFile ttfResource_;
+    int sChar_;
+    int eChar_;
+    int bitmapWidth_;
+    int bitmapHeight_;
+    int fontPixelsHeight_;
+};
 }

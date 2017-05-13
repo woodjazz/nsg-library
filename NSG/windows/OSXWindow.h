@@ -27,41 +27,41 @@ misrepresented as being the original software.
 #if defined(IS_TARGET_OSX)
 #include "Types.h"
 #include "Window.h"
-#include <string>
 #import <Cocoa/Cocoa.h>
+#include <string>
 
-namespace NSG
-{
-    class OSXWindow : public Window
-    {
-    public:
-        OSXWindow(const std::string& name, WindowFlags flags);
-        OSXWindow(const std::string& name, int x, int y, int width, int height, WindowFlags flags);
-        ~OSXWindow();
-        void SwapWindowBuffers() override;
-        void Destroy() override;
-        void HandleEvents() override;
-        NSWindow* GetNSWindow() const { return window_; }
-        void Close() override;        
-        void GetMousePos(int& outX, int& outY) const;        
-    private:
-        void CreateContext();
-        void SetContext() override;
-        void Show() override;
-        void Hide() override;
-        void Raise() override;
-        void SetupImgui() override;
-        void BeginImguiRender() override;
-        void Initialize(int x, int y, int width, int height, WindowFlags flags);
-        bool DispatchEvent(NSEvent* event);
-        int flags_;
-        int32_t style_;
-        NSWindow* window_;
-        NSRect windowFrame_;
-        int keyModifier_;
-        int flagStates_;
-        static NSOpenGLView* view_;
-        static NSOpenGLContext* context_;        
-    };
+namespace NSG {
+class OSXWindow : public Window {
+public:
+    OSXWindow(const std::string& name, WindowFlags flags);
+    OSXWindow(const std::string& name, int x, int y, int width, int height,
+              WindowFlags flags);
+    ~OSXWindow();
+    void SwapWindowBuffers() override;
+    void Destroy() override;
+    void HandleEvents() override;
+    NSWindow* GetNSWindow() const { return window_; }
+    void Close() override;
+    void GetMousePos(int& outX, int& outY) const;
+
+private:
+    void CreateContext();
+    void SetContext() override;
+    void Show() override;
+    void Hide() override;
+    void Raise() override;
+    void SetupImgui() override;
+    void BeginImguiRender() override;
+    void Initialize(int x, int y, int width, int height, WindowFlags flags);
+    bool DispatchEvent(NSEvent* event);
+    int flags_;
+    int32_t style_;
+    NSWindow* window_;
+    NSRect windowFrame_;
+    int keyModifier_;
+    int flagStates_;
+    static NSOpenGLView* view_;
+    static NSOpenGLContext* context_;
+};
 }
 #endif

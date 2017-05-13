@@ -24,83 +24,84 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "ActiveObject.h"
-namespace utils
-{
-    ActiveObject::ActiveObject()
-        : alive_(true)
-    {
-        thread_ = std::thread([this]() { Run(); });
-    }
+#include <stdio.h>
+#include <stdlib.h>
 
-    ActiveObject::~ActiveObject()
-    {
-        if (alive_)
-            Join();
-    }
+namespace utils {
+ActiveObject::ActiveObject() : alive_(true) {
+    thread_ = std::thread([this]() { Run(); });
+}
 
-    void ActiveObject::Join()
-    {
-        alive_ = false;
-        condition_.notify_one();
-        thread_.join();
-    }
+ActiveObject::~ActiveObject() {
+    if (alive_)
+        Join();
+}
 
-    void ActiveObject::Run()
-    {
-        while (alive_)
+void ActiveObject::Join() {
+    alive_ = false;
+    condition_.notify_one();
+    thread_.join();
+}
+
+void ActiveObject::Run() {
+    while (alive_) {
+        PTask task;
         {
-            PTask task;
-            {
-                std::unique_lock<std::mutex> lck(mtx_);
-                Milliseconds duration(Milliseconds::max()); //default timeout when the priority queue is empty
-                if(!priorityQueue_.empty())
-                {
-                    duration = std::chrono::duration_cast<Milliseconds>(priorityQueue_.top().timePoint_ - std::chrono::steady_clock::now());
-                    const Milliseconds toleranceError(50);
-                    if(duration < toleranceError)
-                    {
-                        if(duration < -toleranceError)
-                        {
-                            // We have a time violation. 
-                            // This is very bad because we could not meet the time constraint.
-                            // We can reach this point if some callback was too slow
-                            // or because we scheduled too many messages to be dispatched in less than toleranceError
-                            // or because we executed a normal task that took too long
-                            priorityQueue_.pop(); //the user will get an exception (see std::packaged_task::~packaged_task)
+            std::unique_lock<std::mutex> lck(mtx_);
+            Milliseconds duration(Milliseconds::max()); // default timeout when
+                                                        // the priority queue is
+                                                        // empty
+            if (!priorityQueue_.empty()) {
+                duration = std::chrono::duration_cast<Milliseconds>(
+                    priorityQueue_.top().timePoint_ -
+                    std::chrono::steady_clock::now());
+                const Milliseconds toleranceError(50);
+                if (duration < toleranceError) {
+                    if (duration < -toleranceError) {
+                        // We have a time violation.
+                        // This is very bad because we could not meet the time
+                        // constraint.
+                        // We can reach this point if some callback was too slow
+                        // or because we scheduled too many messages to be
+                        // dispatched in less than toleranceError
+                        // or because we executed a normal task that took too
+                        // long
+                        priorityQueue_
+                            .pop(); // the user will get an exception (see
+                                    // std::packaged_task::~packaged_task)
+                    } else {
+                        // less than toleranceError => no wait needed
+                        // Execute object from priority queue
+                        auto task = priorityQueue_.top().task_;
+                        auto duration = priorityQueue_.top().duration_;
+                        priorityQueue_.pop();
+                        if (task) {
+                            auto start = std::chrono::steady_clock::now();
+                            task->Execute();
+                            auto end = std::chrono::steady_clock::now();
+                            auto diff =
+                                std::chrono::duration_cast<Milliseconds>(end -
+                                                                         start);
+                            if (diff > duration)
+                                fprintf(stderr, "The execution of the task "
+                                                "took %ld ms. The expected "
+                                                "duration was %ld ms.\n",
+                                        diff.count(), duration.count());
                         }
-                        else
-                        {
-                            // less than toleranceError => no wait needed
-                            // Execute object from priority queue
-                            auto task = priorityQueue_.top().task_;
-                            auto duration = priorityQueue_.top().duration_;
-                            priorityQueue_.pop();
-                            if(task)
-                            {
-                                auto start = std::chrono::steady_clock::now();
-                                task->Execute();
-                                auto end = std::chrono::steady_clock::now();
-                                auto diff = std::chrono::duration_cast<Milliseconds>(end - start);
-                                if(diff > duration)
-                                    fprintf(stderr, "The execution of the task took %ld ms. The expected duration was %ld ms.\n", diff.count(), duration.count());
-                            }
-                            continue;
-                        }
+                        continue;
                     }
                 }
-                bool noTimeout = condition_.wait_for(lck, duration, [this]() 
-                { 
-                    return !queue_.empty() || !alive_; 
-                });
-                if(noTimeout && !queue_.empty())
-                {
-                    //execute a normal task (without priority)
-                    task = std::move(queue_.front());
-                    queue_.pop_front();
-                }
             }
-            if(task)
-                task->Execute();
+            bool noTimeout = condition_.wait_for(
+                lck, duration, [this]() { return !queue_.empty() || !alive_; });
+            if (noTimeout && !queue_.empty()) {
+                // execute a normal task (without priority)
+                task = std::move(queue_.front());
+                queue_.pop_front();
+            }
         }
+        if (task)
+            task->Execute();
     }
+}
 }

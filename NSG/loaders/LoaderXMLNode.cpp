@@ -24,51 +24,47 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #include "LoaderXMLNode.h"
-#include "LoaderXML.h"
 #include "Check.h"
+#include "LoaderXML.h"
 #include "ResourceFile.h"
-#include "b64/encode.h"
 #include "b64/decode.h"
+#include "b64/encode.h"
 
-namespace NSG
-{
-    LoaderXMLNode::LoaderXMLNode(LoaderXML* loaderXML, PObject obj, const std::string& type, const std::string& nameAttValue)
-        : loaderXML_(loaderXML),
-          obj_(obj),
-          type_(type),
-          nameAttValue_(nameAttValue)
-    {
-		CHECK_ASSERT(loaderXML_ && !nameAttValue_.empty() && !type_.empty());
-    }
+namespace NSG {
+LoaderXMLNode::LoaderXMLNode(LoaderXML* loaderXML, PObject obj,
+                             const std::string& type,
+                             const std::string& nameAttValue)
+    : loaderXML_(loaderXML), obj_(obj), type_(type),
+      nameAttValue_(nameAttValue) {
+    CHECK_ASSERT(loaderXML_ && !nameAttValue_.empty() && !type_.empty());
+}
 
-    LoaderXMLNode::~LoaderXMLNode()
-    {
-    }
+LoaderXMLNode::~LoaderXMLNode() {}
 
-    bool LoaderXMLNode::Load()
-    {
-        if (loaderXML_->IsReady() && obj_.lock())
-        {
-            auto& doc = loaderXML_->GetDocument();
-            auto appNode = doc.child("App");
-            auto resources = appNode.child(type_.c_str());
-            auto node = resources.find_child([this](pugi::xml_node & node) { return node.attribute("name").as_string() == nameAttValue_; });
-            CHECK_CONDITION(node);
-            auto obj = obj_.lock();
-            if (type_ == "Resources" && !node.child("data"))
-            {
-                Path path(node.attribute("name").as_string());
-                auto resourceFile = std::dynamic_pointer_cast<ResourceFile>(obj);
-                CHECK_ASSERT(resourceFile);
-                auto xmlFile = std::dynamic_pointer_cast<ResourceFile>(loaderXML_->GetResource());
-                if (xmlFile)
-                    path.SetPath(xmlFile->GetPath().GetPath()); //use path of XML file
-                resourceFile->SetPath(path);
-            }
-            else
-                obj->Load(node);
-            return true;
-        }
-        return false;
+bool LoaderXMLNode::Load() {
+    if (loaderXML_->IsReady() && obj_.lock()) {
+        auto& doc = loaderXML_->GetDocument();
+        auto appNode = doc.child("App");
+        auto resources = appNode.child(type_.c_str());
+        auto node = resources.find_child([this](pugi::xml_node& node) {
+            return node.attribute("name").as_string() == nameAttValue_;
+        });
+        CHECK_CONDITION(node);
+        auto obj = obj_.lock();
+        if (type_ == "Resources" && !node.child("data")) {
+            Path path(node.attribute("name").as_string());
+            auto resourceFile = std::dynamic_pointer_cast<ResourceFile>(obj);
+            CHECK_ASSERT(resourceFile);
+            auto xmlFile = std::dynamic_pointer_cast<ResourceFile>(
+                loaderXML_->GetResource());
+            if (xmlFile)
+                path.SetPath(
+                    xmlFile->GetPath().GetPath()); // use path of XML file
+            resourceFile->SetPath(path);
+        } else
+            obj->Load(node);
+        return true;
     }
+    return false;
+}
 }

@@ -24,31 +24,26 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Vector4.h"
-#include "Vector3.h"
-#include "Vector2.h"
 #include "Color.h"
+#include "Vector2.h"
+#include "Vector3.h"
+#include "Vector4.h"
 #include <iostream>
 #include <vector>
 
-namespace NSG
-{
-    struct VertexData
-    {
-        Vertex3 position_;
-        Vertex3 normal_;
-        Vertex2 uv_[2];
-        Color color_;
-        Vertex3 tangent_;
-        Vector4 bonesID_;
-        Vector4 bonesWeight_;
-        VertexData();
-        bool operator == (const VertexData& obj) const;
-    };
+namespace NSG {
+struct VertexData {
+    Vertex3 position_;
+    Vertex3 normal_;
+    Vertex2 uv_[2];
+    Color color_;
+    Vertex3 tangent_;
+    Vector4 bonesID_;
+    Vector4 bonesWeight_;
+    VertexData();
+    bool operator==(const VertexData& obj) const;
+};
 
-    //std::ostream& operator << (std::ostream& s , const VertexData& obj);
-    typedef std::vector<VertexData> VertexsData;
-
+// std::ostream& operator << (std::ostream& s , const VertexData& obj);
+typedef std::vector<VertexData> VertexsData;
 }
-
-

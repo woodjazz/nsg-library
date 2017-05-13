@@ -24,16 +24,15 @@ misrepresented as being the original software.
 -------------------------------------------------------------------------------
 */
 #pragma once
-#include "Types.h"
 #include "SceneNode.h"
+#include "Types.h"
 using namespace NSG;
 
 class Editor;
-class EditorSceneNode : public SceneNode
-{
+class EditorSceneNode : public SceneNode {
 public:
     EditorSceneNode(const std::string& name);
     ~EditorSceneNode();
-	bool CanBeVisible() const override;
-	void ShowGUIProperties(Editor* editor);
+    bool CanBeVisible() const override;
+    void ShowGUIProperties(Editor* editor);
 };
