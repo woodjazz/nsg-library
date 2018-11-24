@@ -148,9 +148,6 @@ int NSG_MAIN(int argc, char* argv[]) {
                 objBB.max_ *= 1.75f;
                 objBB.min_ *= 1.75f;
                 auto camera = scene->GetOrCreateChild<Camera>("camera1");
-                // camera->SetGlobalPosition(Vector3(0, objBB.max_.y,
-                // objBB.max_.z));
-                // camera->SetGlobalLookAtPosition(objPos);
                 auto control = std::make_shared<CameraControl>(camera);
 
                 auto animation = Animation::Create("anim0");
@@ -437,5 +434,4 @@ int NSG_MAIN(int argc, char* argv[]) {
 
 ![](samples/planet/screencast/planet.gif)
 
-*(See code in samples directory)*
 
