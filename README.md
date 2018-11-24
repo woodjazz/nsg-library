@@ -203,6 +203,6 @@ int NSG_MAIN(int argc, char* argv[]) {
 }
 ```
 
-![](http://woodjazz.github.io/images/animation.gif)
+![](samples/animation/screencast/animation.gif)
 
 

@@ -34,8 +34,8 @@ static const int WindowHeight = 480;
 #else
 static const int WindowPosX = 0;
 static const int WindowPosY = 0;
-static const int WindowWidth = 1024;
-static const int WindowHeight = 768;
+static const int WindowWidth = 320;
+static const int WindowHeight = 200;
 
 #endif
 
