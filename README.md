@@ -202,6 +202,7 @@ int NSG_MAIN(int argc, char* argv[]) {
     return engine->Run();
 }
 ```
-![Alt Text](http://woodjazz.github.io/images/animation.gif =300x200)
+
+![](http://woodjazz.github.io/images/animation.gif)
 
 
