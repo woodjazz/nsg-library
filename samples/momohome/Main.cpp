@@ -63,7 +63,6 @@ int NSG_MAIN(int argc, char* argv[]) {
                         character_ = player_->GetCharacter();
                     }
                     void Begin() override {
-                        // controller_->SetSpeed(animName_, 0.1f);
                         controller_->CrossFade(animName_, loop_, 0.5f);
                     }
                     void Stay() override {
