@@ -119,22 +119,89 @@ BLENDER_BIN has to point to the directory where the blender executable is placed
 -------------------------
 Samples
 -------------------------
-These are some examples (from the samples folder) generated with the Emscripten toolchain.
+These are some examples (from the samples folder):
 
-- [animation](http://woodjazz.github.io/samples/animation/animation.html)
-- [loader](http://woodjazz.github.io/samples/loader/loader.html)
-- [momo](http://woodjazz.github.io/samples/momo/momo.html)
-- [momoanimations](http://woodjazz.github.io/samples/momoanimations/momoanimations.html)
-- [momohome](http://woodjazz.github.io/samples/momohome/momohome.html)
-- [planet](http://woodjazz.github.io/samples/planet/planet.html)
+- animation
 
->For loader, momo and momoanimations you can move and rotate the camera around:
+```cpp
+#include "NSG.h"
 
->- Press the [F key] over object. This will center the view on the selected point.
-- Press the [C key] over object. This will center the view on the object's center.
-- Hold [Alt key] + [Left Mouse Button] to orbit the camera around the current mouse position.
-- Hold [Alt key] + [Shift key] + [Left Mouse Button] to zoom the view. This is the same as scrolling with your mouse wheel.
-- Hold [Shift key] + [Left Mouse Button] to drag camera around.
-- Press [R key] to reset the camera position.
+int NSG_MAIN(int argc, char* argv[]) {
+    using namespace NSG;
+    auto engine = Engine::Create();
+    auto& conf = engine->GetAppConfiguration();
+    conf.platform_ = AppConfiguration::Platform::UseEGL;
 
->For momohome and planet you can connect a XBox360 gamepad to one USB and play around... (You can test your gamepad [here](http://html5gamepad.com/))
+    PAnimationController acontrol;
+    auto window = Window::Create();
+
+    LoaderXML loader("loader");
+    auto slotLoaded =
+        loader.Load(Resource::GetOrCreateClass<ResourceFile>("data/duck.xml"))
+            ->Connect([&]() {
+                auto scene = loader.GetScene(0);
+                auto objNode = scene->GetOrCreateChild<SceneNode>("LOD3sp");
+                auto objPos = objNode->GetGlobalPosition();
+                auto objBB = objNode->GetWorldBoundingBox();
+                objBB.max_ *= 1.75f;
+                objBB.min_ *= 1.75f;
+                auto camera = scene->GetOrCreateChild<Camera>("camera1");
+                // camera->SetGlobalPosition(Vector3(0, objBB.max_.y,
+                // objBB.max_.z));
+                // camera->SetGlobalLookAtPosition(objPos);
+                auto control = std::make_shared<CameraControl>(camera);
+
+                auto animation = Animation::Create("anim0");
+                AnimationTrack track;
+                track.node_ = camera;
+                track.channelMask_ = (int)AnimationChannel::POSITION |
+                                     (int)AnimationChannel::ROTATION;
+
+                {
+                    AnimationKeyFrame key(0, camera.get());
+                    track.keyFrames_.push_back(key);
+                }
+
+                {
+                    auto node = std::make_shared<Node>("node0");
+                    node->SetParent(camera->GetParent());
+                    node->SetGlobalPosition(
+                        Vector3(objBB.max_.x, objBB.max_.y, 0));
+                    node->SetGlobalLookAtPosition(objPos);
+                    AnimationKeyFrame key(2, node.get());
+                    track.keyFrames_.push_back(key);
+                }
+
+                {
+                    auto node = std::make_shared<Node>("node1");
+                    node->SetParent(camera->GetParent());
+                    node->SetGlobalPosition(
+                        Vector3(0, objBB.max_.y, objBB.min_.z));
+                    node->SetGlobalLookAtPosition(objPos);
+                    AnimationKeyFrame key(4, node.get());
+                    track.keyFrames_.push_back(key);
+                }
+
+                {
+                    auto node = std::make_shared<Node>("node2");
+                    node->SetParent(camera->GetParent());
+                    node->SetGlobalPosition(
+                        Vector3(objBB.min_.x, objBB.max_.y, 0));
+                    node->SetGlobalLookAtPosition(objPos);
+                    AnimationKeyFrame key(6, node.get());
+                    track.keyFrames_.push_back(key);
+                }
+
+                animation->AddTrack(track);
+                animation->SetLength(8);
+
+                acontrol = std::make_shared<AnimationController>(camera);
+                acontrol->Play(animation->GetName(), false);
+                window->SetScene(scene);
+            });
+    return engine->Run();
+}
+```
+![Alt Text](http://woodjazz.github.io/images/animation.gif =300x200)
+
+
